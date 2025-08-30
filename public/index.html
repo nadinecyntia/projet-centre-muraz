@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centre MURAZ - Plateforme de Surveillance Arboviroses</title>
+    <link href="/css/style.css" rel="stylesheet">
+    <!-- Correction CSS pour les liens -->
+    <style>
+        /* Correction pour les liens de navigation */
+        nav a {
+            color: inherit !important;
+            text-decoration: none !important;
+            cursor: pointer !important;
+            pointer-events: auto !important;
+        }
+        
+        /* S'assurer que la navigation est cliquable */
+        header nav {
+            position: relative !important;
+            z-index: 100 !important;
+        }
+        
+        /* Correction pour les liens dans le contenu */
+        .content a {
+            color: #1e40af !important;
+            text-decoration: underline !important;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Header -->
+    <header class="bg-white shadow-lg border-b-4 border-muraz-blue">
+        <nav class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 flex items-center justify-center" style="width: 85px; height: 85px;">
+                        <img src="/logo-centre-muraz.jpg?v=8" alt="Logo Centre MURAZ" class="w-full h-full object-contain rounded-lg">
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Surveillance Arboviroses</p>
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="/" class="text-muraz-blue font-semibold">Accueil</a>
+                    <a href="/analyses" class="text-gray-700 hover:text-muraz-blue transition-colors">Analyses</a>
+                    <a href="/indices" class="text-gray-700 hover:text-muraz-blue transition-colors">Indices</a>
+                    <a href="/biologie-moleculaire" class="text-gray-700 hover:text-muraz-blue transition-colors">Biologie Moléculaire</a>
+                    <a href="/admin" class="text-gray-700 hover:text-muraz-blue transition-colors">Admin</a>
+                    <a href="/admin" class="btn-primary">Connexion</a>
+                </div>
+                <div class="md:hidden">
+                    <button class="text-gray-700 hover:text-muraz-blue">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section SPECTACULAIRE avec Image du Centre MURAZ -->
+    <section id="accueil" class="relative text-white">
+        <!-- Image de fond du Centre MURAZ avec largeur ÉQUILIBRÉE -->
+        <div class="relative h-screen overflow-hidden mx-auto mb-12 rounded-3xl shadow-2xl max-w-5xl">
+            <img src="/centre-muraz.jpg" alt="Centre MURAZ" class="w-full h-full object-cover filter blur-sm">
+            <!-- Overlay subtil pour améliorer la lisibilité sans cacher l'image -->
+            <div class="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/40 pointer-events-none"></div>
+            
+            <!-- Indicateur de scroll élégant -->
+            <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+                <div class="w-6 h-10 border-2 border-white rounded-full flex justify-center">
+                    <div class="w-1 h-3 bg-white rounded-full mt-2 animate-pulse"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Objectifs du Projet -->
+    <section class="py-16 bg-white">
+        <div class="container mx-auto px-6">
+            <h3 class="section-title text-muraz-blue">Objectifs du Projet</h3>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
+                <!-- Automatisation -->
+                <div class="card text-center hover:shadow-xl transition-shadow">
+                    <div class="w-16 h-16 bg-muraz-blue rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-robot text-white text-2xl"></i>
+                    </div>
+                    <h4 class="text-xl font-semibold mb-3 text-gray-800">Automatisation</h4>
+                    <p class="text-gray-600">Récupération automatique des données KoboCollect et intégration dans PostgreSQL</p>
+                </div>
+
+                <!-- Validation Admin -->
+                <div class="card text-center hover:shadow-xl transition-shadow">
+                    <div class="w-16 h-16 bg-muraz-green rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-shield-alt text-white text-2xl"></i>
+                    </div>
+                    <h4 class="text-xl font-semibold mb-3 text-gray-800">Validation Administrative</h4>
+                    <p class="text-gray-600">Contrôle et validation des données par l'administrateur avant intégration</p>
+                </div>
+
+                <!-- Visualisation -->
+                <div class="card text-center hover:shadow-xl transition-shadow">
+                    <div class="w-16 h-16 bg-muraz-orange rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-chart-line text-white text-2xl"></i>
+                    </div>
+                    <h4 class="text-xl font-semibold mb-3 text-gray-800">Visualisation Avancée</h4>
+                    <p class="text-gray-600">Tableaux de bord interactifs et visualisations en temps réel</p>
+                </div>
+
+                <!-- Surveillance -->
+                <div class="card text-center hover:shadow-xl transition-shadow">
+                    <div class="w-16 h-16 bg-muraz-red rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-eye text-white text-2xl"></i>
+                    </div>
+                    <h4 class="text-xl font-semibold mb-3 text-gray-800">Surveillance Entomologique</h4>
+                    <p class="text-gray-600">Suivi des indices IB, IM, IR et analyse des populations de moustiques</p>
+                </div>
+
+                <!-- Biologie Moléculaire -->
+                <div class="card text-center hover:shadow-xl transition-shadow">
+                    <div class="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-dna text-white text-2xl"></i>
+                    </div>
+                    <h4 class="text-xl font-semibold mb-3 text-gray-800">Biologie Moléculaire</h4>
+                    <p class="text-gray-600">Analyse PCR, RT-PCR et identification des virus et fréquences alléliques</p>
+                </div>
+
+                <!-- Décision -->
+                <div class="card text-center hover:shadow-xl transition-shadow">
+                    <div class="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-lightbulb text-white text-2xl"></i>
+                    </div>
+                    <h4 class="text-xl font-semibold mb-3 text-gray-800">Aide à la Décision</h4>
+                    <p class="text-gray-600">Génération de rapports clairs pour la prise de décision sanitaire</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-6 text-center">
+            <p>&copy; 2024 Centre MURAZ - Plateforme de Surveillance Arboviroses</p>
+            <p class="text-gray-400 mt-2">Ministère de la Santé - Burkina Faso</p>
+        </div>
+    </footer>
+
+    <script src="/js/main.js"></script>
+</body>
+</html>
