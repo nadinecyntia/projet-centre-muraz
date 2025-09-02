@@ -1,10 +1,14 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const session = require('express-session');
+const bcrypt = require('bcryptjs');
 require('dotenv').config();
 
 const { pool } = require('./config/database');
 const apiRoutes = require('./routes/api');
+const authController = require('./controllers/authController');
+const { requireAuth, requireSuperAdmin, requireViewer } = require('./middleware/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -15,38 +19,72 @@ app.use(cors({
     credentials: true
 }));
 
+// Configuration des sessions
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'centre-muraz-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 24 * 60 * 60 * 1000 // 24 heures
+    }
+}));
+
 // Middleware pour parser le JSON et les formulaires
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Middleware d'authentification
+app.use((req, res, next) => {
+    res.locals.user = req.session.user || null;
+    res.locals.isAuthenticated = !!req.session.user;
+    next();
+});
+
 // Servir les fichiers statiques
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Les middlewares d'authentification sont importés depuis middleware/auth.js
+
+// Routes d'authentification
+app.post('/api/auth/login', authController.login);
+app.post('/api/auth/logout', authController.logout);
+app.get('/api/auth/user', authController.getUserInfo);
+app.get('/api/auth/check', authController.checkAuth);
 
 // Routes API
 app.use('/api', apiRoutes);
 
-// Route principale
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// Route de login
+app.get('/login', (req, res) => {
+    if (req.session && req.session.user) {
+        return res.redirect(req.session.user.role === 'SUPER_ADMIN' ? '/admin' : '/analyses');
+    }
+    res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
-// Route pour la page Biologie Moléculaire
-app.get('/biologie-moleculaire', (req, res) => {
+// Route principale (Dashboard) - SUPER_ADMIN uniquement
+app.get('/', requireAuth, requireSuperAdmin, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+});
+
+// Route pour la page Biologie Moléculaire - SUPER_ADMIN uniquement
+app.get('/biologie-moleculaire', requireAuth, requireSuperAdmin, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'biologie-moleculaire.html'));
 });
 
-// Route pour la page Analyses
-app.get('/analyses', (req, res) => {
+// Route pour la page Analyses - Tous les utilisateurs connectés
+app.get('/analyses', requireAuth, requireViewer, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'analyses.html'));
 });
 
-// Route pour la page Administration
-app.get('/admin', (req, res) => {
+// Route pour la page Administration - SUPER_ADMIN uniquement
+app.get('/admin', requireAuth, requireSuperAdmin, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
-// Route pour la page Indices
-app.get('/indices', (req, res) => {
+// Route pour la page Indices - Tous les utilisateurs connectés
+app.get('/indices', requireAuth, requireViewer, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'indices.html'));
 });
 
@@ -68,6 +106,16 @@ app.get('/test-nav', (req, res) => {
 // Route de test pour la page d'accueil sans CSS/JS
 app.get('/index-no-css', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index-no-css.html'));
+});
+
+// Route de test pour les échelles adaptatives
+app.get('/test-echelle', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'test-echelle.html'));
+});
+
+// Route de test simple pour les échelles adaptatives
+app.get('/test-echelle-simple', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'test-echelle-simple.html'));
 });
 
 // Gestion des erreurs 404

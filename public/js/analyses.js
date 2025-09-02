@@ -36,21 +36,150 @@ function createCharts() {
     console.log('🎨 Création des graphiques...');
     
     try {
-        // Créer les graphiques de la section Larves et Gîtes
-        createLarvesChart();
+        // Initialiser les sélecteurs de mois
+        initializeMonthSelectors();
+    
+    // Créer les graphiques de la section Larves et Gîtes
+    createLarvesChart();
         
         // Créer les graphiques de la section Œufs
-        createOeufsSecteurChart();
+    createOeufsSecteurChart();
         createOeufsMoisChart();
         
         // Créer les graphiques de la section Moustiques Adultes
-        createDensiteAnnuelleChart();
-        createDensiteSecteurChart();
-        createGenreChart();
-        
-        console.log('✅ Tous les graphiques créés avec succès !');
+    createDensiteAnnuelleChart();
+    createDensiteSecteurChart();
+    createGenreChart();
+    
+    console.log('✅ Tous les graphiques créés avec succès !');
     } catch (error) {
         console.error('❌ Erreur lors de la création des graphiques:', error);
+    }
+}
+
+// Initialiser les sélecteurs de mois
+function initializeMonthSelectors() {
+    console.log('📅 Initialisation des sélecteurs de mois...');
+    
+    // Sélecteur pour Œufs par Secteur
+    const moisOeufsSecteurSelect = document.getElementById('mois-oeufs-secteur');
+    if (moisOeufsSecteurSelect) {
+        populateMonthSelector(moisOeufsSecteurSelect, 'oeufs');
+        moisOeufsSecteurSelect.addEventListener('change', function() {
+            updateOeufsSecteurChart(this.value);
+        });
+        console.log('✅ Sélecteur mois-oeufs-secteur initialisé');
+    }
+    
+    // Sélecteur pour Répartition par Genre (Moustiques Adultes)
+    const moisSelectionSelect = document.getElementById('mois-selection');
+    if (moisSelectionSelect) {
+        populateMonthSelector(moisSelectionSelect, 'adultes');
+        moisSelectionSelect.addEventListener('change', function() {
+            updateGenreChart(this.value);
+        });
+        console.log('✅ Sélecteur mois-selection initialisé');
+    }
+}
+
+// Peupler un sélecteur de mois
+function populateMonthSelector(selectElement, type) {
+    if (!analysesData || !analysesData.chartData) {
+        console.log('⚠️ Données non disponibles pour peupler le sélecteur');
+        return;
+    }
+    
+    // Vider le sélecteur
+    selectElement.innerHTML = '<option value="">Tous les mois</option>';
+    
+    // Récupérer les périodes disponibles
+    let periodes = [];
+    if (type === 'oeufs' && analysesData.chartData.oeufs) {
+        periodes = Object.keys(analysesData.chartData.oeufs);
+    } else if (type === 'larves' && analysesData.chartData.larves) {
+        periodes = Object.keys(analysesData.chartData.larves);
+    } else if (type === 'adultes' && analysesData.chartData.adultes) {
+        periodes = Object.keys(analysesData.chartData.adultes);
+    }
+    
+    // Trier les périodes chronologiquement
+    const periodesTriees = sortPeriodesChronologiquement(periodes);
+    
+    // Ajouter les options
+    periodesTriees.forEach(periode => {
+        const option = document.createElement('option');
+        option.value = periode;
+        option.textContent = periode;
+        selectElement.appendChild(option);
+    });
+    
+    console.log(`✅ Sélecteur ${type} peuplé avec ${periodesTriees.length} périodes`);
+}
+
+// Mettre à jour le graphique Œufs par Secteur selon le mois sélectionné
+function updateOeufsSecteurChart(selectedMonth = '') {
+    console.log(`🔄 Mise à jour du graphique Œufs par Secteur pour le mois: ${selectedMonth}`);
+    
+    if (!charts.oeufsSecteur) {
+        console.log('⚠️ Graphique Œufs par Secteur non trouvé');
+        return;
+    }
+    
+    const chartData = prepareOeufsSecteurChartData(selectedMonth);
+    charts.oeufsSecteur.data = chartData;
+    charts.oeufsSecteur.update();
+    
+    console.log('✅ Graphique Œufs par Secteur mis à jour');
+}
+
+// Préparer les données pour le graphique Œufs par Secteur avec filtre par mois
+function prepareOeufsSecteurChartData(selectedMonth = '') {
+    if (!analysesData || !analysesData.chartData || !analysesData.chartData.oeufs) {
+        return { labels: [], datasets: [] };
+    }
+    
+    const secteurs = analysesData.secteurs || [];
+    const colors = [
+        '#3b82f6', '#10b981', '#f59e0b', '#ef4444', 
+        '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'
+    ];
+    
+    if (selectedMonth) {
+        // Afficher les données pour le mois sélectionné
+        const data = secteurs.map(secteur => {
+            return analysesData.chartData.oeufs[selectedMonth]?.[secteur] || 0;
+        });
+        
+        return {
+            labels: secteurs,
+            datasets: [{
+                label: `Œufs - ${selectedMonth}`,
+                data: data,
+                backgroundColor: colors.slice(0, secteurs.length),
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        };
+    } else {
+        // Afficher la moyenne de tous les mois
+        const data = secteurs.map(secteur => {
+            const periodes = Object.keys(analysesData.chartData.oeufs);
+            const total = periodes.reduce((sum, periode) => {
+                return sum + (analysesData.chartData.oeufs[periode]?.[secteur] || 0);
+            }, 0);
+            return Math.round(total / periodes.length);
+        });
+        
+        return {
+            labels: secteurs,
+            datasets: [{
+                label: 'Œufs - Moyenne tous mois',
+                data: data,
+                backgroundColor: colors.slice(0, secteurs.length),
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        };
     }
 }
 
@@ -120,9 +249,9 @@ function createLarvesChart() {
                     },
                     ticks: {
                         callback: function(value) {
-                            if (value >= 1000000) {
+                            if (value >= 100000) {
                                 return (value / 1000000).toFixed(1) + 'M';
-                            } else if (value >= 1000) {
+                            } else if (value >= 100) {
                                 return (value / 1000).toFixed(1) + 'k';
                             }
                             return value;
@@ -153,7 +282,7 @@ function createOeufsSecteurChart() {
         return;
     }
     
-    const chartData = prepareChartData('oeufs', 'Œufs par Secteur');
+    const chartData = prepareOeufsSecteurChartData();
     console.log('📊 Données préparées pour œufs secteur:', chartData);
     
     charts.oeufsSecteur = new Chart(ctx, {
@@ -194,9 +323,9 @@ function createOeufsSecteurChart() {
                     },
                     ticks: {
                         callback: function(value) {
-                            if (value >= 1000000) {
+                            if (value >= 100000) {
                                 return (value / 1000000).toFixed(1) + 'M';
-                            } else if (value >= 1000) {
+                            } else if (value >= 100) {
                                 return (value / 1000).toFixed(1) + 'k';
                             }
                             return value;
@@ -262,9 +391,9 @@ function createOeufsMoisChart() {
                     },
                     ticks: {
                         callback: function(value) {
-                            if (value >= 1000000) {
+                            if (value >= 100000) {
                                 return (value / 1000000).toFixed(1) + 'M';
-                            } else if (value >= 1000) {
+                            } else if (value >= 100) {
                                 return (value / 1000).toFixed(1) + 'k';
                             }
                             return value;
@@ -344,9 +473,9 @@ function createDensiteAnnuelleChart() {
                     },
                     ticks: {
                         callback: function(value) {
-                            if (value >= 1000000) {
+                            if (value >= 100000) {
                                 return (value / 1000000).toFixed(1) + 'M';
-                            } else if (value >= 1000) {
+                            } else if (value >= 100) {
                                 return (value / 1000).toFixed(1) + 'k';
                             }
                             return value;
@@ -418,9 +547,9 @@ function createDensiteSecteurChart() {
                     },
                     ticks: {
                         callback: function(value) {
-                            if (value >= 1000000) {
+                            if (value >= 100000) {
                                 return (value / 1000000).toFixed(1) + 'M';
-                            } else if (value >= 1000) {
+                            } else if (value >= 100) {
                                 return (value / 1000).toFixed(1) + 'k';
                             }
                             return value;
@@ -457,7 +586,7 @@ function createGenreChart() {
             plugins: {
                 title: {
                     display: true,
-                    text: 'Répartition par Secteur',
+                    text: 'Répartition par Genre',
                     font: { size: 16, weight: 'bold' }
                 },
                 legend: {
@@ -569,11 +698,19 @@ function prepareDensiteAnnuelleData() {
     };
 }
 
-// Préparer les données pour le graphique en camembert
-function preparePieChartData() {
-    if (!analysesData || !analysesData.chartData || !analysesData.chartData.adultes) {
+// Préparer les données pour le graphique en camembert (Répartition par Genre)
+function preparePieChartData(selectedMonth = '') {
+    if (!analysesData || !analysesData.chartData) {
         return { labels: [], datasets: [] };
     }
+    
+    // Utiliser directement les données par genre (mapping secteur -> genre)
+    const genreMapping = {
+        'Sector 6': 'Aedes',
+        'Sector 9': 'Culex', 
+        'Sector 26': 'Anopheles',
+        'Sector 33': 'Autre'
+    };
     
     const secteurs = analysesData.secteurs || [];
     const colors = [
@@ -581,24 +718,97 @@ function preparePieChartData() {
         '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'
     ];
     
-    // Calculer la moyenne par secteur
-    const data = secteurs.map(secteur => {
-        const periodes = Object.keys(analysesData.chartData.adultes);
-        const total = periodes.reduce((sum, periode) => {
-            return sum + (analysesData.chartData.adultes[periode]?.[secteur] || 0);
-        }, 0);
-        return Math.round(total / periodes.length);
-    });
+    if (selectedMonth) {
+        const data = secteurs.map(secteur => {
+            return analysesData.chartData.adultes[selectedMonth]?.[secteur] || 0;
+        });
+        
+        return {
+            labels: secteurs.map(secteur => genreMapping[secteur] || secteur),
+            datasets: [{
+                label: `Moustiques Adultes par Genre - ${selectedMonth}`,
+                data: data,
+                backgroundColor: colors.slice(0, secteurs.length),
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        };
+    } else {
+        const data = secteurs.map(secteur => {
+            const periodes = Object.keys(analysesData.chartData.adultes);
+            const total = periodes.reduce((sum, periode) => {
+                return sum + (analysesData.chartData.adultes[periode]?.[secteur] || 0);
+            }, 0);
+            return Math.round(total / periodes.length);
+        });
     
-    return {
-        labels: secteurs,
-        datasets: [{
-            data: data,
-            backgroundColor: colors.slice(0, secteurs.length),
-            borderWidth: 2,
-            borderColor: '#ffffff'
-        }]
-    };
+        return {
+            labels: secteurs.map(secteur => genreMapping[secteur] || secteur),
+            datasets: [{
+                label: 'Moustiques Adultes par Genre - Moyenne tous mois',
+                data: data,
+                backgroundColor: colors.slice(0, secteurs.length),
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        };
+    }
+    
+    const genres = analysesData.genres || ['aedes', 'culex', 'anopheles', 'autre'];
+    
+    if (selectedMonth) {
+        // Afficher les données pour le mois sélectionné
+        const data = genres.map(genre => {
+            return analysesData.chartData.adultesParGenre[selectedMonth]?.[genre] || 0;
+        });
+        
+        return {
+            labels: genres.map(genre => genre.charAt(0).toUpperCase() + genre.slice(1)),
+            datasets: [{
+                label: `Moustiques Adultes par Genre - ${selectedMonth}`,
+                data: data,
+                backgroundColor: colors.slice(0, genres.length),
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        };
+    } else {
+        // Afficher la moyenne de tous les mois
+        const data = genres.map(genre => {
+            const periodes = Object.keys(analysesData.chartData.adultesParGenre);
+            const total = periodes.reduce((sum, periode) => {
+                return sum + (analysesData.chartData.adultesParGenre[periode]?.[genre] || 0);
+            }, 0);
+            return Math.round(total / periodes.length);
+        });
+    
+        return {
+            labels: genres.map(genre => genre.charAt(0).toUpperCase() + genre.slice(1)),
+            datasets: [{
+                label: 'Moustiques Adultes par Genre - Moyenne tous mois',
+                data: data,
+                backgroundColor: colors.slice(0, genres.length),
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        };
+    }
+}
+
+// Mettre à jour le graphique de genre selon le mois sélectionné
+function updateGenreChart(selectedMonth = '') {
+    console.log(`🔄 Mise à jour du graphique Répartition par Genre pour le mois: ${selectedMonth}`);
+    
+    if (!charts.genre) {
+        console.log('⚠️ Graphique Répartition par Genre non trouvé');
+        return;
+    }
+    
+    const chartData = preparePieChartData(selectedMonth);
+    charts.genre.data = chartData;
+    charts.genre.update();
+    
+    console.log('✅ Graphique Répartition par Genre mis à jour');
 }
 
 // Fonction pour trier les périodes chronologiquement

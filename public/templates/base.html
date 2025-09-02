@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{PAGE_TITLE}} - Centre MURAZ</title>
+    <link href="./css/style.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .nav-item {
+            @apply text-gray-700 hover:text-muraz-blue transition-colors px-3 py-2 rounded-md text-sm font-medium;
+        }
+        .nav-item.active {
+            @apply bg-muraz-blue text-white;
+        }
+        .card {
+            @apply bg-white rounded-lg shadow-md p-6;
+        }
+        .btn-primary {
+            @apply bg-muraz-orange hover:bg-orange-600 text-white font-bold py-2 px-4 rounded transition-colors duration-200;
+        }
+        .btn-secondary {
+            @apply bg-muraz-blue hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition-colors duration-200;
+        }
+        .btn-success {
+            @apply bg-muraz-green hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition-colors duration-200;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Header avec navigation unifiée -->
+    <header class="bg-white shadow-lg border-b-4 border-muraz-blue sticky top-0 z-40">
+        <nav class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 flex items-center justify-center">
+                        <img src="/logo-centre-muraz.jpg" alt="Logo Centre MURAZ" class="w-full h-full object-contain rounded-lg">
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-muraz-blue">Centre MURAZ</h1>
+                        <p class="text-sm text-gray-600">Surveillance Arboviroses</p>
+                    </div>
+                </div>
+                <div id="main-nav" class="hidden md:flex items-center space-x-6">
+                    <!-- La navigation sera générée dynamiquement par app.js -->
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-btn" class="text-gray-700 hover:text-muraz-blue">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        
+        <!-- Menu mobile -->
+        <div id="mobile-menu" class="md:hidden hidden bg-white border-t border-gray-200">
+            <div class="px-6 py-4 space-y-2">
+                <!-- Les éléments de navigation mobile seront générés dynamiquement -->
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenu principal -->
+    <main class="min-h-screen">
+        {{PAGE_CONTENT}}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-6">
+            <div class="grid md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Centre MURAZ</h3>
+                    <p class="text-gray-300 text-sm">
+                        Plateforme de surveillance des arboviroses et de gestion des données entomologiques.
+                    </p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Contact</h3>
+                    <p class="text-gray-300 text-sm">
+                        <i class="fas fa-envelope mr-2"></i>contact@centre-muraz.bf<br>
+                        <i class="fas fa-phone mr-2"></i>+226 XX XX XX XX
+                    </p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Liens utiles</h3>
+                    <ul class="text-gray-300 text-sm space-y-2">
+                        <li><a href="/analyses" class="hover:text-white transition-colors">Analyses</a></li>
+                        <li><a href="/indices" class="hover:text-white transition-colors">Indices</a></li>
+                        <li><a href="/biologie-moleculaire" class="hover:text-white transition-colors">Biologie Moléculaire</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-300 text-sm">
+                <p>&copy; 2025 Centre MURAZ. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="./js/app.js"></script>
+    {{PAGE_SCRIPTS}}
+</body>
+</html>

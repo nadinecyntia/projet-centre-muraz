@@ -564,6 +564,16 @@ function createComparisonChart(colors) {
                     title: {
                         display: true,
                         text: 'Valeur de l\'Indice (%)'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            if (value >= 100000) {
+                                return (value / 1000000).toFixed(1) + 'M';
+                            } else if (value >= 100) {
+                                return (value / 1000).toFixed(1) + 'k';
+                            }
+                            return value;
+                        }
                     }
                 },
                 x: {
@@ -690,6 +700,16 @@ function createTrendChart(colors) {
                     title: {
                         display: true,
                         text: 'Valeur de l\'Indice (%)'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            if (value >= 100000) {
+                                return (value / 1000000).toFixed(1) + 'M';
+                            } else if (value >= 100) {
+                                return (value / 1000).toFixed(1) + 'k';
+                            }
+                            return value;
+                        }
                     }
                 },
                 x: {
@@ -786,6 +806,16 @@ function createSectorChart(colors) {
                     title: {
                         display: true,
                         text: 'Valeur de l\'Indice (%)'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            if (value >= 100000) {
+                                return (value / 1000000).toFixed(1) + 'M';
+                            } else if (value >= 100) {
+                                return (value / 1000).toFixed(1) + 'k';
+                            }
+                            return value;
+                        }
                     }
                 },
                 x: {

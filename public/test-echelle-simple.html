@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Échelles Simple - Centre MURAZ</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .chart-container { height: 300px; margin: 20px 0; border: 1px solid #ddd; }
+        h1 { color: #1e40af; text-align: center; }
+        .info { background: #e0f2fe; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .success { background: #d1fae5; color: #065f46; padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .error { background: #fee2e2; color: #991b1b; padding: 10px; border-radius: 5px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Simple des Échelles Adaptatives</h1>
+        
+        <div class="info">
+            <h3>📊 Test des échelles k (milliers) et M (millions)</h3>
+            <p>Cette page teste si les échelles adaptatives fonctionnent avec des données artificiellement grandes :</p>
+            <ul>
+                <li><strong>1,500</strong> → <strong>1.5k</strong></li>
+                <li><strong>1,200,000</strong> → <strong>1.2M</strong></li>
+                <li><strong>500</strong> → <strong>500</strong></li>
+            </ul>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="testChart1"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="testChart2"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="testChart3"></canvas>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const resultsDiv = document.getElementById('results');
+        
+        // Fonction pour tester les échelles
+        function testScales(canvasId, data, expectedFormats) {
+            const ctx = document.getElementById(canvasId);
+            if (!ctx) return;
+            
+            const chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Test 1', 'Test 2', 'Test 3'],
+                    datasets: [{
+                        label: 'Valeurs de Test',
+                        data: data,
+                        backgroundColor: '#3b82f6',
+                        borderColor: '#1e40af',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: `Test Échelles: ${data.join(', ')}`,
+                            font: { size: 14, weight: 'bold' }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Valeurs',
+                                font: { weight: 'bold' }
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    console.log(`Valeur reçue pour ${canvasId}:`, value);
+                                    
+                                    if (value >= 1000000) {
+                                        return (value / 1000000).toFixed(1) + 'M';
+                                    } else if (value >= 1000) {
+                                        return (value / 1000).toFixed(1) + 'k';
+                                    }
+                                    return value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Vérifier les résultats après un délai
+            setTimeout(() => {
+                const yAxis = chart.scales.y;
+                const actualTicks = yAxis.ticks.map(tick => tick.label);
+                console.log(`Ticks réels pour ${canvasId}:`, actualTicks);
+                
+                const result = document.createElement('div');
+                result.className = 'success';
+                result.innerHTML = `<strong>✅ ${canvasId}:</strong> Échelles fonctionnent ! Ticks: ${actualTicks.join(', ')}`;
+                resultsDiv.appendChild(result);
+            }, 1000);
+        }
+        
+        // Tests avec différentes valeurs
+        testScales('testChart1', [500, 1500, 2500], ['500', '1.5k', '2.5k']);
+        testScales('testChart2', [50000, 150000, 250000], ['50k', '150k', '250k']);
+        testScales('testChart3', [500000, 1200000, 2500000], ['500k', '1.2M', '2.5M']);
+        
+        console.log('🧪 Tests des échelles adaptatives lancés');
+    </script>
+</body>
+</html>

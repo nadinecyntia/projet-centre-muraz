@@ -10,8 +10,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-gray-50 font-sans">
-    <!-- Header -->
-    <header class="bg-white shadow-lg border-b-4 border-muraz-blue">
+    <!-- Header avec navigation unifiée -->
+    <header class="bg-white shadow-lg border-b-4 border-muraz-blue sticky top-0 z-40">
         <nav class="container mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-4">
@@ -19,23 +19,27 @@
                         <img src="/logo-centre-muraz.jpg" alt="Logo Centre MURAZ" class="w-full h-full object-contain rounded-lg">
                     </div>
                     <div>
+                        <h1 class="text-xl font-bold text-muraz-blue">Centre MURAZ</h1>
                         <p class="text-sm text-gray-600">Surveillance Arboviroses</p>
                     </div>
                 </div>
-                <div class="hidden md:flex items-center space-x-6">
-                    <a href="/" class="text-gray-700 hover:text-muraz-blue transition-colors">Accueil</a>
-                    <a href="/analyses" class="text-muraz-blue font-semibold">Analyses</a>
-                    <a href="/indices" class="text-gray-700 hover:text-muraz-blue transition-colors">Indices</a>
-                    <a href="/biologie-moleculaire" class="text-gray-700 hover:text-muraz-blue transition-colors">Biologie Moléculaire</a>
-                    <a href="/admin" class="text-gray-700 hover:text-muraz-blue transition-colors">Admin</a>
+                <div id="main-nav" class="hidden md:flex items-center space-x-6">
+                    <!-- La navigation sera générée dynamiquement par app.js -->
                 </div>
                 <div class="md:hidden">
-                    <button class="text-gray-700 hover:text-muraz-blue">
+                    <button id="mobile-menu-btn" class="text-gray-700 hover:text-muraz-blue">
                         <i class="fas fa-bars text-xl"></i>
                     </button>
                 </div>
             </div>
         </nav>
+        
+        <!-- Menu mobile -->
+        <div id="mobile-menu" class="md:hidden hidden bg-white border-t border-gray-200">
+            <div class="px-6 py-4 space-y-2">
+                <!-- Les éléments de navigation mobile seront générés dynamiquement -->
+            </div>
+        </div>
     </header>
 
 
@@ -161,6 +165,7 @@
         </div>
     </footer>
 
+    <script src="./js/app.js"></script>
     <script src="./js/analyses.js"></script>
 </body>
 </html>

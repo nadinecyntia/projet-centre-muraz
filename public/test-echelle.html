@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Échelles Adaptatives - Centre MURAZ</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .chart-container {
+            height: 400px;
+            margin: 20px 0;
+        }
+        h1 {
+            color: #1e40af;
+            text-align: center;
+        }
+        .info {
+            background: #e0f2fe;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test des Échelles Adaptatives</h1>
+        
+        <div class="info">
+            <h3>📊 Test des échelles k (milliers) et M (millions)</h3>
+            <p>Cette page teste si les échelles adaptatives fonctionnent correctement :</p>
+            <ul>
+                <li><strong>1,500</strong> devrait s'afficher comme <strong>1.5k</strong></li>
+                <li><strong>1,200,000</strong> devrait s'afficher comme <strong>1.2M</strong></li>
+                <li><strong>500</strong> devrait rester <strong>500</strong></li>
+            </ul>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="testChart"></canvas>
+        </div>
+
+        <div class="info">
+            <h3>🔍 Instructions de test :</h3>
+            <p>1. Regardez l'axe Y du graphique ci-dessus</p>
+            <p>2. Les valeurs devraient s'afficher avec k et M</p>
+            <p>3. Si vous voyez des nombres entiers (1500, 1200000), les échelles ne fonctionnent pas</p>
+            <p>4. Si vous voyez 1.5k, 1.2M, les échelles fonctionnent !</p>
+        </div>
+    </div>
+
+    <script>
+        // Données de test avec de grandes valeurs
+        const testData = {
+            labels: ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin'],
+            datasets: [{
+                label: 'Données de Test',
+                data: [1500, 2500, 1200000, 800000, 3000, 500],
+                backgroundColor: '#3b82f6',
+                borderColor: '#1e40af',
+                borderWidth: 2,
+                fill: false
+            }]
+        };
+
+        // Créer le graphique de test
+        const ctx = document.getElementById('testChart');
+        const testChart = new Chart(ctx, {
+            type: 'line',
+            data: testData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Test des Échelles Adaptatives (k et M)',
+                        font: { size: 16, weight: 'bold' }
+                    },
+                    legend: {
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Mois',
+                            font: { weight: 'bold' }
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Valeurs de Test',
+                            font: { weight: 'bold' }
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                console.log('Valeur reçue:', value);
+                                if (value >= 1000000) {
+                                    return (value / 1000000).toFixed(1) + 'M';
+                                } else if (value >= 1000) {
+                                    return (value / 1000).toFixed(1) + 'k';
+                                }
+                                return value;
+                            }
+                        }
+                    }
+                },
+                elements: {
+                    line: {
+                        tension: 0.4
+                    },
+                    point: {
+                        radius: 5,
+                        hoverRadius: 7
+                    }
+                }
+            }
+        });
+
+        console.log('🧪 Graphique de test créé avec échelles adaptatives');
+        console.log('📊 Valeurs de test:', testData.datasets[0].data);
+    </script>
+</body>
+</html>

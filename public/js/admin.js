@@ -10,9 +10,6 @@ document.addEventListener('DOMContentLoaded', function() {
 function initializeAdmin() {
     console.log('Initialisation de la page admin...');
     
-    // Vérifier l'authentification via les paramètres d'URL
-    checkAuthentication();
-    
     // Initialiser la synchronisation KoboCollect
     initializeSync();
 }
@@ -39,14 +36,7 @@ function setupEventListeners() {
         console.error('❌ Select sample_type non trouvé!');
     }
     
-    // Gestion du formulaire de connexion
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.addEventListener('submit', handleLogin);
-        console.log('✅ Écouteur submit ajouté au formulaire de connexion');
-    } else {
-        console.error('❌ Formulaire de connexion non trouvé!');
-    }
+
 }
 
 // Gestion de la soumission du formulaire
@@ -159,61 +149,46 @@ function showNotification(message, type = 'info') {
     }, 5000);
 }
 
+// Notification d'actions rapides après une synchro réussie
+function showSyncActions(detailMsg = '') {
+    const container = document.createElement('div');
+    container.className = 'fixed bottom-4 right-4 z-50 max-w-md w-full';
+
+    container.innerHTML = `
+        <div class="bg-white shadow-xl rounded-lg border border-gray-200 p-4">
+            <div class="flex items-start gap-3">
+                <div class="text-green-600">
+                    <i class="fas fa-check-circle text-2xl"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="text-gray-800 font-semibold mb-1">Synchronisation terminée</p>
+                    <p class="text-sm text-gray-600 mb-3">${detailMsg || 'Succès'}</p>
+                    <div class="flex gap-2">
+                        <a href="/analyses" target="_blank" class="px-3 py-2 bg-muraz-orange text-white rounded hover:opacity-90 transition text-sm">
+                            <i class="fas fa-chart-bar mr-1"></i> Ouvrir Analyses
+                        </a>
+                        <a href="/indices" target="_blank" class="px-3 py-2 bg-muraz-green text-white rounded hover:opacity-90 transition text-sm">
+                            <i class="fas fa-chart-line mr-1"></i> Ouvrir Indices
+                        </a>
+                    </div>
+                </div>
+                <button class="text-gray-400 hover:text-gray-600" aria-label="Fermer" onclick="this.closest('.fixed').remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(container);
+
+    setTimeout(() => {
+        if (container.parentElement) container.remove();
+    }, 7000);
+}
+
 // ===== AUTHENTIFICATION =====
 
-// Vérifier l'authentification via les paramètres d'URL
-function checkAuthentication() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const username = urlParams.get('username');
-    const password = urlParams.get('password');
-    
-    if (username === 'admin' && password === 'admin123') {
-        // Authentification réussie
-        showAdminDashboard();
-        showNotification('✅ Connexion réussie!', 'success');
-    } else {
-        // Pas d'authentification ou échec
-        showLoginForm();
-    }
-}
 
-// Afficher le dashboard admin
-function showAdminDashboard() {
-    const loginSection = document.getElementById('login-admin');
-    const adminDashboard = document.getElementById('admin-dashboard');
-    
-    if (loginSection) loginSection.classList.add('hidden');
-    if (adminDashboard) adminDashboard.classList.remove('hidden');
-}
-
-// Afficher le formulaire de connexion
-function showLoginForm() {
-    const loginSection = document.getElementById('login-admin');
-    const adminDashboard = document.getElementById('admin-dashboard');
-    
-    if (loginSection) loginSection.classList.remove('hidden');
-    if (adminDashboard) adminDashboard.classList.add('hidden');
-}
-
-// Gérer la soumission du formulaire de connexion
-function handleLogin(event) {
-    event.preventDefault();
-    
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-    
-    if (username === 'admin' && password === 'admin123') {
-        // Authentification réussie
-        showAdminDashboard();
-        showNotification('✅ Connexion réussie!', 'success');
-        
-        // Mettre à jour l'URL avec les paramètres de connexion
-        const newUrl = `${window.location.pathname}?username=${username}&password=${password}`;
-        window.history.pushState({}, '', newUrl);
-    } else {
-        showNotification('❌ Identifiants incorrects', 'error');
-    }
-}
 
 // ===== SYNCHRONISATION KOBCOLLECT =====
 
@@ -261,6 +236,17 @@ function setupSyncEventListeners() {
     const refreshStatusBtn = document.getElementById('refresh-status');
     if (refreshStatusBtn) {
         refreshStatusBtn.addEventListener('click', checkSyncStatus);
+    }
+    
+    // Boutons de rafraîchissement des graphiques
+    const refreshAnalysesBtn = document.getElementById('refresh-analyses');
+    if (refreshAnalysesBtn) {
+        refreshAnalysesBtn.addEventListener('click', refreshAnalysesPage);
+    }
+    
+    const refreshIndicesBtn = document.getElementById('refresh-indices');
+    if (refreshIndicesBtn) {
+        refreshIndicesBtn.addEventListener('click', refreshIndicesPage);
     }
 }
 
@@ -335,13 +321,34 @@ async function synchronizeKoboCollect(type = 'complete') {
         if (response.ok) {
             const result = await response.json();
             console.log('✅ Résultat de la synchronisation:', result);
-            
-            addSyncLog(`✅ Synchronisation ${type} réussie: ${result.message || 'Succès'}`);
-            showNotification(`✅ Synchronisation ${type} réussie!`, 'success');
-            
-            // Mettre à jour le statut
-            updateSyncStatus({ status: 'success', lastSync: result.timestamp });
-            
+            console.log('📊 Détails de la réponse:', {
+                success: result.success,
+                message: result.message,
+                type: result.type,
+                result: result.result,
+                timestamp: result.timestamp
+            });
+
+            // Extraire les compteurs traités/erreurs selon le type de réponse
+            const processed = result.result?.processedCount ?? 0;
+            const errors = result.result?.errorCount ?? 0;
+
+            const detailMsg = `traités: ${processed}, erreurs: ${errors}`;
+
+            // Cas déjà à jour (aucune nouvelle donnée, aucune erreur)
+            if (processed === 0 && errors === 0) {
+                addSyncLog(`ℹ️ Synchronisation ${type}: déjà à jour (aucune nouvelle donnée)`);
+                showNotification('ℹ️ Synchronisation déjà effectuée, aucune nouvelle donnée', 'info');
+                updateSyncStatus({ status: 'success', lastSync: result.timestamp, detail: 'déjà à jour' });
+            } else {
+                addSyncLog(`✅ Synchronisation ${type} réussie: ${result.message || 'Succès'} (${detailMsg})`);
+                showNotification(`✅ Synchronisation ${type} réussie (${detailMsg})`, 'success');
+                // Mettre à jour le statut avec détail
+                updateSyncStatus({ status: 'success', lastSync: result.timestamp, detail: detailMsg });
+                // Afficher les actions rapides (ouvrir Analyses/Indices)
+                showSyncActions(detailMsg);
+            }
+
             // Vérifier le nouveau statut après un délai
             setTimeout(checkSyncStatus, 1000);
             
@@ -423,6 +430,72 @@ function clearSyncLogs() {
     const logsElement = document.getElementById('sync-logs');
     if (logsElement) {
         logsElement.innerHTML = '<div class="text-gray-500">Logs effacés...</div>';
+    }
+}
+
+// Rafraîchir la page Analyses
+async function refreshAnalysesPage() {
+    try {
+        console.log('🔄 Rafraîchissement de la page Analyses...');
+        
+        // Désactiver le bouton pendant le rafraîchissement
+        const btn = document.getElementById('refresh-analyses');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Rafraîchissement...';
+        btn.disabled = true;
+        
+        // Appeler l'API pour rafraîchir les données
+        const response = await fetch('/api/analyses');
+        if (response.ok) {
+            showNotification('✅ Page Analyses rafraîchie avec succès!', 'success');
+            
+            // Ouvrir la page Analyses dans un nouvel onglet
+            window.open('/analyses', '_blank');
+        } else {
+            showNotification('❌ Erreur lors du rafraîchissement des Analyses', 'error');
+        }
+        
+    } catch (error) {
+        console.error('Erreur lors du rafraîchissement des Analyses:', error);
+        showNotification('❌ Erreur de connexion lors du rafraîchissement', 'error');
+    } finally {
+        // Restaurer le bouton
+        const btn = document.getElementById('refresh-analyses');
+        btn.innerHTML = '<i class="fas fa-chart-bar mr-2"></i>Rafraîchir Analyses';
+        btn.disabled = false;
+    }
+}
+
+// Rafraîchir la page Indices
+async function refreshIndicesPage() {
+    try {
+        console.log('🔄 Rafraîchissement de la page Indices...');
+        
+        // Désactiver le bouton pendant le rafraîchissement
+        const btn = document.getElementById('refresh-indices');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Rafraîchissement...';
+        btn.disabled = true;
+        
+        // Appeler l'API pour rafraîchir les données
+        const response = await fetch('/api/indices');
+        if (response.ok) {
+            showNotification('✅ Page Indices rafraîchie avec succès!', 'success');
+            
+            // Ouvrir la page Indices dans un nouvel onglet
+            window.open('/indices', '_blank');
+        } else {
+            showNotification('❌ Erreur lors du rafraîchissement des Indices', 'error');
+        }
+        
+    } catch (error) {
+        console.error('Erreur lors du rafraîchissement des Indices:', error);
+        showNotification('❌ Erreur de connexion lors du rafraîchissement', 'error');
+    } finally {
+        // Restaurer le bouton
+        const btn = document.getElementById('refresh-indices');
+        btn.innerHTML = '<i class="fas fa-chart-line mr-2"></i>Rafraîchir Indices';
+        btn.disabled = false;
     }
 }
 
@@ -659,4 +732,27 @@ async function handleRepasFormSubmit(event) {
         console.error('Erreur lors de l\'enregistrement Repas:', error);
         showNotification('❌ Erreur de connexion au serveur', 'error');
     }
+}
+
+// Afficher les actions rapides (ouvrir Analyses/Indices)
+function showSyncActions(detailMsg) {
+    const actionsElement = document.getElementById('sync-actions');
+    if (!actionsElement) return;
+
+    actionsElement.innerHTML = `
+        <h3 class="text-lg font-semibold mb-2">Actions Rapides</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <button onclick="openPCRForm()" class="bg-blue-500 text-white p-2 rounded-md flex items-center justify-center">
+                <i class="fas fa-flask mr-2"></i>Analyses
+            </button>
+            <button onclick="openBioessaiForm()" class="bg-green-500 text-white p-2 rounded-md flex items-center justify-center">
+                <i class="fas fa-vial mr-2"></i>Indices
+            </button>
+            <button onclick="openRepasForm()" class="bg-purple-500 text-white p-2 rounded-md flex items-center justify-center">
+                <i class="fas fa-chart-bar mr-2"></i>Repas
+            </button>
+        </div>
+        <p class="text-sm text-gray-600 mt-2">${detailMsg}</p>
+    `;
+    actionsElement.classList.remove('hidden');
 }

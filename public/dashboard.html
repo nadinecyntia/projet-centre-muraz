@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Centre MURAZ</title>
+    <link href="./css/style.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Header avec navigation unifiée -->
+    <header class="bg-white shadow-lg border-b-4 border-muraz-blue sticky top-0 z-40">
+        <nav class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 flex items-center justify-center">
+                        <img src="/logo-centre-muraz.jpg" alt="Logo Centre MURAZ" class="w-full h-full object-contain rounded-lg">
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-muraz-blue">Centre MURAZ</h1>
+                        <p class="text-sm text-gray-600">Surveillance Arboviroses</p>
+                    </div>
+                </div>
+                <div id="main-nav" class="hidden md:flex items-center space-x-6">
+                    <!-- La navigation sera générée dynamiquement par app.js -->
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-btn" class="text-gray-700 hover:text-muraz-blue">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        
+        <!-- Menu mobile -->
+        <div id="mobile-menu" class="md:hidden hidden bg-white border-t border-gray-200">
+            <div class="px-6 py-4 space-y-2">
+                <!-- Les éléments de navigation mobile seront générés dynamiquement -->
+            </div>
+        </div>
+    </header>
+
+    <!-- Section Dashboard Principal -->
+    <section class="py-16 bg-gray-50">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-muraz-blue mb-4">
+                    <i class="fas fa-tachometer-alt text-4xl mr-4"></i>
+                    Dashboard Centre MURAZ
+                </h2>
+                <p class="text-lg text-gray-600">Vue d'ensemble de la surveillance des arboviroses</p>
+            </div>
+
+            <!-- Cartes de statistiques -->
+            <div class="grid md:grid-cols-4 gap-6 mb-12">
+                <!-- Carte Données Entomologiques -->
+                <div class="card bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+                    <div class="flex items-center">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold mb-2">
+                                <i class="fas fa-bug mr-2"></i>Données Entomologiques
+                            </h3>
+                            <p class="text-2xl font-bold" id="entomological-count">0</p>
+                            <p class="text-sm opacity-90">Enregistrements</p>
+                        </div>
+                        <div class="text-3xl opacity-80">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Carte Analyses Laboratoire -->
+                <div class="card bg-gradient-to-r from-green-500 to-green-600 text-white">
+                    <div class="flex items-center">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold mb-2">
+                                <i class="fas fa-flask mr-2"></i>Analyses Laboratoire
+                            </h3>
+                            <p class="text-2xl font-bold" id="lab-analysis-count">0</p>
+                            <p class="text-sm opacity-90">Analyses</p>
+                        </div>
+                        <div class="text-3xl opacity-80">
+                            <i class="fas fa-microscope"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Carte Indices Entomologiques -->
+                <div class="card bg-gradient-to-r from-orange-500 to-orange-600 text-white">
+                    <div class="flex items-center">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold mb-2">
+                                <i class="fas fa-chart-bar mr-2"></i>Indices Entomologiques
+                            </h3>
+                            <p class="text-2xl font-bold" id="indices-count">0</p>
+                            <p class="text-sm opacity-90">Calculés</p>
+                        </div>
+                        <div class="text-3xl opacity-80">
+                            <i class="fas fa-calculator"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Carte Alertes -->
+                <div class="card bg-gradient-to-r from-red-500 to-red-600 text-white">
+                    <div class="flex items-center">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold mb-2">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>Alertes
+                            </h3>
+                            <p class="text-2xl font-bold" id="alerts-count">0</p>
+                            <p class="text-sm opacity-90">Actives</p>
+                        </div>
+                        <div class="text-3xl opacity-80">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Graphiques et visualisations -->
+            <div class="grid lg:grid-cols-2 gap-8 mb-12">
+                <!-- Graphique Évolution Temporelle -->
+                <div class="card">
+                    <h3 class="text-xl font-semibold mb-4 text-muraz-blue">
+                        <i class="fas fa-chart-line mr-2"></i>Évolution Temporelle
+                    </h3>
+                    <div class="h-80">
+                        <canvas id="temporalChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Graphique Répartition par Secteur -->
+                <div class="card">
+                    <h3 class="text-xl font-semibold mb-4 text-muraz-green">
+                        <i class="fas fa-chart-pie mr-2"></i>Répartition par Secteur
+                    </h3>
+                    <div class="h-80">
+                        <canvas id="sectorChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions rapides -->
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- Synchronisation KoboCollect -->
+                <div class="card hover:shadow-lg transition-shadow duration-300">
+                    <div class="text-center p-6">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-sync text-blue-600 text-2xl"></i>
+                        </div>
+                        <h4 class="text-xl font-semibold text-blue-700 mb-3">Synchronisation KoboCollect</h4>
+                        <p class="text-gray-600 mb-4 text-sm">
+                            Récupérer les dernières données depuis KoBoToolbox
+                        </p>
+                        <button onclick="window.location.href='/admin'" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200">
+                            <i class="fas fa-cogs mr-2"></i>Accéder à l'Admin
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Analyses Entomo -->
+                <div class="card hover:shadow-lg transition-shadow duration-300">
+                    <div class="text-center p-6">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-chart-line text-green-600 text-2xl"></i>
+                        </div>
+                        <h4 class="text-xl font-semibold text-green-700 mb-3">Analyses Entomologiques</h4>
+                        <p class="text-gray-600 mb-4 text-sm">
+                            Visualiser les graphiques et analyses des données
+                        </p>
+                        <button onclick="window.location.href='/analyses'" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200">
+                            <i class="fas fa-chart-line mr-2"></i>Voir les Analyses
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Indices Entomologiques -->
+                <div class="card hover:shadow-lg transition-shadow duration-300">
+                    <div class="text-center p-6">
+                        <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-chart-bar text-orange-600 text-2xl"></i>
+                        </div>
+                        <h4 class="text-xl font-semibold text-orange-700 mb-3">Indices Entomologiques</h4>
+                        <p class="text-gray-600 mb-4 text-sm">
+                            Consulter les indices IB, IM, IR calculés
+                        </p>
+                        <button onclick="window.location.href='/indices'" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200">
+                            <i class="fas fa-chart-bar mr-2"></i>Voir les Indices
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-6 text-center">
+            <p>&copy; 2025 Centre MURAZ - Plateforme de Surveillance Arboviroses</p>
+            <p class="text-gray-400 mt-2">Ministère de la Santé - Burkina Faso</p>
+        </div>
+    </footer>
+
+    <script src="./js/app.js"></script>
+    <script src="./js/dashboard.js"></script>
+</body>
+</html>

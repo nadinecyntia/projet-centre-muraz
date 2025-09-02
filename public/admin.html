@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="bg-gray-50 font-sans">
-    <!-- Header -->
+    <!-- Header avec navigation adaptative -->
     <header class="bg-white shadow-lg border-b-4 border-muraz-blue">
         <nav class="container mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
@@ -18,15 +18,12 @@
                         <img src="/logo-centre-muraz.jpg" alt="Logo Centre MURAZ" class="w-full h-full object-contain rounded-lg">
                     </div>
                     <div>
+                        <h1 class="text-xl font-bold text-muraz-blue">Centre MURAZ</h1>
                         <p class="text-sm text-gray-600">Surveillance Arboviroses</p>
                     </div>
                 </div>
-                <div class="hidden md:flex items-center space-x-6">
-                    <a href="/" class="text-gray-700 hover:text-muraz-blue transition-colors">Accueil</a>
-                    <a href="/analyses" class="text-gray-700 hover:text-muraz-blue transition-colors">Analyses</a>
-                    <a href="/indices" class="text-gray-700 hover:text-muraz-blue transition-colors">Indices</a>
-                    <a href="/biologie-moleculaire" class="text-gray-700 hover:text-muraz-blue transition-colors">Biologie Moléculaire</a>
-                    <a href="/admin" class="text-muraz-orange font-semibold">Admin</a>
+                <div id="main-nav" class="hidden md:flex items-center space-x-6">
+                    <!-- La navigation sera générée dynamiquement par navigation.js -->
                 </div>
                 <div class="md:hidden">
                     <button class="text-gray-700 hover:text-muraz-blue">
@@ -37,48 +34,8 @@
         </nav>
     </header>
 
-
-
-    <!-- Section Connexion Admin -->
-    <section id="login-admin" class="py-16 bg-white">
-        <div class="container mx-auto px-6">
-            <div class="max-w-md mx-auto">
-                <div class="card">
-                    <h2 class="text-2xl font-bold text-center text-muraz-orange mb-6">
-                        <i class="fas fa-user-shield text-3xl mr-3"></i>
-                        Connexion Administrateur
-                    </h2>
-                    
-                    <form id="loginForm" class="space-y-4">
-                        <div>
-                            <label for="username" class="block text-sm font-medium text-gray-700 mb-2">
-                                Nom d'utilisateur
-                            </label>
-                            <input type="text" id="username" name="username" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-muraz-orange focus:border-transparent"
-                                placeholder="admin">
-                        </div>
-                        
-                        <div>
-                            <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
-                                Mot de passe
-                            </label>
-                            <input type="password" id="password" name="password" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-muraz-orange focus:border-transparent"
-                                placeholder="••••••••">
-                        </div>
-                        
-                        <button type="submit" class="w-full btn-primary">
-                            <i class="fas fa-sign-in-alt mr-2"></i>Se connecter
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Section Dashboard Admin (cachée par défaut) -->
-    <section id="admin-dashboard" class="py-16 bg-gray-50 hidden">
+    <!-- Section Dashboard Admin -->
+    <section id="admin-dashboard" class="py-16 bg-gray-50">
         <div class="container mx-auto px-6">
             <div class="text-center mb-12">
                 <h2 class="text-3xl font-bold text-muraz-orange mb-4">
@@ -155,10 +112,98 @@
                     </div>
                 </div>
 
+                <!-- Synchronisation KoboCollect -->
+                <div class="mt-12">
+                    <div class="text-center mb-8">
+                        <h3 class="text-2xl font-semibold mb-4 text-muraz-blue">
+                            <i class="fas fa-sync-alt mr-2"></i>
+                            Synchronisation KoboCollect
+                        </h3>
+                        <p class="text-gray-600">Gestion de la synchronisation des données de terrain</p>
+                    </div>
+                    
+                    <div class="max-w-4xl mx-auto">
+                        <!-- Statut de la synchronisation -->
+                        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                            <h4 class="text-lg font-semibold text-gray-800 mb-4">
+                                <i class="fas fa-info-circle mr-2 text-blue-600"></i>Statut de la Synchronisation
+                            </h4>
+                            <div id="sync-status" class="text-center p-4 bg-gray-50 rounded-lg">
+                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                                <p class="text-gray-600">Vérification du statut...</p>
+                            </div>
+                        </div>
 
-            </div>
+                        <!-- Boutons de synchronisation -->
+                        <div class="grid md:grid-cols-2 gap-6 mb-8">
+                            <!-- Synchronisation complète -->
+                            <div class="bg-white rounded-lg shadow-md p-6">
+                                <h4 class="text-lg font-semibold text-gray-800 mb-4">
+                                    <i class="fas fa-download mr-2 text-green-600"></i>Synchronisation Complète
+                                </h4>
+                                <p class="text-gray-600 mb-4">Récupère toutes les données des formulaires KoboCollect et les synchronise avec la base de données.</p>
+                                <button id="sync-complete" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200">
+                                    <i class="fas fa-sync mr-2"></i>Lancer la Synchronisation
+                                </button>
+                            </div>
 
-            <!-- Formulaire PCR et RT-PCR -->
+                            <!-- Synchronisation par type -->
+                            <div class="bg-white rounded-lg shadow-md p-6">
+                                <h4 class="text-lg font-semibold text-gray-800 mb-4">
+                                    <i class="fas fa-filter mr-2 text-blue-600"></i>Synchronisation par Type
+                                </h4>
+                                <p class="text-gray-600 mb-4">Synchronise un type de formulaire spécifique (Larves, Œufs, Adultes).</p>
+                                <div class="space-y-3">
+                                    <button id="sync-larves" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200">
+                                        <i class="fas fa-bug mr-2"></i>Larves et Gîtes
+                                    </button>
+                                    <button id="sync-oeufs" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200">
+                                        <i class="fas fa-egg mr-2"></i>Œufs
+                                    </button>
+                                    <button id="sync-adultes" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200 border-2 border-purple-800">
+                                        <i class="fas fa-mosquito mr-2"></i>Moustiques Adultes
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Logs de synchronisation -->
+                        <div class="bg-white rounded-lg shadow-md p-6">
+                            <h4 class="text-lg font-semibold text-gray-800 mb-4">
+                                <i class="fas fa-list-alt mr-2 text-purple-600"></i>Logs de Synchronisation
+                            </h4>
+                            <div id="sync-logs" class="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm h-64 overflow-y-auto">
+                                <div class="text-gray-500">En attente de synchronisation...</div>
+                            </div>
+                            <div class="mt-4 flex justify-between">
+                                <button id="clear-logs" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200">
+                                    <i class="fas fa-trash mr-2"></i>Effacer les Logs
+                                </button>
+                                <button id="refresh-status" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200">
+                                    <i class="fas fa-refresh mr-2"></i>Actualiser le Statut
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Boutons de rafraîchissement des graphiques -->
+                        <div class="bg-white rounded-lg shadow-md p-6 mt-6">
+                            <h4 class="text-lg font-semibold text-gray-800 mb-4">
+                                <i class="fas fa-chart-bar mr-2 text-purple-600"></i>Rafraîchissement des Graphiques
+                            </h4>
+                            <p class="text-gray-600 mb-4">Rafraîchir les données des pages Analyses et Indices après synchronisation</p>
+                            <div class="flex gap-4">
+                                <button id="refresh-analyses" class="bg-muraz-orange hover:bg-orange-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200">
+                                    <i class="fas fa-chart-bar mr-2"></i>Rafraîchir Analyses
+                                </button>
+                                <button id="refresh-indices" class="bg-muraz-green hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200">
+                                    <i class="fas fa-chart-line mr-2"></i>Rafraîchir Indices
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Formulaire PCR et RT-PCR -->
             <div id="pcr-form" class="max-w-4xl mx-auto hidden">
                 <div class="card">
                     <div class="flex items-center justify-between mb-6">
@@ -701,89 +746,9 @@
         </div>
     </section>
 
-
-
-    <!-- Synchronisation KoboCollect -->
-    <section class="py-16 bg-gray-100">
-        <div class="container mx-auto px-6">
-            <h3 class="text-2xl font-bold text-muraz-blue mb-8 text-center">
-                <i class="fas fa-sync-alt mr-3"></i>Synchronisation KoboCollect
-            </h3>
-            
-            <div class="max-w-4xl mx-auto">
-                <!-- Statut de la synchronisation -->
-                <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-                    <h4 class="text-lg font-semibold text-gray-800 mb-4">
-                        <i class="fas fa-info-circle mr-2 text-blue-600"></i>Statut de la Synchronisation
-                    </h4>
-                    <div id="sync-status" class="text-center p-4 bg-gray-50 rounded-lg">
-                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-                        <p class="text-gray-600">Vérification du statut...</p>
-                    </div>
-                </div>
-
-                <!-- Boutons de synchronisation -->
-                <div class="grid md:grid-cols-2 gap-6 mb-8">
-                    <!-- Synchronisation complète -->
-                    <div class="bg-white rounded-lg shadow-md p-6">
-                        <h4 class="text-lg font-semibold text-gray-800 mb-4">
-                            <i class="fas fa-download mr-2 text-green-600"></i>Synchronisation Complète
-                        </h4>
-                        <p class="text-gray-600 mb-4">Récupère toutes les données des formulaires KoboCollect et les synchronise avec la base de données.</p>
-                        <button id="sync-complete" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200">
-                            <i class="fas fa-sync mr-2"></i>Lancer la Synchronisation
-                        </button>
-                    </div>
-
-                    <!-- Synchronisation par type -->
-                    <div class="bg-white rounded-lg shadow-md p-6">
-                        <h4 class="text-lg font-semibold text-gray-800 mb-4">
-                            <i class="fas fa-filter mr-2 text-blue-600"></i>Synchronisation par Type
-                        </h4>
-                        <p class="text-gray-600 mb-4">Synchronise un type de formulaire spécifique (Larves, Œufs, Adultes).</p>
-                        <div class="space-y-3">
-                            <button id="sync-larves" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200">
-                                <i class="fas fa-bug mr-2"></i>Larves et Gîtes
-                            </button>
-                            <button id="sync-oeufs" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200">
-                                <i class="fas fa-egg mr-2"></i>Œufs
-                            </button>
-                            <button id="sync-adultes" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200 border-2 border-purple-800">
-                                <i class="fas fa-mosquito mr-2"></i>Moustiques Adultes
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Logs de synchronisation -->
-                <div class="bg-white rounded-lg shadow-md p-6">
-                    <h4 class="text-lg font-semibold text-gray-800 mb-4">
-                        <i class="fas fa-list-alt mr-2 text-purple-600"></i>Logs de Synchronisation
-                    </h4>
-                    <div id="sync-logs" class="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm h-64 overflow-y-auto">
-                        <div class="text-gray-500">En attente de synchronisation...</div>
-                    </div>
-                    <div class="mt-4 flex justify-between">
-                        <button id="clear-logs" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200">
-                            <i class="fas fa-trash mr-2"></i>Effacer les Logs
-                        </button>
-                        <button id="refresh-status" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200">
-                            <i class="fas fa-refresh mr-2"></i>Actualiser le Statut
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-white py-8">
-        <div class="container mx-auto px-6 text-center">
-            <p>&copy; 2024 Centre MURAZ - Plateforme de Surveillance Arboviroses</p>
-            <p class="text-gray-400 mt-2">Ministère de la Santé - Burkina Faso</p>
-        </div>
-    </footer>
-
-    <script src="./js/admin.js"></script>
+    <script src="./js/app.js?v=2025-09-02-02"></script>
+    <script src="./js/admin.js?v=2025-09-02-02"></script>
 </body>
 </html>
