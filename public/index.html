@@ -4,52 +4,101 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Centre MURAZ - Plateforme de Surveillance Arboviroses</title>
-    <link href="/css/style.css" rel="stylesheet">
-    <!-- Correction CSS pour les liens -->
-    <style>
-        /* Correction pour les liens de navigation */
-        nav a {
-            color: inherit !important;
-            text-decoration: none !important;
-            cursor: pointer !important;
-            pointer-events: auto !important;
-        }
-        
-        /* S'assurer que la navigation est cliquable */
-        header nav {
-            position: relative !important;
-            z-index: 100 !important;
-        }
-        
-        /* Correction pour les liens dans le contenu */
-        .content a {
-            color: #1e40af !important;
-            text-decoration: underline !important;
-        }
-    </style>
+    <link href="./css/style.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .carousel {
+            position: relative;
+            overflow: hidden;
+            height: 600px;
+        }
+        .carousel-inner {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+        }
+        .carousel-item {
+            min-width: 100%;
+            position: relative;
+        }
+        .carousel-item img {
+            width: 100%;
+            height: 600px;
+            object-fit: cover;
+        }
+        .carousel-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            opacity: 0;
+        }
+        .carousel-controls {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 18px;
+            border-radius: 50%;
+            transition: background 0.3s;
+        }
+        .carousel-controls:hover {
+            background: rgba(0, 0, 0, 0.8);
+        }
+        .carousel-prev {
+            left: 20px;
+        }
+        .carousel-next {
+            right: 20px;
+        }
+        .carousel-indicators {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+        .carousel-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .carousel-indicator.active {
+            background: white;
+        }
+    </style>
 </head>
 <body class="bg-gray-50 font-sans">
-    <!-- Header -->
+    <!-- Header avec navigation adaptative -->
     <header class="bg-white shadow-lg border-b-4 border-muraz-blue">
         <nav class="container mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-4">
-                    <div class="w-12 h-12 flex items-center justify-center" style="width: 85px; height: 85px;">
-                        <img src="/logo-centre-muraz.jpg?v=8" alt="Logo Centre MURAZ" class="w-full h-full object-contain rounded-lg">
+                    <div class="w-12 h-12 flex items-center justify-center">
+                        <img src="/logo-centre-muraz.jpg" alt="Logo Centre MURAZ" class="w-full h-full object-contain rounded-lg">
                     </div>
                     <div>
+                        <h1 class="text-xl font-bold text-muraz-blue">Centre MURAZ</h1>
                         <p class="text-sm text-gray-600">Surveillance Arboviroses</p>
                     </div>
                 </div>
-                <div class="hidden md:flex items-center space-x-6">
-                    <a href="/" class="text-muraz-blue font-semibold">Accueil</a>
-                    <a href="/analyses" class="text-gray-700 hover:text-muraz-blue transition-colors">Analyses</a>
-                    <a href="/indices" class="text-gray-700 hover:text-muraz-blue transition-colors">Indices</a>
-                    <a href="/biologie-moleculaire" class="text-gray-700 hover:text-muraz-blue transition-colors">Biologie Moléculaire</a>
-                    <a href="/admin" class="text-gray-700 hover:text-muraz-blue transition-colors">Admin</a>
-                    <a href="/admin" class="btn-primary">Connexion</a>
+                <div id="main-nav" class="hidden md:flex items-center space-x-6">
+                    <!-- La navigation sera générée dynamiquement par app.js -->
                 </div>
                 <div class="md:hidden">
                     <button class="text-gray-700 hover:text-muraz-blue">
@@ -60,81 +109,129 @@
         </nav>
     </header>
 
-    <!-- Hero Section SPECTACULAIRE avec Image du Centre MURAZ -->
-    <section id="accueil" class="relative text-white">
-        <!-- Image de fond du Centre MURAZ avec largeur ÉQUILIBRÉE -->
-        <div class="relative h-screen overflow-hidden mx-auto mb-12 rounded-3xl shadow-2xl max-w-5xl">
-            <img src="/centre-muraz.jpg" alt="Centre MURAZ" class="w-full h-full object-cover filter blur-sm">
-            <!-- Overlay subtil pour améliorer la lisibilité sans cacher l'image -->
-            <div class="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/40 pointer-events-none"></div>
-            
-            <!-- Indicateur de scroll élégant -->
-            <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-                <div class="w-6 h-10 border-2 border-white rounded-full flex justify-center">
-                    <div class="w-1 h-3 bg-white rounded-full mt-2 animate-pulse"></div>
+    <!-- Carousel d'images -->
+    <section class="carousel">
+        <div class="carousel-inner" id="carouselInner">
+            <div class="carousel-item">
+                <img src="/centre-muraz.jpg" alt="Centre MURAZ">
+                <div class="carousel-overlay">
+                    <div>
+                        <h2 class="text-4xl font-bold mb-4">Centre MURAZ</h2>
+                        <p class="text-xl mb-6">Plateforme de Surveillance des Arboviroses</p>
+                        <div class="flex justify-center space-x-4">
+                            <a href="/login" class="bg-white text-muraz-blue font-bold py-3 px-8 rounded-lg hover:bg-gray-100 transition-colors">
+                                <i class="fas fa-sign-in-alt mr-2"></i>Se Connecter
+                            </a>
+                            <a href="#presentation" class="border-2 border-white text-white font-bold py-3 px-8 rounded-lg hover:bg-white hover:text-muraz-blue transition-colors">
+                                <i class="fas fa-info-circle mr-2"></i>En Savoir Plus
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="carousel-item">
+                <img src="/IMG_0300.webp" alt="Centre MURAZ">
+                <div class="carousel-overlay">
+                    <div>
+                        <h2 class="text-4xl font-bold mb-4">Indices Entomologiques</h2>
+                        <p class="text-xl mb-6">Calcul automatique des indices IB, IM, IR</p>
+                        <div class="flex justify-center space-x-4">
+                            <a href="/login" class="bg-white text-muraz-blue font-bold py-3 px-8 rounded-lg hover:bg-gray-100 transition-colors">
+                                <i class="fas fa-sign-in-alt mr-2"></i>Se Connecter
+                            </a>
+                            <a href="#presentation" class="border-2 border-white text-white font-bold py-3 px-8 rounded-lg hover:bg-white hover:text-muraz-blue transition-colors">
+                                <i class="fas fa-info-circle mr-2"></i>En Savoir Plus
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="carousel-item">
+                <img src="/IMG_20211209_130631_806.webp" alt="Centre MURAZ">
+                <div class="carousel-overlay">
+                    <div>
+                        <h2 class="text-4xl font-bold mb-4">Prévention et Contrôle</h2>
+                        <p class="text-xl mb-6">Système intégré pour la prévention des arboviroses</p>
+                        <div class="flex justify-center space-x-4">
+                            <a href="/login" class="bg-white text-muraz-blue font-bold py-3 px-8 rounded-lg hover:bg-gray-100 transition-colors">
+                                <i class="fas fa-sign-in-alt mr-2"></i>Se Connecter
+                            </a>
+                            <a href="#presentation" class="border-2 border-white text-white font-bold py-3 px-8 rounded-lg hover:bg-white hover:text-muraz-blue transition-colors">
+                                <i class="fas fa-info-circle mr-2"></i>En Savoir Plus
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+        
+        <!-- Contrôles du carousel -->
+        <button class="carousel-controls carousel-prev" onclick="prevSlide()">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="carousel-controls carousel-next" onclick="nextSlide()">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+        
+        <!-- Indicateurs -->
+        <div class="carousel-indicators" id="carouselIndicators">
+            <!-- Les indicateurs seront générés automatiquement par JavaScript -->
+        </div>
     </section>
 
-    <!-- Objectifs du Projet -->
-    <section class="py-16 bg-white">
+    <!-- Section Présentation -->
+    <section id="presentation" class="py-16 bg-white">
         <div class="container mx-auto px-6">
-            <h3 class="section-title text-muraz-blue">Objectifs du Projet</h3>
-            
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
-                <!-- Automatisation -->
-                <div class="card text-center hover:shadow-xl transition-shadow">
-                    <div class="w-16 h-16 bg-muraz-blue rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-robot text-white text-2xl"></i>
+            <div class="text-center mb-12">
+                <h3 class="text-4xl font-bold text-muraz-blue mb-6 tracking-wide leading-tight shadow-sm">
+                    Projet de surveillance des données d'arbovirose du Centre Muraz
+                </h3>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-bug text-blue-600 text-2xl"></i>
                     </div>
-                    <h4 class="text-xl font-semibold mb-3 text-gray-800">Automatisation</h4>
-                    <p class="text-gray-600">Récupération automatique des données KoboCollect et intégration dans PostgreSQL</p>
+                    <h4 class="text-xl font-semibold text-blue-700 mb-3">Surveillance Entomologique</h4>
+                    <p class="text-gray-600">
+                        Collecte et analyse des données sur les populations de moustiques 
+                        vecteurs d'arboviroses dans différents secteurs.
+                    </p>
                 </div>
 
-                <!-- Validation Admin -->
-                <div class="card text-center hover:shadow-xl transition-shadow">
-                    <div class="w-16 h-16 bg-muraz-green rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-shield-alt text-white text-2xl"></i>
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-dna text-purple-600 text-2xl"></i>
                     </div>
-                    <h4 class="text-xl font-semibold mb-3 text-gray-800">Validation Administrative</h4>
-                    <p class="text-gray-600">Contrôle et validation des données par l'administrateur avant intégration</p>
+                    <h4 class="text-xl font-semibold text-purple-700 mb-3">Biologie Moléculaire</h4>
+                    <p class="text-gray-600">
+                        Tests PCR et RT-PCR pour l'identification et la caractérisation 
+                        des virus d'arboviroses dans les échantillons collectés.
+                    </p>
                 </div>
 
-                <!-- Visualisation -->
-                <div class="card text-center hover:shadow-xl transition-shadow">
-                    <div class="w-16 h-16 bg-muraz-orange rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-chart-line text-white text-2xl"></i>
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-flask text-green-600 text-2xl"></i>
                     </div>
-                    <h4 class="text-xl font-semibold mb-3 text-gray-800">Visualisation Avancée</h4>
-                    <p class="text-gray-600">Tableaux de bord interactifs et visualisations en temps réel</p>
+                    <h4 class="text-xl font-semibold text-green-700 mb-3">Biochimie</h4>
+                    <p class="text-gray-600">
+                        Analyses biochimiques pour l'étude des protéines et enzymes 
+                        impliquées dans les mécanismes de résistance aux insecticides.
+                    </p>
                 </div>
 
-                <!-- Surveillance -->
-                <div class="card text-center hover:shadow-xl transition-shadow">
-                    <div class="w-16 h-16 bg-muraz-red rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-eye text-white text-2xl"></i>
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-vial text-orange-600 text-2xl"></i>
                     </div>
-                    <h4 class="text-xl font-semibold mb-3 text-gray-800">Surveillance Entomologique</h4>
-                    <p class="text-gray-600">Suivi des indices IB, IM, IR et analyse des populations de moustiques</p>
-                </div>
-
-                <!-- Biologie Moléculaire -->
-                <div class="card text-center hover:shadow-xl transition-shadow">
-                    <div class="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-dna text-white text-2xl"></i>
-                    </div>
-                    <h4 class="text-xl font-semibold mb-3 text-gray-800">Biologie Moléculaire</h4>
-                    <p class="text-gray-600">Analyse PCR, RT-PCR et identification des virus et fréquences alléliques</p>
-                </div>
-
-                <!-- Décision -->
-                <div class="card text-center hover:shadow-xl transition-shadow">
-                    <div class="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-lightbulb text-white text-2xl"></i>
-                    </div>
-                    <h4 class="text-xl font-semibold mb-3 text-gray-800">Aide à la Décision</h4>
-                    <p class="text-gray-600">Génération de rapports clairs pour la prise de décision sanitaire</p>
+                    <h4 class="text-xl font-semibold text-orange-700 mb-3">Bioessais</h4>
+                    <p class="text-gray-600">
+                        Tests de sensibilité aux insecticides et analyses d'origine 
+                        des repas sanguins pour évaluer la résistance vectorielle.
+                    </p>
                 </div>
             </div>
         </div>
@@ -145,11 +242,77 @@
     <!-- Footer -->
     <footer class="bg-gray-800 text-white py-8">
         <div class="container mx-auto px-6 text-center">
-            <p>&copy; 2024 Centre MURAZ - Plateforme de Surveillance Arboviroses</p>
+            <p>&copy; 2025 Centre MURAZ - Plateforme de Surveillance Arboviroses</p>
             <p class="text-gray-400 mt-2">Ministère de la Santé - Burkina Faso</p>
         </div>
     </footer>
 
-    <script src="/js/main.js"></script>
+    <script src="./js/app.js?v=2025-09-02-02"></script>
+    <script>
+        // Carousel dynamique et automatique
+        let currentSlide = 0;
+        let autoSlideInterval;
+
+        function initCarousel() {
+            const slides = document.querySelectorAll('.carousel-item');
+            const totalSlides = slides.length;
+            
+            if (totalSlides === 0) {
+                console.log('Aucune image trouvée dans le carousel');
+                return;
+            }
+
+            // Générer les indicateurs dynamiquement
+            const indicatorsContainer = document.getElementById('carouselIndicators');
+            indicatorsContainer.innerHTML = '';
+            
+            for (let i = 0; i < totalSlides; i++) {
+                const indicator = document.createElement('div');
+                indicator.className = `carousel-indicator ${i === 0 ? 'active' : ''}`;
+                indicator.onclick = () => goToSlide(i);
+                indicatorsContainer.appendChild(indicator);
+            }
+
+            function showSlide(n) {
+                currentSlide = (n + totalSlides) % totalSlides;
+                const carousel = document.getElementById('carouselInner');
+                carousel.style.transform = `translateX(-${currentSlide * 100}%)`;
+                
+                // Mettre à jour les indicateurs
+                const indicators = document.querySelectorAll('.carousel-indicator');
+                indicators.forEach((indicator, index) => {
+                    indicator.classList.toggle('active', index === currentSlide);
+                });
+            }
+
+            function nextSlide() {
+                showSlide(currentSlide + 1);
+            }
+
+            function prevSlide() {
+                showSlide(currentSlide - 1);
+            }
+
+            function goToSlide(n) {
+                showSlide(n);
+            }
+
+            // Rendre les fonctions globales
+            window.nextSlide = nextSlide;
+            window.prevSlide = prevSlide;
+            window.goToSlide = goToSlide;
+
+            // Démarrer le défilement automatique
+            autoSlideInterval = setInterval(nextSlide, 5000);
+
+            // Initialisation
+            showSlide(0);
+
+            console.log(`Carousel initialisé avec ${totalSlides} images`);
+        }
+
+        // Initialiser le carousel quand le DOM est chargé
+        document.addEventListener('DOMContentLoaded', initCarousel);
+    </script>
 </body>
 </html>

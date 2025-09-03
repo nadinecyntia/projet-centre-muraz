@@ -22,6 +22,7 @@
                         <p class="text-sm text-gray-600">Surveillance Arboviroses</p>
                     </div>
                 </div>
+
                 <div id="main-nav" class="hidden md:flex items-center space-x-6">
                     <!-- La navigation sera générée dynamiquement par navigation.js -->
                 </div>
@@ -165,10 +166,10 @@
                                     </button>
                                 </div>
                             </div>
-                        </div>
+                                            </div>
 
-                        <!-- Logs de synchronisation -->
-                        <div class="bg-white rounded-lg shadow-md p-6">
+                    <!-- Logs de synchronisation -->
+                    <div class="bg-white rounded-lg shadow-md p-6 max-w-4xl ml-auto">
                             <h4 class="text-lg font-semibold text-gray-800 mb-4">
                                 <i class="fas fa-list-alt mr-2 text-purple-600"></i>Logs de Synchronisation
                             </h4>
@@ -185,8 +186,8 @@
                             </div>
                         </div>
 
-                        <!-- Boutons de rafraîchissement des graphiques -->
-                        <div class="bg-white rounded-lg shadow-md p-6 mt-6">
+                                            <!-- Boutons de rafraîchissement des graphiques -->
+                    <div class="bg-white rounded-lg shadow-md p-6 mt-6 max-w-4xl ml-auto">
                             <h4 class="text-lg font-semibold text-gray-800 mb-4">
                                 <i class="fas fa-chart-bar mr-2 text-purple-600"></i>Rafraîchissement des Graphiques
                             </h4>
@@ -201,9 +202,9 @@
                             </div>
                         </div>
                     </div>
-                </div>
+            </div>
 
-                <!-- Formulaire PCR et RT-PCR -->
+            <!-- Formulaire PCR et RT-PCR -->
             <div id="pcr-form" class="max-w-4xl mx-auto hidden">
                 <div class="card">
                     <div class="flex items-center justify-between mb-6">
@@ -746,9 +747,50 @@
         </div>
     </section>
 
-    </section>
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-16">
+        <div class="container mx-auto px-6 text-center">
+            <p>&copy; 2025 Centre MURAZ - Plateforme de Surveillance Arboviroses</p>
+            <p class="text-gray-400 mt-2">Ministère de la Santé - Burkina Faso</p>
+        </div>
+    </footer>
 
     <script src="./js/app.js?v=2025-09-02-02"></script>
     <script src="./js/admin.js?v=2025-09-02-02"></script>
+    
+    <script>
+        // Gestion du bouton de déconnexion
+        document.getElementById('logoutBtn').addEventListener('click', async function() {
+            if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+                try {
+                    console.log('🔐 Déconnexion en cours...');
+                    
+                    const response = await fetch('/api/auth/logout', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    });
+
+                    if (response.ok) {
+                        console.log('✅ Déconnexion réussie');
+                        
+                        // Nettoyer les données locales
+                        localStorage.removeItem('user');
+                        sessionStorage.clear();
+                        
+                        // Rediriger vers la page de connexion
+                        window.location.href = '/login';
+                    } else {
+                        console.error('❌ Erreur lors de la déconnexion');
+                        alert('Erreur lors de la déconnexion');
+                    }
+                } catch (error) {
+                    console.error('❌ Erreur lors de la déconnexion:', error);
+                    alert('Erreur de connexion');
+                }
+            }
+        });
+    </script>
 </body>
 </html>

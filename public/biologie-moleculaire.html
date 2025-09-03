@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Biologie Moléculaire - Centre Muraz</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="./css/style.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .fade-in { animation: fadeIn 0.5s ease-in; }
@@ -15,34 +16,29 @@
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
-    <!-- Header -->
-    <header class="bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg">
-        <div class="container mx-auto px-6 py-4">
+    <!-- Header avec navigation adaptative -->
+    <header class="bg-white shadow-lg border-b-4 border-muraz-blue">
+        <nav class="container mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3">
+                <div class="flex items-center space-x-4">
                     <div class="w-12 h-12 flex items-center justify-center">
                         <img src="/logo-centre-muraz.jpg" alt="Logo Centre MURAZ" class="w-full h-full object-contain rounded-lg">
                     </div>
                     <div>
-                        <p class="text-blue-100">Surveillance Arboviroses</p>
+                        <h1 class="text-xl font-bold text-muraz-blue">Centre MURAZ</h1>
+                        <p class="text-sm text-gray-600">Surveillance Arboviroses</p>
                     </div>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <a href="/" class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition-all">
-                        <i class="fas fa-home mr-2"></i>Accueil
-                    </a>
-                    <a href="/analyses" class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition-all">
-                        <i class="fas fa-chart-bar mr-2"></i>Analyses
-                    </a>
-                    <a href="/indices" class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition-all">
-                        <i class="fas fa-calculator mr-2"></i>Indices
-                    </a>
-                    <a href="/admin" class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition-all">
-                        <i class="fas fa-cog mr-2"></i>Administration
-                    </a>
+                <div id="main-nav" class="hidden md:flex items-center space-x-6">
+                    <!-- La navigation sera générée dynamiquement par app.js -->
+                </div>
+                <div class="md:hidden">
+                    <button class="text-gray-700 hover:text-muraz-blue">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
                 </div>
             </div>
-        </div>
+        </nav>
     </header>
 
     <!-- Main Content -->
@@ -240,6 +236,7 @@
     </div>
 
     <!-- Scripts -->
+    <script src="./js/app.js?v=2025-09-02-02"></script>
     <script src="js/biologie-moleculaire.js"></script>
 </body>
 </html>

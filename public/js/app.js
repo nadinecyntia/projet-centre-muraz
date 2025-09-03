@@ -19,36 +19,66 @@ class MurazApp {
         // Initialiser les fonctionnalités spécifiques à la page
         this.initPageFeatures();
         
-        // Initialiser les gestionnaires d'événements globaux
-        this.initGlobalEventListeners();
+                       // Initialiser les gestionnaires d'événements globaux
+               this.initGlobalEventListeners();
+
+               // Démarrer la vérification périodique de session
+               this.startSessionCheck();
     }
 
-    async checkAuthentication() {
-        try {
-            console.log('🔍 Vérification de l\'authentification...');
-            const response = await fetch('/api/auth/check');
-            const result = await response.json();
-            
-            console.log('📡 Réponse auth:', result);
-            
-            if (result.success && result.authenticated) {
-                this.user = result.user;
-                console.log('✅ Utilisateur connecté:', this.user.username, '(', this.user.role, ')');
-            } else {
-                console.log('ℹ️ Utilisateur non connecté');
-                // Rediriger vers login si pas sur la page login
-                if (this.currentPage !== '/login') {
-                    window.location.href = '/login';
-                    return;
-                }
-            }
-        } catch (error) {
-            console.error('❌ Erreur vérification authentification:', error);
-            if (this.currentPage !== '/login') {
-                window.location.href = '/login';
-            }
-        }
-    }
+               async checkAuthentication() {
+               try {
+                   console.log('🔍 Vérification de l\'authentification...');
+                   const response = await fetch('/api/auth/check');
+                   const result = await response.json();
+
+                   console.log('📡 Réponse auth:', result);
+
+                   if (result.success && result.authenticated) {
+                       this.user = result.user;
+                       console.log('✅ Utilisateur connecté:', this.user.username, '(', this.user.role, ')');
+                       
+                       // Vérifier les permissions pour la page actuelle
+                       this.checkPagePermissions();
+                   } else {
+                       console.log('ℹ️ Utilisateur non connecté');
+                       // Ne pas rediriger si on est sur la page d'accueil ou login
+                       if (this.currentPage !== '/login' && this.currentPage !== '/') {
+                           console.log('🚫 Accès refusé, redirection vers login');
+                           window.location.href = '/login';
+                           return;
+                       }
+                   }
+               } catch (error) {
+                   console.error('❌ Erreur vérification authentification:', error);
+                   if (this.currentPage !== '/login' && this.currentPage !== '/') {
+                       console.log('🚫 Erreur de connexion, redirection vers login');
+                       window.location.href = '/login';
+                   }
+               }
+           }
+
+           checkPagePermissions() {
+               // Vérifier les permissions selon la page et le rôle
+               if (this.currentPage === '/admin' && this.user.role !== 'SUPER_ADMIN') {
+                   console.log('🚫 Accès refusé à /admin - rôle insuffisant');
+                   window.location.href = '/login';
+                   return;
+               }
+               
+               if (this.currentPage === '/biologie-moleculaire' && this.user.role !== 'SUPER_ADMIN') {
+                   console.log('🚫 Accès refusé à /biologie-moleculaire - rôle insuffisant');
+                   window.location.href = '/login';
+                   return;
+               }
+               
+               if ((this.currentPage === '/analyses' || this.currentPage === '/indices') && 
+                   !['SUPER_ADMIN', 'VIEWER'].includes(this.user.role)) {
+                   console.log('🚫 Accès refusé aux analyses/indices - rôle insuffisant');
+                   window.location.href = '/login';
+                   return;
+               }
+           }
 
     initNavigation() {
         console.log('🧭 Initialisation de la navigation...');
@@ -61,11 +91,15 @@ class MurazApp {
         console.log('📋 Génération des éléments de navigation...');
         const navItems = this.generateNavigationItems();
         console.log('🎯 Éléments de navigation générés:', navItems);
+        console.log('🎯 Longueur des éléments:', navItems.length);
         
         nav.innerHTML = navItems;
         
         // Ajouter les gestionnaires d'événements de navigation
         this.setupNavigationEventListeners();
+        
+        // Debug: vérifier le contenu final
+        console.log('🔍 Contenu final de main-nav:', nav.innerHTML);
     }
 
     generateNavigationItems() {
@@ -73,7 +107,16 @@ class MurazApp {
         
         if (!this.user) {
             console.log('❌ Aucun utilisateur connecté');
-            return '';
+            // Retourner une navbar statique pour les utilisateurs non connectés
+            return `
+                <a href="/" class="text-muraz-blue font-semibold">Accueil</a>
+                <a href="/login" class="text-gray-700 hover:text-muraz-blue transition-colors">Connexion</a>
+            `;
+        }
+
+        // Si on est sur la page d'accueil et qu'un utilisateur est connecté, générer la navigation dynamique
+        if (this.currentPage === '/') {
+            console.log('🏠 Page d\'accueil - utilisateur connecté - génération navigation dynamique');
         }
 
         const isSuperAdmin = this.user.role === 'SUPER_ADMIN';
@@ -87,10 +130,7 @@ class MurazApp {
             // Navigation complète pour SUPER_ADMIN
             navItems = `
                 <a href="/" class="nav-item ${this.currentPage === '/' ? 'active' : ''}">
-                    <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
-                </a>
-                <a href="/admin" class="nav-item ${this.currentPage === '/admin' ? 'active' : ''}">
-                    <i class="fas fa-cogs mr-2"></i>Administration
+                    <i class="fas fa-home mr-2"></i>Accueil
                 </a>
                 <a href="/analyses" class="nav-item ${this.currentPage === '/analyses' ? 'active' : ''}">
                     <i class="fas fa-chart-line mr-2"></i>Analyses
@@ -105,6 +145,9 @@ class MurazApp {
         } else if (isViewer) {
             // Navigation limitée pour VIEWER
             navItems = `
+                <a href="/" class="nav-item ${this.currentPage === '/' ? 'active' : ''}">
+                    <i class="fas fa-home mr-2"></i>Accueil
+                </a>
                 <a href="/analyses" class="nav-item ${this.currentPage === '/analyses' ? 'active' : ''}">
                     <i class="fas fa-chart-line mr-2"></i>Analyses
                 </a>
@@ -115,29 +158,18 @@ class MurazApp {
         }
 
         // Ajouter le menu utilisateur et déconnexion
-        if (this.user) {
-            navItems += `
-                <div class="flex items-center space-x-4 ml-auto">
-                    <div class="relative group">
-                        <button class="flex items-center space-x-2 text-gray-700 hover:text-muraz-blue transition-colors">
-                            <i class="fas fa-user-circle text-xl"></i>
-                            <span class="font-medium">${this.user.username}</span>
-                            <span class="text-xs bg-gray-200 px-2 py-1 rounded">${this.user.role}</span>
-                            <i class="fas fa-chevron-down text-xs"></i>
-                        </button>
-                        <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 hidden group-hover:block">
-                            <div class="px-4 py-2 text-sm text-gray-700 border-b">
-                                <div class="font-medium">${this.user.username}</div>
-                                <div class="text-gray-500">${this.user.email}</div>
-                            </div>
-                            <button id="logoutBtn" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
-                                <i class="fas fa-sign-out-alt mr-2"></i>Déconnexion
-                            </button>
-                        </div>
-                    </div>
+        navItems += `
+            <div class="flex items-center space-x-4 ml-auto">
+                <div class="flex items-center space-x-3">
+                    <span class="font-medium text-gray-700">${this.user.username}</span>
+                    <span class="text-xs bg-gray-200 px-2 py-1 rounded">${this.user.role}</span>
+                    <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center space-x-2 shadow-md">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Déconnexion</span>
+                    </button>
                 </div>
-            `;
-        }
+            </div>
+        `;
 
         console.log('✅ Navigation générée avec succès');
         return navItems;
@@ -156,6 +188,8 @@ class MurazApp {
 
     async handleLogout() {
         try {
+            console.log('🔐 Déconnexion en cours...');
+            
             const response = await fetch('/api/auth/logout', {
                 method: 'POST',
                 headers: {
@@ -164,16 +198,42 @@ class MurazApp {
             });
 
             if (response.ok) {
+                console.log('✅ Déconnexion réussie');
                 this.user = null;
+                
+                // Nettoyer les données locales
+                localStorage.removeItem('user');
+                sessionStorage.clear();
+                
+                // Rediriger vers la page de connexion
                 window.location.href = '/login';
             } else {
-                console.error('Erreur lors de la déconnexion');
+                console.error('❌ Erreur lors de la déconnexion');
                 this.showNotification('❌ Erreur lors de la déconnexion', 'error');
             }
         } catch (error) {
-            console.error('Erreur lors de la déconnexion:', error);
+            console.error('❌ Erreur lors de la déconnexion:', error);
             this.showNotification('❌ Erreur de connexion', 'error');
         }
+    }
+
+    // Vérification périodique de la session
+    startSessionCheck() {
+        setInterval(async () => {
+            try {
+                const response = await fetch('/api/auth/check');
+                const result = await response.json();
+                
+                if (!result.success || !result.authenticated) {
+                    console.log('⚠️ Session expirée, redirection vers login');
+                    this.user = null;
+                    localStorage.removeItem('user');
+                    window.location.href = '/login';
+                }
+            } catch (error) {
+                console.error('❌ Erreur vérification session:', error);
+            }
+        }, 30000); // Vérifier toutes les 30 secondes
     }
 
     initPageFeatures() {

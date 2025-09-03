@@ -51,7 +51,7 @@ class AuthController {
             };
             
             // Déterminer la page de redirection selon le rôle
-            let redirectUrl = '/analyses'; // Par défaut
+            let redirectUrl = '/'; // Par défaut (page d'accueil)
             if (user.role === 'SUPER_ADMIN') {
                 redirectUrl = '/admin';
             }

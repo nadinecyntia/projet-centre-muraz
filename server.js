@@ -58,14 +58,14 @@ app.use('/api', apiRoutes);
 // Route de login
 app.get('/login', (req, res) => {
     if (req.session && req.session.user) {
-        return res.redirect(req.session.user.role === 'SUPER_ADMIN' ? '/admin' : '/analyses');
+        return res.redirect(req.session.user.role === 'SUPER_ADMIN' ? '/admin' : '/');
     }
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
-// Route principale (Dashboard) - SUPER_ADMIN uniquement
-app.get('/', requireAuth, requireSuperAdmin, (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+// Route principale (Page d'accueil) - Accessible à tous
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Route pour la page Biologie Moléculaire - SUPER_ADMIN uniquement
