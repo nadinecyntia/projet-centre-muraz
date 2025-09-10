@@ -348,7 +348,7 @@ async function synchronizeKoboCollect(type = 'complete') {
                 // Afficher les actions rapides (ouvrir Analyses/Indices)
                 showSyncActions(detailMsg);
             }
-
+            
             // Vérifier le nouveau statut après un délai
             setTimeout(checkSyncStatus, 1000);
             

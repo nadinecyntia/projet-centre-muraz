@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Final - Centre MURAZ</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        select { padding: 5px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 DEBUG FINAL - Système de Traduction</h1>
+    
+    <div class="test">
+        <h3>1. Test du TranslationManager</h3>
+        <div id="test1">En cours...</div>
+    </div>
+    
+    <div class="test">
+        <h3>2. Test du Sélecteur de Langue</h3>
+        <div id="languageSelector"></div>
+        <div id="test2">En cours...</div>
+    </div>
+    
+    <div class="test">
+        <h3>3. Test des Traductions</h3>
+        <p data-i18n="dashboard.title">Centre MURAZ Dashboard</p>
+        <p data-i18n="dashboard.subtitle">Arbovirus Surveillance Platform</p>
+        <div id="test3">En cours...</div>
+    </div>
+    
+    <div class="test">
+        <h3>4. Test de Changement de Langue</h3>
+        <button onclick="testLanguageChange()">Tester Changement EN/FR</button>
+        <div id="test4">Cliquez sur le bouton</div>
+    </div>
+
+    <script src="./js/translation.js"></script>
+    
+    <script>
+        function updateTest(id, message, isSuccess = true) {
+            const element = document.getElementById(id);
+            element.innerHTML = message;
+            element.className = isSuccess ? 'success' : 'error';
+        }
+
+        function testLanguageChange() {
+            const test4 = document.getElementById('test4');
+            test4.innerHTML = 'Test en cours...';
+            
+            if (!window.translationManager) {
+                updateTest('test4', '❌ TranslationManager non trouvé', false);
+                return;
+            }
+            
+            // Test changement vers EN
+            window.translationManager.changeLanguage('en').then(() => {
+                updateTest('test4', '✅ Changement vers EN réussi', true);
+                
+                // Test retour vers FR après 2 secondes
+                setTimeout(() => {
+                    window.translationManager.changeLanguage('fr').then(() => {
+                        updateTest('test4', '✅ Changement vers FR réussi - Test terminé', true);
+                    }).catch(err => {
+                        updateTest('test4', '❌ Erreur retour FR: ' + err.message, false);
+                    });
+                }, 2000);
+                
+            }).catch(err => {
+                updateTest('test4', '❌ Erreur changement EN: ' + err.message, false);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 DEBUG FINAL - Page chargée');
+            
+            // Test 1: TranslationManager
+            setTimeout(() => {
+                if (window.translationManager) {
+                    const lang = window.translationManager.getCurrentLanguage();
+                    const loaded = window.translationManager.isLoaded;
+                    const translations = Object.keys(window.translationManager.translations || {}).length;
+                    
+                    updateTest('test1', `✅ TranslationManager trouvé<br>
+                        - Langue: ${lang}<br>
+                        - Chargé: ${loaded}<br>
+                        - Traductions: ${translations} langues`, true);
+                } else {
+                    updateTest('test1', '❌ TranslationManager non trouvé', false);
+                }
+            }, 1000);
+
+            // Test 2: Sélecteur de langue
+            setTimeout(() => {
+                const languageSelector = document.getElementById('languageSelector');
+                if (languageSelector && window.translationManager) {
+                    const selector = window.translationManager.createLanguageSelector();
+                    languageSelector.appendChild(selector);
+                    
+                    const select = selector.querySelector('select');
+                    if (select) {
+                        select.addEventListener('change', (e) => {
+                            console.log('🔄 Changement de langue:', e.target.value);
+                            window.translationManager.changeLanguage(e.target.value);
+                        });
+                        updateTest('test2', '✅ Sélecteur créé et fonctionnel', true);
+                    } else {
+                        updateTest('test2', '❌ Élément select non trouvé', false);
+                    }
+                } else {
+                    updateTest('test2', '❌ Impossible de créer le sélecteur', false);
+                }
+            }, 1500);
+
+            // Test 3: Traductions
+            setTimeout(() => {
+                if (window.translationManager && window.translationManager.isLoaded) {
+                    const title = window.translationManager.t('dashboard.title');
+                    const subtitle = window.translationManager.t('dashboard.subtitle');
+                    
+                    updateTest('test3', `✅ Traductions fonctionnelles<br>
+                        - Titre: "${title}"<br>
+                        - Sous-titre: "${subtitle}"`, true);
+                } else {
+                    updateTest('test3', '❌ Traductions non chargées', false);
+                }
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

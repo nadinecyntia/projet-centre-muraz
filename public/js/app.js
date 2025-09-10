@@ -24,14 +24,21 @@ class MurazApp {
 
                // Démarrer la vérification périodique de session
                this.startSessionCheck();
+               
+               // Écouter les changements de langue
+               this.setupLanguageChangeListener();
     }
 
                async checkAuthentication() {
                try {
                    console.log('🔍 Vérification de l\'authentification...');
                    const response = await fetch('/api/auth/check');
+                   
+                   if (!response.ok) {
+                       throw new Error(`HTTP ${response.status}`);
+                   }
+                   
                    const result = await response.json();
-
                    console.log('📡 Réponse auth:', result);
 
                    if (result.success && result.authenticated) {
@@ -109,8 +116,9 @@ class MurazApp {
             console.log('❌ Aucun utilisateur connecté');
             // Retourner une navbar statique pour les utilisateurs non connectés
             return `
-                <a href="/" class="text-muraz-blue font-semibold">Accueil</a>
-                <a href="/login" class="text-gray-700 hover:text-muraz-blue transition-colors">Connexion</a>
+                <a href="/" class="text-muraz-blue font-semibold" data-i18n="navigation.home">Accueil</a>
+                <a href="/login" class="text-gray-700 hover:text-muraz-blue transition-colors" data-i18n="navigation.login">Connexion</a>
+                <div id="languageSelector" class="language-selector ml-auto"></div>
             `;
         }
 
@@ -130,34 +138,34 @@ class MurazApp {
             // Navigation complète pour SUPER_ADMIN
             navItems = `
                 <a href="/" class="nav-item ${this.currentPage === '/' ? 'active' : ''}">
-                    <i class="fas fa-home mr-2"></i>Accueil
+                    <i class="fas fa-home mr-2"></i><span data-i18n="navigation.home">Accueil</span>
                 </a>
                 <a href="/analyses" class="nav-item ${this.currentPage === '/analyses' ? 'active' : ''}">
-                    <i class="fas fa-chart-line mr-2"></i>Analyses
+                    <i class="fas fa-chart-line mr-2"></i><span data-i18n="navigation.analyses">Analyses</span>
                 </a>
                 <a href="/indices" class="nav-item ${this.currentPage === '/indices' ? 'active' : ''}">
-                    <i class="fas fa-chart-bar mr-2"></i>Indices
+                    <i class="fas fa-chart-bar mr-2"></i><span data-i18n="navigation.indices">Indices</span>
                 </a>
                 <a href="/biologie-moleculaire" class="nav-item ${this.currentPage === '/biologie-moleculaire' ? 'active' : ''}">
-                    <i class="fas fa-dna mr-2"></i>Biologie Moléculaire
+                    <i class="fas fa-dna mr-2"></i><span data-i18n="navigation.molecular_biology">Biologie Moléculaire</span>
                 </a>
             `;
         } else if (isViewer) {
             // Navigation limitée pour VIEWER
             navItems = `
                 <a href="/" class="nav-item ${this.currentPage === '/' ? 'active' : ''}">
-                    <i class="fas fa-home mr-2"></i>Accueil
+                    <i class="fas fa-home mr-2"></i><span data-i18n="navigation.home">Accueil</span>
                 </a>
                 <a href="/analyses" class="nav-item ${this.currentPage === '/analyses' ? 'active' : ''}">
-                    <i class="fas fa-chart-line mr-2"></i>Analyses
+                    <i class="fas fa-chart-line mr-2"></i><span data-i18n="navigation.analyses">Analyses</span>
                 </a>
                 <a href="/indices" class="nav-item ${this.currentPage === '/indices' ? 'active' : ''}">
-                    <i class="fas fa-chart-bar mr-2"></i>Indices
+                    <i class="fas fa-chart-bar mr-2"></i><span data-i18n="navigation.indices">Indices</span>
                 </a>
             `;
         }
 
-        // Ajouter le menu utilisateur et déconnexion
+        // Ajouter le menu utilisateur et le sélecteur de langue
         navItems += `
             <div class="flex items-center space-x-4 ml-auto">
                 <div class="flex items-center space-x-3">
@@ -165,9 +173,10 @@ class MurazApp {
                     <span class="text-xs bg-gray-200 px-2 py-1 rounded">${this.user.role}</span>
                     <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center space-x-2 shadow-md">
                         <i class="fas fa-sign-out-alt"></i>
-                        <span>Déconnexion</span>
+                        <span data-i18n="navigation.logout">Déconnexion</span>
                     </button>
                 </div>
+                <div id="languageSelector" class="language-selector"></div>
             </div>
         `;
 
@@ -184,6 +193,62 @@ class MurazApp {
         } else {
             console.log('⚠️ Bouton déconnexion non trouvé');
         }
+        
+        // Initialiser le sélecteur de langue
+        this.initLanguageSelector();
+    }
+
+    initLanguageSelector() {
+        const languageSelector = document.getElementById('languageSelector');
+        if (!languageSelector) {
+            console.warn('⚠️ Élément languageSelector non trouvé');
+            return;
+        }
+
+        if (!window.translationManager) {
+            console.warn('⚠️ TranslationManager non disponible');
+            return;
+        }
+
+        try {
+            // Vider le conteneur existant
+            languageSelector.innerHTML = '';
+            
+            // Créer le sélecteur
+            const selector = window.translationManager.createLanguageSelector();
+            languageSelector.appendChild(selector);
+            
+            // Ajouter un écouteur d'événement sur le select
+            const selectElement = selector.querySelector('select');
+            if (selectElement) {
+                selectElement.addEventListener('change', async (e) => {
+                    const newLanguage = e.target.value;
+                    console.log('🔄 Changement de langue via sélecteur:', newLanguage);
+                    
+                    try {
+                        await window.translationManager.changeLanguage(newLanguage);
+                        console.log('✅ Changement de langue réussi via sélecteur');
+                    } catch (error) {
+                        console.error('❌ Erreur lors du changement de langue:', error);
+                    }
+                });
+                
+                console.log('✅ Sélecteur de langue initialisé avec écouteur');
+            } else {
+                console.error('❌ Élément select non trouvé dans le sélecteur');
+            }
+            
+        } catch (error) {
+            console.error('❌ Erreur lors de l\'initialisation du sélecteur de langue:', error);
+        }
+    }
+
+    setupLanguageChangeListener() {
+        window.addEventListener('languageChanged', (event) => {
+            console.log('🌐 Langue changée:', event.detail.language);
+            // Recharger la navigation pour appliquer les nouvelles traductions
+            this.initNavigation();
+        });
     }
 
     async handleLogout() {

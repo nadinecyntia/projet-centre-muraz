@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Administration - Centre MURAZ</title>
+    <title data-i18n="admin.title">Administration - Centre MURAZ</title>
     <link href="./css/style.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="./js/translation.js"></script>
 </head>
 <body class="bg-gray-50 font-sans">
     <!-- Header avec navigation adaptative -->
@@ -18,18 +19,21 @@
                         <img src="/logo-centre-muraz.jpg" alt="Logo Centre MURAZ" class="w-full h-full object-contain rounded-lg">
                     </div>
                     <div>
-                        <h1 class="text-xl font-bold text-muraz-blue">Centre MURAZ</h1>
-                        <p class="text-sm text-gray-600">Surveillance Arboviroses</p>
+                        <h1 class="text-xl font-bold text-muraz-blue" data-i18n="dashboard.title">Centre MURAZ</h1>
+                        <p class="text-sm text-gray-600" data-i18n="dashboard.subtitle">Surveillance Arboviroses</p>
                     </div>
                 </div>
 
                 <div id="main-nav" class="hidden md:flex items-center space-x-6">
-                    <!-- La navigation sera générée dynamiquement par navigation.js -->
+                    <!-- La navigation sera générée dynamiquement par app.js -->
                 </div>
+                <div class="flex items-center space-x-4">
+                    <div id="languageSelector" class="language-selector"></div>
                 <div class="md:hidden">
                     <button class="text-gray-700 hover:text-muraz-blue">
                         <i class="fas fa-bars text-xl"></i>
                     </button>
+                    </div>
                 </div>
             </div>
         </nav>
@@ -39,28 +43,21 @@
     <section id="admin-dashboard" class="py-16 bg-gray-50">
         <div class="container mx-auto px-6">
             <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold text-muraz-orange mb-4">
+                <h2 class="text-3xl font-bold text-muraz-orange mb-4" data-i18n="admin.admin_dashboard">
                     <i class="fas fa-tachometer-alt text-4xl mr-4"></i>
                     Tableau de Bord Administrateur
                 </h2>
-                <p class="text-lg text-gray-600">Gestion des données biologiques et entomologiques</p>
-                <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg max-w-2xl mx-auto">
-                    <p class="text-sm text-blue-800">
-                        <i class="fas fa-info-circle mr-2"></i>
-                        <strong>Note :</strong> Les indices entomologiques (IB, IM, IR) sont calculés automatiquement 
-                        à partir des données collectées via KoboCollect (Gîtes, Œufs, Adultes).
-                    </p>
-                </div>
+                <p class="text-lg text-gray-600" data-i18n="admin.data_management">Gestion des données biologiques et entomologiques</p>
             </div>
 
             <!-- Boutons d'Accès aux Formulaires d'Analyses Laboratoires -->
             <div class="max-w-6xl mx-auto">
                 <div class="text-center mb-8">
-                    <h3 class="text-2xl font-semibold mb-4 text-muraz-blue">
+                    <h3 class="text-2xl font-semibold mb-4 text-muraz-blue" data-i18n="admin.lab_analysis_forms">
                         <i class="fas fa-flask mr-2"></i>
                         Formulaires d'Analyses Laboratoires
                     </h3>
-                    <p class="text-gray-600">Sélectionnez le type d'analyse à effectuer</p>
+                    <p class="text-gray-600" data-i18n="admin.select_analysis_type">Sélectionnez le type d'analyse à effectuer</p>
                 </div>
 
                 <div class="grid md:grid-cols-3 gap-6">
@@ -70,11 +67,11 @@
                             <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <i class="fas fa-dna text-blue-600 text-2xl"></i>
                             </div>
-                            <h4 class="text-xl font-semibold text-blue-700 mb-3">PCR et RT-PCR</h4>
-                            <p class="text-gray-600 mb-4 text-sm">
+                            <h4 class="text-xl font-semibold text-blue-700 mb-3" data-i18n="admin.pcr_rt_pcr">PCR et RT-PCR</h4>
+                            <p class="text-gray-600 mb-4 text-sm" data-i18n="admin.pcr_description">
                                 Analyse des fréquences alléliques et identification virale (Dengue, Chikungunya, Zika, Fièvre jaune)
                             </p>
-                            <button onclick="openPCRForm()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200">
+                            <button onclick="openPCRForm()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200" data-i18n="admin.fill_form">
                                 <i class="fas fa-edit mr-2"></i>Remplir le Formulaire
                             </button>
                         </div>
@@ -86,11 +83,11 @@
                             <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <i class="fas fa-bug text-green-600 text-2xl"></i>
                             </div>
-                            <h4 class="text-xl font-semibold text-green-700 mb-3">Bioessai</h4>
-                            <p class="text-gray-600 mb-4 text-sm">
+                            <h4 class="text-xl font-semibold text-green-700 mb-3" data-i18n="admin.bioassay">Bioessai</h4>
+                            <p class="text-gray-600 mb-4 text-sm" data-i18n="admin.bioassay_description">
                                 Tests de résistance aux insecticides et pourcentages de mortalité
                             </p>
-                            <button onclick="openBioessaiForm()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200">
+                            <button onclick="openBioessaiForm()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200" data-i18n="admin.fill_form">
                                 <i class="fas fa-edit mr-2"></i>Remplir le Formulaire
                             </button>
                         </div>
@@ -102,11 +99,11 @@
                             <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <i class="fas fa-tint text-purple-600 text-2xl"></i>
                             </div>
-                            <h4 class="text-xl font-semibold text-purple-700 mb-3">Origine Repas Sanguin</h4>
-                            <p class="text-gray-600 mb-4 text-sm">
+                            <h4 class="text-xl font-semibold text-purple-700 mb-3" data-i18n="admin.blood_meal_origin">Origine Repas Sanguin</h4>
+                            <p class="text-gray-600 mb-4 text-sm" data-i18n="admin.blood_meal_description">
                                 Identification de l'origine des repas sanguins (Homme, Poule, Bœuf, Porc, etc.)
                             </p>
-                            <button onclick="openRepasForm()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200">
+                            <button onclick="openRepasForm()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200" data-i18n="admin.fill_form">
                                 <i class="fas fa-edit mr-2"></i>Remplir le Formulaire
                             </button>
                         </div>
@@ -114,91 +111,95 @@
                 </div>
 
                 <!-- Synchronisation KoboCollect -->
-                <div class="mt-12">
-                    <div class="text-center mb-8">
-                        <h3 class="text-2xl font-semibold mb-4 text-muraz-blue">
+                <div class="mt-8">
+                    <div class="text-center mb-6">
+                        <h3 class="text-xl font-semibold mb-2 text-muraz-blue" data-i18n="admin.kobocollect_sync">
                             <i class="fas fa-sync-alt mr-2"></i>
                             Synchronisation KoboCollect
                         </h3>
-                        <p class="text-gray-600">Gestion de la synchronisation des données de terrain</p>
+                        <p class="text-sm text-gray-600" data-i18n="admin.field_data_management">Gestion de la synchronisation des données de terrain</p>
                     </div>
                     
-                    <div class="max-w-4xl mx-auto">
-                        <!-- Statut de la synchronisation -->
-                        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-                            <h4 class="text-lg font-semibold text-gray-800 mb-4">
-                                <i class="fas fa-info-circle mr-2 text-blue-600"></i>Statut de la Synchronisation
-                            </h4>
-                            <div id="sync-status" class="text-center p-4 bg-gray-50 rounded-lg">
-                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-                                <p class="text-gray-600">Vérification du statut...</p>
-                            </div>
-                        </div>
-
+                    <div class="max-w-3xl mx-auto">
                         <!-- Boutons de synchronisation -->
-                        <div class="grid md:grid-cols-2 gap-6 mb-8">
+                        <div class="grid md:grid-cols-2 gap-4 mb-6">
                             <!-- Synchronisation complète -->
-                            <div class="bg-white rounded-lg shadow-md p-6">
-                                <h4 class="text-lg font-semibold text-gray-800 mb-4">
+                            <div class="bg-white rounded-lg shadow-md p-4">
+                                <h4 class="text-base font-semibold text-gray-800 mb-2" data-i18n="admin.complete_sync">
                                     <i class="fas fa-download mr-2 text-green-600"></i>Synchronisation Complète
                                 </h4>
-                                <p class="text-gray-600 mb-4">Récupère toutes les données des formulaires KoboCollect et les synchronise avec la base de données.</p>
-                                <button id="sync-complete" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200">
+                                <p class="text-sm text-gray-600 mb-3" data-i18n="admin.complete_sync_desc">Récupère toutes les données des formulaires KoboCollect.</p>
+                                <button id="sync-complete" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 text-sm" data-i18n="admin.launch_sync">
                                     <i class="fas fa-sync mr-2"></i>Lancer la Synchronisation
                                 </button>
                             </div>
 
                             <!-- Synchronisation par type -->
-                            <div class="bg-white rounded-lg shadow-md p-6">
-                                <h4 class="text-lg font-semibold text-gray-800 mb-4">
+                            <div class="bg-white rounded-lg shadow-md p-4">
+                                <h4 class="text-base font-semibold text-gray-800 mb-2" data-i18n="admin.sync_by_type">
                                     <i class="fas fa-filter mr-2 text-blue-600"></i>Synchronisation par Type
                                 </h4>
-                                <p class="text-gray-600 mb-4">Synchronise un type de formulaire spécifique (Larves, Œufs, Adultes).</p>
-                                <div class="space-y-3">
-                                    <button id="sync-larves" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200">
-                                        <i class="fas fa-bug mr-2"></i>Larves et Gîtes
+                                <p class="text-sm text-gray-600 mb-3" data-i18n="admin.sync_by_type_desc">Synchronise un type de formulaire spécifique.</p>
+                                <div class="space-y-2">
+                                    <button id="sync-larves" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-1.5 px-3 rounded transition-colors duration-200 text-sm" data-i18n="admin.larvae_sites">
+                                        <i class="fas fa-bug mr-1"></i>Larves et Gîtes
                                     </button>
-                                    <button id="sync-oeufs" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200">
-                                        <i class="fas fa-egg mr-2"></i>Œufs
+                                    <button id="sync-oeufs" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-1.5 px-3 rounded transition-colors duration-200 text-sm" data-i18n="admin.eggs">
+                                        <i class="fas fa-egg mr-1"></i>Œufs
                                     </button>
-                                    <button id="sync-adultes" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200 border-2 border-purple-800">
-                                        <i class="fas fa-mosquito mr-2"></i>Moustiques Adultes
+                                    <button id="sync-adultes" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-1.5 px-3 rounded transition-colors duration-200 text-sm" data-i18n="admin.adult_mosquitoes">
+                                        <i class="fas fa-mosquito mr-1"></i>Moustiques Adultes
                                     </button>
                                 </div>
                             </div>
-                                            </div>
+                        </div>
 
-                    <!-- Logs de synchronisation -->
-                    <div class="bg-white rounded-lg shadow-md p-6 max-w-4xl ml-auto">
-                            <h4 class="text-lg font-semibold text-gray-800 mb-4">
-                                <i class="fas fa-list-alt mr-2 text-purple-600"></i>Logs de Synchronisation
-                            </h4>
-                            <div id="sync-logs" class="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm h-64 overflow-y-auto">
-                                <div class="text-gray-500">En attente de synchronisation...</div>
+                        <!-- Statut et Logs compacts -->
+                        <div class="grid md:grid-cols-2 gap-4 mb-6">
+                            <!-- Statut de la synchronisation -->
+                            <div class="bg-white rounded-lg shadow-md p-4">
+                                <h4 class="text-base font-semibold text-gray-800 mb-2" data-i18n="admin.status">
+                                    <i class="fas fa-info-circle mr-2 text-blue-600"></i>Statut
+                                </h4>
+                                <div id="sync-status" class="text-center p-3 bg-gray-50 rounded-lg">
+                                    <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto mb-1"></div>
+                                    <p class="text-xs text-gray-600" data-i18n="admin.checking">Vérification...</p>
+                                </div>
                             </div>
-                            <div class="mt-4 flex justify-between">
-                                <button id="clear-logs" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200">
-                                    <i class="fas fa-trash mr-2"></i>Effacer les Logs
-                                </button>
-                                <button id="refresh-status" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200">
-                                    <i class="fas fa-refresh mr-2"></i>Actualiser le Statut
-                                </button>
+
+                            <!-- Boutons de rafraîchissement -->
+                            <div class="bg-white rounded-lg shadow-md p-4">
+                                <h4 class="text-base font-semibold text-gray-800 mb-2" data-i18n="common.refresh">
+                                    <i class="fas fa-chart-bar mr-2 text-purple-600"></i>Rafraîchissement
+                                </h4>
+                                <div class="space-y-2">
+                                    <button id="refresh-analyses" class="w-full bg-muraz-orange hover:bg-orange-700 text-white font-medium py-1.5 px-3 rounded transition-colors duration-200 text-sm" data-i18n="admin.refresh_analyses">
+                                        <i class="fas fa-chart-bar mr-1"></i>Analyses
+                                    </button>
+                                    <button id="refresh-indices" class="w-full bg-muraz-green hover:bg-green-700 text-white font-medium py-1.5 px-3 rounded transition-colors duration-200 text-sm" data-i18n="admin.refresh_indices">
+                                        <i class="fas fa-chart-line mr-1"></i>Indices
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
-                                            <!-- Boutons de rafraîchissement des graphiques -->
-                    <div class="bg-white rounded-lg shadow-md p-6 mt-6 max-w-4xl ml-auto">
-                            <h4 class="text-lg font-semibold text-gray-800 mb-4">
-                                <i class="fas fa-chart-bar mr-2 text-purple-600"></i>Rafraîchissement des Graphiques
-                            </h4>
-                            <p class="text-gray-600 mb-4">Rafraîchir les données des pages Analyses et Indices après synchronisation</p>
-                            <div class="flex gap-4">
-                                <button id="refresh-analyses" class="bg-muraz-orange hover:bg-orange-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200">
-                                    <i class="fas fa-chart-bar mr-2"></i>Rafraîchir Analyses
-                                </button>
-                                <button id="refresh-indices" class="bg-muraz-green hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200">
-                                    <i class="fas fa-chart-line mr-2"></i>Rafraîchir Indices
-                                </button>
+                        <!-- Logs de synchronisation -->
+                        <div class="bg-white rounded-lg shadow-md p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="text-base font-semibold text-gray-800" data-i18n="admin.logs">
+                                    <i class="fas fa-list-alt mr-2 text-purple-600"></i>Logs
+                                </h4>
+                                <div class="flex gap-2">
+                                    <button id="clear-logs" class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-1 px-3 rounded transition-colors duration-200 text-xs" data-i18n="admin.clear">
+                                        <i class="fas fa-trash mr-1"></i>Effacer
+                                    </button>
+                                    <button id="refresh-status" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-1 px-3 rounded transition-colors duration-200 text-xs" data-i18n="admin.update">
+                                        <i class="fas fa-refresh mr-1"></i>Actualiser
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="sync-logs" class="bg-gray-900 text-green-400 p-3 rounded-lg font-mono text-xs h-32 overflow-y-auto">
+                                <div class="text-gray-500" data-i18n="admin.waiting_sync">En attente de synchronisation...</div>
                             </div>
                         </div>
                     </div>
@@ -208,11 +209,11 @@
             <div id="pcr-form" class="max-w-4xl mx-auto hidden">
                 <div class="card">
                     <div class="flex items-center justify-between mb-6">
-                        <h3 class="text-xl font-semibold text-blue-600">
+                        <h3 class="text-xl font-semibold text-blue-600" data-i18n="admin.pcr_form_title">
                             <i class="fas fa-dna mr-2"></i>
                             Formulaire PCR et RT-PCR
                         </h3>
-                        <button onclick="closePCRForm()" class="text-gray-500 hover:text-gray-700">
+                        <button onclick="closePCRForm()" class="text-gray-500 hover:text-gray-700" data-i18n="common.close">
                             <i class="fas fa-times text-xl"></i>
                         </button>
                     </div>
@@ -221,80 +222,80 @@
                         <div class="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                             <div class="grid md:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="pcr_analysis_type" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <label for="pcr_analysis_type" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="admin.analysis_type">
                                         Type d'Analyse *
                                     </label>
                                     <select id="pcr_analysis_type" name="analysis_type" required
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
-                                        <option value="">Sélectionner...</option>
+                                        <option value="" data-i18n="common.select">Sélectionner...</option>
                                         <option value="pcr">PCR</option>
                                         <option value="rt_pcr">RT-PCR</option>
                                     </select>
                                 </div>
                                 
                                 <div>
-                                    <label for="pcr_sample_stage" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <label for="pcr_sample_stage" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.sample_stage">
                                         Stade des Échantillons *
                                     </label>
                                     <select id="pcr_sample_stage" name="sample_stage" required
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
-                                        <option value="">Sélectionner...</option>
-                                        <option value="oeufs">Œufs</option>
-                                        <option value="larves">Larves</option>
-                                        <option value="moustiques">Moustiques</option>
+                                        <option value="" data-i18n="common.select">Sélectionner...</option>
+                                        <option value="oeufs">Eggs</option>
+                                        <option value="larves">Larvae</option>
+                                        <option value="moustiques">Mosquitoes</option>
                                     </select>
                                 </div>
                             </div>
 
                             <div class="grid md:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="pcr_genus" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <label for="pcr_genus" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="forms.adult_mosquitoes.genus">
                                         Genre des Échantillons Analysés *
                                     </label>
                                     <select id="pcr_genus" name="genus" required multiple
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
-                                        <option value="aedes">Aèdes</option>
-                                        <option value="anopheles">Anophèles</option>
+                                        <option value="aedes">Aedes</option>
+                                        <option value="anopheles">Anopheles</option>
                                         <option value="culex">Culex</option>
-                                        <option value="indetermine">Indéterminé</option>
+                                        <option value="indetermine">Undetermined</option>
                                     </select>
-                                    <p class="text-xs text-gray-500 mt-1">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
+                                    <p class="text-xs text-gray-500 mt-1" data-i18n="admin.multi_select_hint">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
                                 </div>
                                 
                                 <div>
-                                    <label for="pcr_species" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <label for="pcr_species" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="forms.adult_mosquitoes.species">
                                         Espèces des Échantillons Analysés *
                                     </label>
                                     <select id="pcr_species" name="species" required multiple
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
-                                        <option value="">Sélectionner...</option>
-                                        <option value="aedes_aegypti">Aedes aegypti</option>
-                                        <option value="autre_aedes">Autre Aedes</option>
+                                        <option value="" data-i18n="common.select">Sélectionner...</option>
+                                        <option value="aedes_aegypti" >Aedes aegypti</option>
+                                        <option value="autre_aedes">Other Aedes</option>
                                         <option value="culex">Culex</option>
                                         <option value="anopheles">Anopheles</option>
-                                        <option value="indetermine">Indéterminé</option>
+                                        <option value="indetermine">Undetermined</option>
                                     </select>
-                                    <p class="text-xs text-gray-500 mt-1">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
+                                    <p class="text-xs text-gray-500 mt-1" data-i18n="admin.multi_select_hint">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
                                 </div>
                             </div>
 
                             <div class="grid md:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="pcr_sector" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <label for="pcr_sector" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="forms.household_visits.sector">
                                         Secteur de Collecte *
                                     </label>
                                     <select id="pcr_sector" name="sector" required
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
-                                        <option value="">Sélectionner...</option>
-                                        <option value="secteur_6">Secteur 6</option>
-                                        <option value="secteur_9">Secteur 9</option>
-                                        <option value="secteur_26">Secteur 26</option>
-                                        <option value="secteur_33">Secteur 33</option>
+                                        <option value="" data-i18n="common.select">Sélectionner...</option>
+                                        <option value="secteur_6" >Sector 6</option>
+                                        <option value="secteur_9">Sector 9</option>
+                                        <option value="secteur_26">Sector 26</option>
+                                        <option value="secteur_33">Sector 33</option>
                                     </select>
                                 </div>
                                 
                                 <div>
-                                    <label for="pcr_sample_count" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <label for="pcr_sample_count" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.samples">
                                         Nombre d'Échantillons *
                                     </label>
                                     <input type="number" id="pcr_sample_count" name="sample_count" min="1" required
@@ -305,7 +306,7 @@
 
                             <div class="grid md:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="pcr_collection_date" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <label for="pcr_collection_date" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.collection_date">
                                         Date de Récolte des Échantillons *
                                     </label>
                                     <input type="date" id="pcr_collection_date" name="collection_date" required
@@ -313,7 +314,7 @@
                                 </div>
                                 
                                 <div>
-                                    <label for="pcr_analysis_date" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <label for="pcr_analysis_date" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.analysis_date">
                                         Date d'Analyse des Échantillons *
                                     </label>
                                     <input type="date" id="pcr_analysis_date" name="analysis_date" required
@@ -322,56 +323,56 @@
                             </div>
 
                             <div>
-                                <label for="pcr_complementary_info" class="block text-sm font-medium text-gray-700 mb-2">
+                                <label for="pcr_complementary_info" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.complementary_info">
                                     Informations Complémentaires
                                 </label>
                                 <textarea id="pcr_complementary_info" name="complementary_info" rows="3"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
-                                    placeholder="Remarques supplémentaires, conditions particulières, observations importantes..."></textarea>
+                                    placeholder="Remarques supplémentaires, conditions particulières, observations importantes..." data-i18n="admin.complementary_info_placeholder"></textarea>
                             </div>
                         </div>
 
                         <!-- Informations Spécifiques PCR et RT-PCR -->
                         <div class="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                            <h4 class="font-semibold text-blue-700 mb-3">
+                            <h4 class="font-semibold text-blue-700 mb-3" data-i18n="admin.pcr_specific_info">
                                 <i class="fas fa-dna mr-2"></i>Informations Spécifiques PCR et RT-PCR
                             </h4>
                             
                             <div>
-                                <label for="pcr_identified_species" class="block text-sm font-medium text-gray-700 mb-2">
+                                <label for="pcr_identified_species" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.identified_species">
                                     Identification des Espèces après Analyse *
                                 </label>
                                 <select id="pcr_identified_species" name="identified_species" required multiple
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
-                                    <option value="aedes_aegypti">Aedes aegypti</option>
-                                    <option value="autre_aedes">Autre Aedes</option>
+                                    <option value="aedes_aegypti" >Aedes aegypti</option>
+                                    <option value="autre_aedes">Other Aedes</option>
                                     <option value="culex">Culex</option>
                                     <option value="anopheles">Anopheles</option>
-                                    <option value="indetermine">Indéterminé</option>
+                                    <option value="indetermine">Undetermined</option>
                                 </select>
-                                <p class="text-xs text-gray-500 mt-1">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
+                                <p class="text-xs text-gray-500 mt-1" data-i18n="admin.multi_select_hint">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
                             </div>
 
                             <div>
-                                <label for="pcr_virus_type" class="block text-sm font-medium text-gray-700 mb-2">
+                                <label for="pcr_virus_type" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.virus_types">
                                     Type de Virus Trouvé
                                 </label>
                                 <select id="pcr_virus_type" name="virus_types" multiple
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
-                                    <option value="dengue">Dengue</option>
+                                    <option value="dengue" >Dengue</option>
                                     <option value="chikungunya">Chikungunya</option>
                                     <option value="zika">Zika</option>
-                                    <option value="fievre_jaune">Fièvre Jaune</option>
+                                    <option value="fievre_jaune">Yellow Fever</option>
                                 </select>
-                                <p class="text-xs text-gray-500 mt-1">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
+                                <p class="text-xs text-gray-500 mt-1" data-i18n="admin.multi_select_hint">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
                             </div>
 
                             <div class="space-y-4">
-                                <h5 class="font-medium text-blue-700 mb-3">Comptage Allélique :</h5>
+                                <h5 class="font-medium text-blue-700 mb-3" data-i18n="admin.allelic_counting">Comptage Allélique :</h5>
                                 
                                 <div class="grid md:grid-cols-3 gap-6">
                                     <div class="text-center">
-                                        <label for="pcr_homozygous_count" class="block text-sm font-medium text-gray-700 mb-2">
+                                        <label for="pcr_homozygous_count" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.homozygous_aa">
                                             Homozygotes Allèle A *
                                         </label>
                                         <input type="number" id="pcr_homozygous_count" name="homozygous_count" min="0" required
@@ -380,7 +381,7 @@
                                     </div>
                                     
                                     <div class="text-center">
-                                        <label for="pcr_heterozygous_count" class="block text-sm font-medium text-gray-700 mb-2">
+                                        <label for="pcr_heterozygous_count" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.heterozygous_aa">
                                             Hétérozygotes *
                                         </label>
                                         <input type="number" id="pcr_heterozygous_count" name="heterozygous_count" min="0" required
@@ -389,7 +390,7 @@
                                     </div>
                                     
                                     <div class="text-center">
-                                        <label for="pcr_total_count" class="block text-sm font-medium text-gray-700 mb-2">
+                                        <label for="pcr_total_count" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.total_population">
                                             Total Population *
                                         </label>
                                         <input type="number" id="pcr_total_count" name="total_population" min="1" required
@@ -400,7 +401,7 @@
                             </div>
                         </div>
 
-                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200">
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200" data-i18n="admin.save_pcr_analysis">
                             <i class="fas fa-save mr-2"></i>Enregistrer l'Analyse PCR/RT-PCR
                         </button>
                     </form>
@@ -411,11 +412,11 @@
             <div id="bioessai-form" class="max-w-4xl mx-auto hidden">
                 <div class="card">
                     <div class="flex items-center justify-between mb-6">
-                        <h3 class="text-xl font-semibold text-green-600">
+                        <h3 class="text-xl font-semibold text-green-600" data-i18n="admin.bioassay_form_title">
                             <i class="fas fa-bug mr-2"></i>
                             Formulaire Bioessai
                         </h3>
-                        <button onclick="closeBioessaiForm()" class="text-gray-500 hover:text-gray-700">
+                        <button onclick="closeBioessaiForm()" class="text-gray-500 hover:text-gray-700" data-i18n="common.close">
                             <i class="fas fa-times text-xl"></i>
                         </button>
                     </div>
@@ -424,79 +425,79 @@
                         <div class="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                             <div class="grid md:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="bio_analysis_type" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <label for="bio_analysis_type" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="admin.analysis_type">
                                         Type d'Analyse *
                                     </label>
                                     <select id="bio_analysis_type" name="analysis_type" required
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent">
-                                        <option value="">Sélectionner...</option>
-                                        <option value="bioessai">Bioessai</option>
+                                        <option value="" data-i18n="common.select">Sélectionner...</option>
+                                        <option value="bioessai" >Bioassay</option>
                                     </select>
                                 </div>
                                 
                                 <div>
-                                    <label for="bio_sample_stage" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <label for="bio_sample_stage" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.sample_stage">
                                         Stade des Échantillons *
                                     </label>
                                     <select id="bio_sample_stage" name="sample_stage" required
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent">
-                                        <option value="">Sélectionner...</option>
-                                        <option value="oeufs">Œufs</option>
-                                        <option value="larves">Larves</option>
-                                        <option value="moustiques">Moustiques</option>
+                                        <option value="" data-i18n="common.select">Sélectionner...</option>
+                                        <option value="oeufs">Eggs</option>
+                                        <option value="larves">Larvae</option>
+                                        <option value="moustiques">Mosquitoes</option>
                                     </select>
                                 </div>
                             </div>
 
                             <div class="grid md:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="bio_genus" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <label for="bio_genus" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="forms.adult_mosquitoes.genus">
                                         Genre des Échantillons Analysés *
                                     </label>
                                     <select id="bio_genus" name="genus" required multiple
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent">
-                                        <option value="aedes">Aèdes</option>
-                                        <option value="anopheles">Anophèles</option>
+                                        <option value="aedes">Aedes</option>
+                                        <option value="anopheles">Anopheles</option>
                                         <option value="culex">Culex</option>
-                                        <option value="indetermine">Indéterminé</option>
+                                        <option value="indetermine">Undetermined</option>
                                     </select>
-                                    <p class="text-xs text-gray-500 mt-1">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
+                                    <p class="text-xs text-gray-500 mt-1" data-i18n="admin.multi_select_hint">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
                                 </div>
                                 
                                 <div>
-                                    <label for="bio_species" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <label for="bio_species" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="forms.adult_mosquitoes.species">
                                         Espèces des Échantillons Analysés *
                                     </label>
                                     <select id="bio_species" name="species" required multiple
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent">
-                                        <option value="">Sélectionner...</option>
-                                        <option value="aedes_aegypti">Aedes aegypti</option>
-                                        <option value="autre_aedes">Autre Aedes</option>
+                                        <option value="" data-i18n="common.select">Sélectionner...</option>
+                                        <option value="aedes_aegypti" >Aedes aegypti</option>
+                                        <option value="autre_aedes">Other Aedes</option>
                                         <option value="culex">Culex</option>
                                         <option value="anopheles">Anopheles</option>
-                                        <option value="indetermine">Indéterminé</option>
+                                        <option value="indetermine">Undetermined</option>
                                     </select>
-                                    <p class="text-xs text-gray-500 mt-1">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
+                                    <p class="text-xs text-gray-500 mt-1" data-i18n="admin.multi_select_hint">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
                                 </div>
                             </div>
 
                             <div class="grid md:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="bio_sector" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <label for="bio_sector" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="forms.household_visits.sector">
                                         Secteur de Collecte *
                                     </label>
                                     <select id="bio_sector" name="sector" required
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent">
-                                        <option value="">Sélectionner...</option>
-                                        <option value="secteur_6">Secteur 6</option>
-                                        <option value="secteur_9">Secteur 9</option>
-                                        <option value="secteur_26">Secteur 26</option>
-                                        <option value="secteur_33">Secteur 33</option>
+                                        <option value="" data-i18n="common.select">Sélectionner...</option>
+                                        <option value="secteur_6" >Sector 6</option>
+                                        <option value="secteur_9">Sector 9</option>
+                                        <option value="secteur_26">Sector 26</option>
+                                        <option value="secteur_33">Sector 33</option>
                                     </select>
                                 </div>
                                 
                                 <div>
-                                    <label for="bio_sample_count" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <label for="bio_sample_count" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.samples">
                                         Nombre d'Échantillons *
                                     </label>
                                     <input type="number" id="bio_sample_count" name="sample_count" min="1" required
@@ -507,7 +508,7 @@
 
                             <div class="grid md:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="bio_collection_date" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <label for="bio_collection_date" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.collection_date">
                                         Date de Récolte des Échantillons *
                                     </label>
                                     <input type="date" id="bio_collection_date" name="collection_date" required
@@ -515,7 +516,7 @@
                                 </div>
                                 
                                 <div>
-                                    <label for="bio_analysis_date" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <label for="bio_analysis_date" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.analysis_date">
                                         Date d'Analyse des Échantillons *
                                     </label>
                                     <input type="date" id="bio_analysis_date" name="analysis_date" required
@@ -524,44 +525,44 @@
                             </div>
 
                             <div>
-                                <label for="bio_complementary_info" class="block text-sm font-medium text-gray-700 mb-2">
+                                <label for="bio_complementary_info" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.complementary_info">
                                     Informations Complémentaires
                                 </label>
                                 <textarea id="bio_complementary_info" name="complementary_info" rows="3"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                                    placeholder="Remarques supplémentaires, conditions particulières, observations importantes..."></textarea>
+                                    placeholder="Remarques supplémentaires, conditions particulières, observations importantes..." data-i18n="admin.complementary_info_placeholder"></textarea>
                             </div>
                         </div>
 
                         <!-- Champs Spécifiques Bioessai -->
                         <div class="space-y-4 p-4 bg-green-50 rounded-lg border border-green-200">
-                            <h4 class="font-semibold text-green-700 mb-3">
+                            <h4 class="font-semibold text-green-700 mb-3" data-i18n="admin.bioassay_specific_fields">
                                 <i class="fas fa-bug mr-2"></i>Champs Spécifiques Bioessai
                             </h4>
                             
                             <div>
-                                <label for="bio_insecticide_type" class="block text-sm font-medium text-gray-700 mb-2">
+                                <label for="bio_insecticide_type" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.insecticide_types">
                                     Type d'Insecticide *
                                 </label>
                                 <select id="bio_insecticide_type" name="insecticide_types" required multiple
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent">
-                                    <option value="permethrine_0_75">Perméthrine : 0,75 %</option>
-                                    <option value="deltamethrine_0_05">Deltaméthrine : 0,05 %</option>
-                                    <option value="lambda_cyhalothrine_0_05">Lambda-cyhalothrine : 0,05 %</option>
-                                    <option value="malathion_5">Malathion : 5 %</option>
-                                    <option value="fenitrothion_1">Fenitrothion : 1 %</option>
-                                    <option value="bendiocarb_0_1">Bendiocarb : 0,1 %</option>
+                                    <option value="permethrine_0_75" >Permethrin: 0.75%</option>
+                                    <option value="deltamethrine_0_05">Deltamethrin: 0.05%</option>
+                                    <option value="lambda_cyhalothrine_0_05">Lambda-cyhalothrin: 0.05%</option>
+                                    <option value="malathion_5">Malathion: 5%</option>
+                                    <option value="fenitrothion_1">Fenitrothion: 1%</option>
+                                    <option value="bendiocarb_0_1">Bendiocarb: 0.1%</option>
                                     <option value="pbo_4">PBO 4%</option>
                                     <option value="malathium_5">Malathium 5%</option>
                                     <option value="deltametrin_0_005">Deltametrin 0.005%</option>
                                     <option value="pm_0_025">PM 0.025%</option>
                                 </select>
-                                <p class="text-xs text-gray-500 mt-1">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
+                                <p class="text-xs text-gray-500 mt-1" data-i18n="admin.multi_select_hint">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
                             </div>
 
                             <div class="grid md:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="bio_mortality_percentage" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <label for="bio_mortality_percentage" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="admin.mortality_percentage">
                                         Pourcentage de Mort *
                                     </label>
                                     <input type="number" id="bio_mortality_percentage" name="mortality_percentage" min="0" max="100" step="0.01" required
@@ -570,7 +571,7 @@
                                 </div>
                                 
                                 <div>
-                                    <label for="bio_survival_percentage" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <label for="bio_survival_percentage" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="admin.survival_percentage">
                                         Pourcentage de Vivant *
                                     </label>
                                     <input type="number" id="bio_survival_percentage" name="survival_percentage" min="0" max="100" step="0.01" required
@@ -580,7 +581,7 @@
                             </div>
                         </div>
 
-                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200">
+                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200" data-i18n="admin.save_bioassay_analysis">
                             <i class="fas fa-save mr-2"></i>Enregistrer l'Analyse Bioessai
                         </button>
                     </form>
@@ -591,11 +592,11 @@
             <div id="repas-form" class="max-w-4xl mx-auto hidden">
                 <div class="card">
                     <div class="flex items-center justify-between mb-6">
-                        <h3 class="text-xl font-semibold text-purple-600">
+                        <h3 class="text-xl font-semibold text-purple-600" data-i18n="admin.blood_meal_form_title">
                             <i class="fas fa-tint mr-2"></i>
                             Formulaire Origine Repas Sanguin
                         </h3>
-                        <button onclick="closeRepasForm()" class="text-gray-500 hover:text-gray-700">
+                        <button onclick="closeRepasForm()" class="text-gray-500 hover:text-gray-700" data-i18n="common.close">
                             <i class="fas fa-times text-xl"></i>
                         </button>
                     </div>
@@ -604,79 +605,79 @@
                         <div class="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                             <div class="grid md:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="repas_analysis_type" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <label for="repas_analysis_type" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="admin.analysis_type">
                                         Type d'Analyse *
                                     </label>
                                     <select id="repas_analysis_type" name="analysis_type" required
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent">
-                                        <option value="">Sélectionner...</option>
-                                        <option value="origine_repas_sanguin">Origine Repas Sanguin</option>
+                                        <option value="" data-i18n="common.select">Sélectionner...</option>
+                                        <option value="origine_repas_sanguin" >Blood Meal Origin</option>
                                     </select>
                                 </div>
                                 
                                 <div>
-                                    <label for="repas_sample_stage" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <label for="repas_sample_stage" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.sample_stage">
                                         Stade des Échantillons *
                                     </label>
                                     <select id="repas_sample_stage" name="sample_stage" required
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent">
-                                        <option value="">Sélectionner...</option>
-                                        <option value="oeufs">Œufs</option>
-                                        <option value="larves">Larves</option>
-                                        <option value="moustiques">Moustiques</option>
+                                        <option value="" data-i18n="common.select">Sélectionner...</option>
+                                        <option value="oeufs">Eggs</option>
+                                        <option value="larves">Larvae</option>
+                                        <option value="moustiques">Mosquitoes</option>
                                     </select>
                                 </div>
                             </div>
 
                             <div class="grid md:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="repas_genus" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <label for="repas_genus" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="forms.adult_mosquitoes.genus">
                                         Genre des Échantillons Analysés *
                                     </label>
                                     <select id="repas_genus" name="genus" required multiple
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent">
-                                        <option value="aedes">Aèdes</option>
-                                        <option value="anopheles">Anophèles</option>
+                                        <option value="aedes">Aedes</option>
+                                        <option value="anopheles">Anopheles</option>
                                         <option value="culex">Culex</option>
-                                        <option value="indetermine">Indéterminé</option>
+                                        <option value="indetermine">Undetermined</option>
                                     </select>
-                                    <p class="text-xs text-gray-500 mt-1">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
+                                    <p class="text-xs text-gray-500 mt-1" data-i18n="admin.multi_select_hint">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
                                 </div>
                                 
                                 <div>
-                                    <label for="repas_species" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <label for="repas_species" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="forms.adult_mosquitoes.species">
                                         Espèces des Échantillons Analysés *
                                     </label>
                                     <select id="repas_species" name="species" required multiple
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent">
-                                        <option value="">Sélectionner...</option>
-                                        <option value="aedes_aegypti">Aedes aegypti</option>
-                                        <option value="autre_aedes">Autre Aedes</option>
+                                        <option value="" data-i18n="common.select">Sélectionner...</option>
+                                        <option value="aedes_aegypti" >Aedes aegypti</option>
+                                        <option value="autre_aedes">Other Aedes</option>
                                         <option value="culex">Culex</option>
                                         <option value="anopheles">Anopheles</option>
-                                        <option value="indetermine">Indéterminé</option>
+                                        <option value="indetermine">Undetermined</option>
                                     </select>
-                                    <p class="text-xs text-gray-500 mt-1">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
+                                    <p class="text-xs text-gray-500 mt-1" data-i18n="admin.multi_select_hint">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
                                 </div>
                             </div>
 
                             <div class="grid md:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="repas_sector" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <label for="repas_sector" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="forms.household_visits.sector">
                                         Secteur de Collecte *
                                     </label>
                                     <select id="repas_sector" name="sector" required
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent">
-                                        <option value="">Sélectionner...</option>
-                                        <option value="secteur_6">Secteur 6</option>
-                                        <option value="secteur_9">Secteur 9</option>
-                                        <option value="secteur_26">Secteur 26</option>
-                                        <option value="secteur_33">Secteur 33</option>
+                                        <option value="" data-i18n="common.select">Sélectionner...</option>
+                                        <option value="secteur_6" >Sector 6</option>
+                                        <option value="secteur_9">Sector 9</option>
+                                        <option value="secteur_26">Sector 26</option>
+                                        <option value="secteur_33">Sector 33</option>
                                     </select>
                                 </div>
                                 
                                 <div>
-                                    <label for="repas_sample_count" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <label for="repas_sample_count" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.samples">
                                         Nombre d'Échantillons *
                                     </label>
                                     <input type="number" id="repas_sample_count" name="sample_count" min="1" required
@@ -687,7 +688,7 @@
 
                             <div class="grid md:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="repas_collection_date" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <label for="repas_collection_date" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.collection_date">
                                         Date de Récolte des Échantillons *
                                     </label>
                                     <input type="date" id="repas_collection_date" name="collection_date" required
@@ -695,7 +696,7 @@
                                 </div>
                                 
                                 <div>
-                                    <label for="repas_analysis_date" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <label for="repas_analysis_date" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.analysis_date">
                                         Date d'Analyse des Échantillons *
                                     </label>
                                     <input type="date" id="repas_analysis_date" name="analysis_date" required
@@ -704,41 +705,41 @@
                             </div>
 
                             <div>
-                                <label for="repas_complementary_info" class="block text-sm font-medium text-gray-700 mb-2">
+                                <label for="repas_complementary_info" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.complementary_info">
                                     Informations Complémentaires
                                 </label>
                                 <textarea id="repas_complementary_info" name="complementary_info" rows="3"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                                    placeholder="Remarques supplémentaires, conditions particulières, observations importantes..."></textarea>
+                                    placeholder="Remarques supplémentaires, conditions particulières, observations importantes..." data-i18n="admin.complementary_info_placeholder"></textarea>
                             </div>
                         </div>
 
                         <!-- Champs Spécifiques Origine Repas Sanguin -->
                         <div class="space-y-4 p-4 bg-purple-50 rounded-lg border border-purple-200">
-                            <h4 class="font-semibold text-purple-700 mb-3">
+                            <h4 class="font-semibold text-purple-700 mb-3" data-i18n="admin.blood_meal_specific_fields">
                                 <i class="fas fa-tint mr-2"></i>Champs Spécifiques Origine Repas Sanguin
                             </h4>
                             
                             <div>
-                                <label for="repas_blood_meal_origin" class="block text-sm font-medium text-gray-700 mb-2">
+                                <label for="repas_blood_meal_origin" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="admin.blood_meal_origin_choice">
                                     Choix de l'Origine du Repas Sanguin *
                                 </label>
                                 <select id="repas_blood_meal_origin" name="blood_meal_origins" required multiple
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent">
-                                    <option value="homme">Homme</option>
-                                    <option value="poule">Poule</option>
-                                    <option value="boeuf">Bœuf</option>
-                                    <option value="porc">Porc</option>
-                                    <option value="chien">Chien</option>
-                                    <option value="ane">Âne</option>
-                                    <option value="mouton">Mouton</option>
-                                    <option value="chevre">Chèvre</option>
+                                    <option value="homme" >Human</option>
+                                    <option value="poule">Chicken</option>
+                                    <option value="boeuf">Cattle</option>
+                                    <option value="porc">Pig</option>
+                                    <option value="chien">Dog</option>
+                                    <option value="ane">Donkey</option>
+                                    <option value="mouton">Sheep</option>
+                                    <option value="chevre">Goat</option>
                                 </select>
-                                <p class="text-xs text-gray-500 mt-1">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
+                                <p class="text-xs text-gray-500 mt-1" data-i18n="admin.multi_select_hint">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
                             </div>
                         </div>
 
-                        <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200">
+                        <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200" data-i18n="admin.save_blood_meal_analysis">
                             <i class="fas fa-save mr-2"></i>Enregistrer l'Analyse Origine Repas Sanguin
                         </button>
                     </form>
@@ -746,14 +747,6 @@
             </div>
         </div>
     </section>
-
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-white py-8 mt-16">
-        <div class="container mx-auto px-6 text-center">
-            <p>&copy; 2025 Centre MURAZ - Plateforme de Surveillance Arboviroses</p>
-            <p class="text-gray-400 mt-2">Ministère de la Santé - Burkina Faso</p>
-        </div>
-    </footer>
 
     <script src="./js/app.js?v=2025-09-02-02"></script>
     <script src="./js/admin.js?v=2025-09-02-02"></script>

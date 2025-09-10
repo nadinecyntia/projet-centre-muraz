@@ -102,6 +102,13 @@ CREATE TABLE adult_mosquitoes (
     
     -- Classification des moustiques
     genus TEXT[] NOT NULL,                  -- [aedes, culex, anopheles, autre]
+    
+    -- Compteurs par genre (COHÉRENT AVEC KOBOCOLLECT)
+    aedes_count INTEGER NOT NULL DEFAULT 0,
+    culex_count INTEGER NOT NULL DEFAULT 0,
+    anopheles_count INTEGER NOT NULL DEFAULT 0,
+    other_genus_count INTEGER NOT NULL DEFAULT 0,
+    
     species TEXT[] NOT NULL,                -- [aedes_aegypti, autre_aedes, culex, anopheles]
     
     -- Méthode de collecte
@@ -167,6 +174,10 @@ CREATE INDEX idx_household_visits_sector ON household_visits(sector);
 CREATE INDEX idx_household_visits_date ON household_visits(visit_start_date);
 CREATE INDEX idx_household_visits_environment ON household_visits(environment);
 
+-- Index composites pour optimiser les requêtes par période et secteur
+CREATE INDEX idx_household_visits_date_sector ON household_visits(visit_start_date, sector);
+CREATE INDEX idx_household_visits_sector_date ON household_visits(sector, visit_start_date);
+
 -- Index sur les indices entomologiques
 CREATE INDEX idx_entomological_indices_sector ON entomological_indices(sector);
 CREATE INDEX idx_entomological_indices_period ON entomological_indices(period_start, period_end);
@@ -192,7 +203,8 @@ ADD CONSTRAINT check_nymphs_counts CHECK (aedes_nymphs_count + culex_nymphs_coun
 -- Contraintes de validation pour les moustiques adultes
 ALTER TABLE adult_mosquitoes 
 ADD CONSTRAINT check_mosquito_counts CHECK (male_count + female_count <= total_mosquitoes_count),
-ADD CONSTRAINT check_female_states CHECK (blood_fed_females_count + gravid_females_count + starved_females_count <= female_count);
+ADD CONSTRAINT check_female_states CHECK (blood_fed_females_count + gravid_females_count + starved_females_count <= female_count),
+ADD CONSTRAINT check_genus_counts CHECK (aedes_count + culex_count + anopheles_count + other_genus_count <= total_mosquitoes_count);
 
 -- Contraintes de validation pour les dates
 ALTER TABLE household_visits 

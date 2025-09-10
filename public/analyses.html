@@ -23,13 +23,16 @@
                         <p class="text-sm text-gray-600">Surveillance Arboviroses</p>
                     </div>
                 </div>
-                <div id="main-nav" class="hidden md:flex items-center space-x-6">
+                <div id="main-nav" class="flex items-center space-x-6">
                     <!-- La navigation sera générée dynamiquement par app.js -->
                 </div>
-                <div class="md:hidden">
-                    <button id="mobile-menu-btn" class="text-gray-700 hover:text-muraz-blue">
-                        <i class="fas fa-bars text-xl"></i>
-                    </button>
+                <div class="flex items-center space-x-4">
+                    <div id="languageSelector" class="language-selector"></div>
+                    <div class="md:hidden">
+                        <button id="mobile-menu-btn" class="text-gray-700 hover:text-muraz-blue">
+                            <i class="fas fa-bars text-xl"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </nav>
@@ -42,7 +45,22 @@
         </div>
     </header>
 
-
+    <!-- Note explicative sur les unités -->
+    <section class="py-8 bg-blue-50 border-b border-blue-200">
+        <div class="container mx-auto px-6">
+            <div class="text-center">
+                <div class="inline-flex items-center bg-blue-100 text-blue-800 px-4 py-2 rounded-lg">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    <span class="text-sm font-medium">
+                        <strong data-i18n="analyses.units_legend">Légende des unités :</strong>
+                        <span class="text-blue-600" data-i18n="analyses.thousands">k = milliers</span> |
+                        <span class="text-blue-600" data-i18n="analyses.millions">M = millions</span> |
+                        <span class="text-blue-600" data-i18n="analyses.scientific_notation">notation scientifique pour les très grandes valeurs</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- Section Œufs -->
     <section id="oeufs" class="py-16 bg-gray-50">
@@ -50,34 +68,45 @@
             <div class="text-center mb-12">
                 <h2 class="text-3xl font-bold text-muraz-orange mb-4">
                     <i class="fas fa-egg text-4xl mr-4"></i>
-                    Section Œufs
+                    <span data-i18n="analyses.eggs_section">Section Œufs</span>
                 </h2>
-                <p class="text-lg text-gray-600">Analyse de la ponte et évolution des populations d'œufs</p>
+                <p class="text-lg text-gray-600" data-i18n="analyses.eggs_description">Analyse de la ponte et évolution des populations d'œufs</p>
             </div>
 
             <div class="grid lg:grid-cols-2 gap-8">
                 <!-- Graphique 1: Œufs par secteur -->
                 <div class="card">
-                    <h3 class="text-xl font-semibold mb-4 text-muraz-orange">Œufs par Secteur</h3>
+                    <h3 class="text-xl font-semibold mb-4 text-muraz-orange" data-i18n="analyses.eggs_by_sector">Œufs par Secteur</h3>
                     
                     <!-- Sélecteur de mois pour le graphique par secteur -->
                     <div class="mb-4 text-center">
-                        <label for="mois-oeufs-secteur" class="block text-sm font-medium text-gray-700 mb-2">Sélectionner le mois :</label>
+                        <label for="mois-oeufs-secteur" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="analyses.month_filter">Sélectionner le mois :</label>
                         <select id="mois-oeufs-secteur" class="px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-muraz-orange focus:border-transparent">
-                            <option value="">Choisir un mois...</option>
+                            <option value="" data-i18n="indices.choose_month">Choisir un mois...</option>
                         </select>
                     </div>
                     
                     <div class="h-80">
-                        <canvas id="oeufsSecteurChart"></canvas>
+                        <canvas id="oeufs-secteur-chart"></canvas>
                     </div>
+                    
+                    <!-- Légende personnalisée pour les secteurs -->
+                    <div id="oeufs-secteur-legend" class="mt-4 flex flex-wrap justify-center gap-4 text-sm">
+                        <!-- La légende sera générée dynamiquement par JavaScript -->
+                    </div>
+                    
                 </div>
 
                 <!-- Graphique 2: Œufs par mois -->
                 <div class="card">
-                    <h3 class="text-xl font-semibold mb-4 text-muraz-orange">Œufs par Mois</h3>
+                    <h3 class="text-xl font-semibold mb-4 text-muraz-orange" data-i18n="analyses.eggs_by_month">Œufs par Mois</h3>
                     <div class="h-80">
-                        <canvas id="oeufsMoisChart"></canvas>
+                        <canvas id="oeufs-mois-chart"></canvas>
+                    </div>
+                    
+                    <!-- Légende personnalisée pour les secteurs -->
+                    <div id="oeufs-mois-legend" class="mt-4 flex flex-wrap justify-center gap-4 text-sm">
+                        <!-- La légende sera générée dynamiquement par JavaScript -->
                     </div>
                 </div>
             </div>
@@ -90,42 +119,42 @@
             <div class="text-center mb-12">
                 <h2 class="text-3xl font-bold text-muraz-red mb-4">
                     <i class="fas fa-mosquito text-4xl mr-4"></i>
-                    Section Moustiques Adultes
+                    <span data-i18n="analyses.adults_section">Section Moustiques Adultes</span>
                 </h2>
-                <p class="text-lg text-gray-600">Analyse des populations adultes et de leur densité</p>
+                <p class="text-lg text-gray-600" data-i18n="analyses.adults_description">Analyse des populations adultes et de leur densité</p>
             </div>
 
             <div class="grid lg:grid-cols-3 gap-8">
                 <!-- Graphique 1: Densité par année -->
                 <div class="card">
-                    <h3 class="text-xl font-semibold mb-4 text-muraz-red">Densité des Moustiques par Année</h3>
+                    <h3 class="text-xl font-semibold mb-4 text-muraz-red" data-i18n="analyses.density_by_year">Densité des Moustiques par Année</h3>
                     <div class="h-80">
-                        <canvas id="densiteAnnuelleChart"></canvas>
+                        <canvas id="densite-annuelle-chart"></canvas>
                     </div>
                 </div>
 
                 <!-- Graphique 2: Densité par secteur et par mois -->
                 <div class="card">
-                    <h3 class="text-xl font-semibold mb-4 text-muraz-red">Densité par Secteur et par Mois</h3>
+                    <h3 class="text-xl font-semibold mb-4 text-muraz-red" data-i18n="analyses.density_by_sector_month">Densité par Secteur et par Mois</h3>
                     <div class="h-80">
-                        <canvas id="densiteSecteurChart"></canvas>
+                        <canvas id="densite-secteur-chart"></canvas>
                     </div>
                 </div>
 
                 <!-- Graphique 3: Densité par genre -->
                 <div class="card">
-                    <h3 class="text-xl font-semibold mb-4 text-muraz-red">Répartition par Genre</h3>
+                    <h3 class="text-xl font-semibold mb-4 text-muraz-red" data-i18n="analyses.distribution_by_genus">Répartition par Genre</h3>
                     
                     <!-- Sélecteur de mois -->
                     <div class="mb-4 text-center">
-                        <label for="mois-selection" class="block text-sm font-medium text-gray-700 mb-2">Sélectionner le mois :</label>
+                        <label for="mois-selection" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="analyses.month_filter">Sélectionner le mois :</label>
                         <select id="mois-selection" class="px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-muraz-red focus:border-transparent">
-                            <option value="">Choisir un mois...</option>
+                            <option value="" data-i18n="indices.choose_month">Choisir un mois...</option>
                         </select>
                     </div>
                     
                     <div class="h-80">
-                        <canvas id="genreChart"></canvas>
+                        <canvas id="genre-chart"></canvas>
                     </div>
                 </div>
             </div>
@@ -138,17 +167,17 @@
             <div class="text-center mb-12">
                 <h2 class="text-3xl font-bold text-muraz-blue mb-4">
                     <i class="fas fa-bug text-4xl mr-4"></i>
-                    Section Larves
+                    <span data-i18n="analyses.larvae_section">Section Larves</span>
                 </h2>
-                <p class="text-lg text-gray-600">Analyse des populations larvaires</p>
+                <p class="text-lg text-gray-600" data-i18n="analyses.larvae_description">Analyse des populations larvaires</p>
             </div>
 
             <div class="grid lg:grid-cols-1 gap-8">
                 <!-- Graphique: Total Larves par 2 mois -->
                 <div class="card">
-                    <h3 class="text-xl font-semibold mb-4 text-muraz-blue">Total Larves par Période de 2 Mois</h3>
+                    <h3 class="text-xl font-semibold mb-4 text-muraz-blue" data-i18n="analyses.total_larvae_period">Total Larves par Période de 2 Mois</h3>
                     <div class="h-80">
-                        <canvas id="larvesChart"></canvas>
+                        <canvas id="larves-chart"></canvas>
                     </div>
                 </div>
             </div>
@@ -165,7 +194,40 @@
         </div>
     </footer>
 
+    <script src="./js/translation.js"></script>
     <script src="./js/app.js"></script>
     <script src="./js/analyses.js"></script>
+    
+    <script>
+        // Initialiser le sélecteur de langue si app.js ne l'a pas fait
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                const languageSelector = document.getElementById('languageSelector');
+                if (languageSelector && window.translationManager) {
+                    // Vérifier si app.js a déjà créé le sélecteur
+                    const existingSelect = languageSelector.querySelector('select');
+                    if (!existingSelect) {
+                        console.log('Initialisation manuelle du sélecteur de langue...');
+                        const selector = window.translationManager.createLanguageSelector();
+                        languageSelector.appendChild(selector);
+                        
+                        // Ajouter l'écouteur
+                        const select = selector.querySelector('select');
+                        if (select) {
+                            select.addEventListener('change', (e) => {
+                                console.log('Changement de langue:', e.target.value);
+                                window.translationManager.changeLanguage(e.target.value);
+                            });
+                        }
+                        console.log('Sélecteur de langue initialisé manuellement');
+                    } else {
+                        console.log('Sélecteur de langue déjà créé par app.js');
+                    }
+                }
+            }, 1000);
+        });
+    </script>
+    <script src="./js/oeufs-chart-independent.js"></script>
+    <script src="./js/oeufs-mois-chart-independent.js"></script>
 </body>
 </html>

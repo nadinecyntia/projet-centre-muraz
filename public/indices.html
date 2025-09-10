@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Indices Entomologiques - Centre MURAZ</title>
+    <title data-i18n="indices.title">Indices Entomologiques - Centre MURAZ</title>
     <link href="./css/style.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="./js/translation.js"></script>
 </head>
 <body class="bg-gray-50 font-sans">
     <!-- Header avec navigation unifiée -->
@@ -19,17 +19,20 @@
                         <img src="/logo-centre-muraz.jpg" alt="Logo Centre MURAZ" class="w-full h-full object-contain rounded-lg">
                     </div>
                     <div>
-                        <h1 class="text-xl font-bold text-muraz-blue">Centre MURAZ</h1>
-                        <p class="text-sm text-gray-600">Surveillance Arboviroses</p>
+                        <h1 class="text-xl font-bold text-muraz-blue" data-i18n="dashboard.title">Centre MURAZ</h1>
+                        <p class="text-sm text-gray-600" data-i18n="dashboard.subtitle">Surveillance Arboviroses</p>
                     </div>
                 </div>
-                <div id="main-nav" class="hidden md:flex items-center space-x-6">
+                <div id="main-nav" class="flex items-center space-x-6">
                     <!-- La navigation sera générée dynamiquement par app.js -->
                 </div>
-                <div class="md:hidden">
-                    <button id="mobile-menu-btn" class="text-gray-700 hover:text-muraz-blue">
-                        <i class="fas fa-bars text-xl"></i>
-                    </button>
+                <div class="flex items-center space-x-4">
+                    <div id="languageSelector" class="language-selector"></div>
+                    <div class="md:hidden">
+                        <button id="mobile-menu-btn" class="text-gray-700 hover:text-muraz-blue">
+                            <i class="fas fa-bars text-xl"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </nav>
@@ -50,21 +53,21 @@
             <div class="text-center mb-12">
                 <h2 class="text-3xl font-bold text-muraz-green mb-4">
                     <i class="fas fa-calculator text-4xl mr-4"></i>
-                    Indices Entomologiques Mensuels
+                    <span data-i18n="indices.monthly_indices">Indices Entomologiques Mensuels</span>
                 </h2>
-                <p class="text-lg text-gray-600">Calcul automatique des indices de surveillance entomologique par mois</p>
+                <p class="text-lg text-gray-600" data-i18n="indices.automatic_calculation">Calcul automatique des indices de surveillance entomologique par mois</p>
                 
                 <!-- Sélecteur de mois -->
                 <div class="mt-6 flex justify-center">
                     <div class="bg-white p-4 rounded-lg shadow-md border border-gray-200">
                         <label for="mois-selection-indices" class="block text-sm font-medium text-gray-700 mb-2">
                             <i class="fas fa-calendar-alt mr-2"></i>
-                            Sélectionner le mois pour afficher les indices :
+                            <span data-i18n="indices.select_month">Sélectionner le mois pour afficher les indices :</span>
                         </label>
                         <select id="mois-selection-indices" class="px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-muraz-green focus:border-transparent min-w-[200px]">
-                            <option value="">Choisir un mois...</option>
+                            <option value="" data-i18n="indices.choose_month">Choisir un mois...</option>
                         </select>
-                        <p class="text-xs text-gray-500 mt-2">Les indices sont calculés par mois individuel</p>
+                        <p class="text-xs text-gray-500 mt-2" data-i18n="indices.calculation_period">Les indices sont calculés par mois individuel</p>
                     </div>
                 </div>
             </div>
@@ -72,106 +75,65 @@
             <!-- Résultats des Indices -->
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
                 <div class="card bg-blue-50 border-blue-200">
-                    <h3 class="text-lg font-semibold mb-3 text-muraz-blue">Indice de Breteau (IB)</h3>
-                    <p class="text-sm text-gray-600 mb-3">Mesure la densité des gîtes par rapport aux habitations</p>
+                    <h3 class="text-lg font-semibold mb-3 text-muraz-blue" data-i18n="indices.breteau_index">Indice de Breteau (IB)</h3>
+                    <p class="text-sm text-gray-600 mb-3" data-i18n="indices.description">Mesure la densité des gîtes par rapport aux habitations</p>
                     <div class="bg-white p-3 rounded border text-center">
                         <div class="text-2xl font-bold text-blue-800" id="breteau-resultat">--</div>
-                        <p class="text-xs text-gray-500 mt-1">Résultat calculé</p>
+                        <p class="text-xs text-gray-500 mt-1" data-i18n="indices.calculated_result">Résultat calculé</p>
                     </div>
                 </div>
 
                 <div class="card bg-green-50 border-green-200">
-                    <h3 class="text-lg font-semibold mb-3 text-muraz-green">Indice de Maison (IM)</h3>
-                    <p class="text-sm text-gray-600 mb-3">Mesure la proportion de maisons infectées</p>
+                    <h3 class="text-lg font-semibold mb-3 text-muraz-green" data-i18n="indices.house_index">Indice de Maison (IM)</h3>
+                    <p class="text-sm text-gray-600 mb-3" data-i18n="indices.house_description">Mesure la proportion de maisons infectées</p>
                     <div class="bg-white p-3 rounded border text-center">
                         <div class="text-2xl font-bold text-green-800" id="maison-resultat">--</div>
-                        <p class="text-xs text-gray-500 mt-1">Résultat calculé</p>
+                        <p class="text-xs text-gray-500 mt-1" data-i18n="indices.calculated_result">Résultat calculé</p>
                     </div>
                 </div>
 
                 <div class="card bg-orange-50 border-orange-200">
-                    <h3 class="text-lg font-semibold mb-3 text-muraz-orange">Indice de Récipient (IR)</h3>
-                    <p class="text-sm text-gray-600 mb-3">Mesure la proportion de récipients à risque</p>
+                    <h3 class="text-lg font-semibold mb-3 text-muraz-orange" data-i18n="indices.container_index">Indice de Récipient (IR)</h3>
+                    <p class="text-sm text-gray-600 mb-3" data-i18n="indices.container_description">Mesure la proportion de récipients à risque</p>
                     <div class="bg-white p-3 rounded border text-center">
                         <div class="text-2xl font-bold text-orange-800" id="recipient-resultat">--</div>
-                        <p class="text-xs text-gray-500 mt-1">Résultat calculé</p>
+                        <p class="text-xs text-gray-500 mt-1" data-i18n="indices.calculated_result">Résultat calculé</p>
                     </div>
                 </div>
 
                 <div class="card bg-purple-50 border-purple-200">
-                    <h3 class="text-lg font-semibold mb-3 text-purple-600">Indice de Positivité Pondoire</h3>
-                    <p class="text-sm text-gray-600 mb-3">Mesure l'efficacité des pièges</p>
+                    <h3 class="text-lg font-semibold mb-3 text-purple-600" data-i18n="indices.pupae_index">Indice de Positivité Pondoire</h3>
+                    <p class="text-sm text-gray-600 mb-3" data-i18n="indices.pupae_description">Mesure l'efficacité des pièges</p>
                     <div class="bg-white p-3 rounded border text-center">
                         <div class="text-2xl font-bold text-purple-800" id="pondoir-resultat">--</div>
-                        <p class="text-xs text-gray-500 mt-1">Résultat calculé</p>
+                        <p class="text-xs text-gray-500 mt-1" data-i18n="indices.calculated_result">Résultat calculé</p>
                     </div>
                 </div>
 
                 <div class="card bg-indigo-50 border-indigo-200">
-                    <h3 class="text-lg font-semibold mb-3 text-indigo-600">Indice de Colonisation Nymphale</h3>
-                    <p class="text-sm text-gray-600 mb-3">Mesure l'infestation des maisons</p>
+                    <h3 class="text-lg font-semibold mb-3 text-indigo-600" data-i18n="indices.pupae_index">Indice de Colonisation Nymphale</h3>
+                    <p class="text-sm text-gray-600 mb-3" data-i18n="indices.nymphal_description">Mesure l'infestation des maisons</p>
                     <div class="bg-white p-3 rounded border text-center">
                         <div class="text-2xl font-bold text-indigo-800" id="nymphale-resultat">--</div>
-                        <p class="text-xs text-gray-500 mt-1">Résultat calculé</p>
+                        <p class="text-xs text-gray-500 mt-1" data-i18n="indices.calculated_result">Résultat calculé</p>
                     </div>
                 </div>
 
                 <div class="card bg-red-50 border-red-200">
-                    <h3 class="text-lg font-semibold mb-3 text-muraz-red">Indice Adultes par Piège BG</h3>
-                    <p class="text-sm text-gray-600 mb-3">Mesure la densité des moustiques adultes</p>
+                    <h3 class="text-lg font-semibold mb-3 text-muraz-red" data-i18n="indices.adult_density">Indice Adultes par Piège BG</h3>
+                    <p class="text-sm text-gray-600 mb-3" data-i18n="indices.adult_description">Mesure la densité des moustiques adultes</p>
                     <div class="bg-white p-3 rounded border text-center">
                         <div class="text-2xl font-bold text-red-800" id="adultes-resultat">--</div>
-                        <p class="text-xs text-gray-500 mt-1">Résultat calculé</p>
+                        <p class="text-xs text-gray-500 mt-1" data-i18n="indices.calculated_result">Résultat calculé</p>
                     </div>
                 </div>
 
                 <div class="card bg-pink-50 border-pink-200">
-                    <h3 class="text-lg font-semibold mb-3 text-pink-600">Indice Adultes par Piège Prokopack</h3>
-                    <p class="text-sm text-gray-600 mb-3">Mesure la densité des moustiques adultes (Prokopack)</p>
+                    <h3 class="text-lg font-semibold mb-3 text-pink-600" data-i18n="indices.adult_density">Indice Adultes par Piège Prokopack</h3>
+                    <p class="text-sm text-gray-600 mb-3" data-i18n="indices.prokopack_description">Mesure la densité des moustiques adultes (Prokopack)</p>
                     <div class="bg-white p-3 rounded border text-center">
                         <div class="text-2xl font-bold text-pink-800" id="prokopack-resultat">--</div>
-                        <p class="text-xs text-gray-500 mt-1">Résultat calculé</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Graphiques des Indices -->
-            <div class="grid lg:grid-cols-2 gap-8 mb-8">
-                <!-- Comparaison par Mois -->
-                <div class="card">
-                    <h3 class="text-xl font-semibold mb-4 text-muraz-blue">
-                        <i class="fas fa-chart-bar mr-2"></i>
-                        Comparaison par Mois
-                    </h3>
-                    <p class="text-sm text-gray-600 mb-4">Évolution des indices par mois (moyenne des secteurs)</p>
-                    <div class="h-80">
-                        <canvas id="indicesComparisonChart"></canvas>
-                    </div>
-                </div>
-
-                <!-- Comparaison par Secteur (pour un mois) -->
-                <div class="card">
-                    <h3 class="text-xl font-semibold mb-4 text-muraz-orange">
-                        <i class="fas fa-chart-pie mr-2"></i>
-                        Comparaison par Secteur
-                    </h3>
-                    <p class="text-sm text-gray-600 mb-4">Répartition des indices par secteur pour le mois sélectionné</p>
-                    <div class="h-80">
-                        <canvas id="indicesSectorChart"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Évolution Mensuelle des Indices -->
-            <div class="grid lg:grid-cols-1 gap-8 mb-8">
-                <div class="card">
-                    <h3 class="text-xl font-semibold mb-4 text-muraz-purple">
-                        <i class="fas fa-chart-area mr-2"></i>
-                        Évolution Mensuelle des Indices
-                    </h3>
-                    <p class="text-sm text-gray-600 mb-4">Évolution complète des indices par mois (moyenne des secteurs)</p>
-                    <div class="h-80">
-                        <canvas id="indicesTrendChart"></canvas>
+                        <p class="text-xs text-gray-500 mt-1" data-i18n="indices.calculated_result">Résultat calculé</p>
                     </div>
                 </div>
             </div>
@@ -182,73 +144,48 @@
             <div class="card mt-8">
                 <h3 class="text-xl font-semibold mb-4 text-muraz-green">
                     <i class="fas fa-table mr-2"></i>
-                    <span id="tableau-titre">Données des Indices Mensuels</span>
+                    <span data-i18n="indices.monthly_data">Données des Indices Mensuels</span>
                 </h3>
-                <p class="text-sm text-gray-600 mb-4">
-                    <span id="tableau-description">Vue détaillée de tous les indices entomologiques par secteur et mois</span>
+                <p class="text-sm text-gray-600 mb-4" data-i18n="indices.detailed_view">
+                    Vue détaillée de tous les indices entomologiques par mois (moyennes globales)
                 </p>
                 
-                <!-- Filtres et Recherche -->
-                <div class="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                    <div class="grid md:grid-cols-4 gap-4 mb-4">
-                        <!-- Filtre par Mois -->
-                        <div>
-                            <label for="filtre-mois" class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-calendar mr-2"></i>Filtrer par Mois
-                            </label>
-                            <select id="filtre-mois" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-muraz-green">
-                                <option value="">Tous les mois</option>
-                            </select>
-                        </div>
-                        
-                        <!-- Filtre par Secteur -->
-                        <div>
-                            <label for="filtre-secteur" class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-map-marker-alt mr-2"></i>Filtrer par Secteur
-                            </label>
-                            <select id="filtre-secteur" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-muraz-green">
-                                <option value="">Tous les secteurs</option>
-                            </select>
-                        </div>
-                        
-                        <!-- Recherche -->
-                        <div>
-                            <label for="recherche-indices" class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-search mr-2"></i>Recherche
-                            </label>
-                            <input type="text" id="recherche-indices" placeholder="Rechercher..." 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-muraz-green">
-                        </div>
-                        
-                        <!-- Bouton Réinitialiser -->
-                        <div class="flex items-end">
-                            <button id="reinitialiser-filtres" class="w-full px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors">
-                                <i class="fas fa-undo mr-2"></i>Réinitialiser
-                            </button>
-                        </div>
+                <!-- Contrôles de pagination -->
+                <div class="flex items-center justify-between mb-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <div class="flex items-center space-x-4">
+                        <label for="table-page-size" class="text-sm font-medium text-gray-700">
+                            <i class="fas fa-list mr-2"></i>
+                            <span data-i18n="indices.lines_per_page">Lignes par page :</span>
+                        </label>
+                        <select id="table-page-size" class="px-3 py-1 border border-gray-300 rounded-md bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-muraz-green focus:border-transparent">
+                            <option value="10">10</option>
+                            <option value="25" selected>25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
                     </div>
                     
-                    <!-- Informations sur les résultats -->
-                    <div class="flex justify-between items-center text-sm text-gray-600">
-                        <span id="info-resultats">Affichage de 1-10 sur 48 résultats</span>
-                        <span id="total-resultats">Total: 48 résultats</span>
+                    <div class="flex items-center space-x-2">
+                        <span id="table-info" class="text-sm text-gray-600">
+                            <span data-i18n="indices.display_info">Affichage de</span> <span id="current-start">1</span> <span data-i18n="indices.to">à</span> <span id="current-end">25</span> 
+                            <span data-i18n="indices.of">sur</span> <span id="total-entries">0</span> <span data-i18n="indices.entries">entrées</span>
+                        </span>
                     </div>
                 </div>
-                
+
                 <!-- Tableau -->
                 <div class="overflow-x-auto">
                     <table class="min-w-full bg-white border border-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Période</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Secteur</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IB (%)</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IM (%)</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IR (%)</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IPP (%)</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ICN (%)</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IAP BG</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IAP Prokopack</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-i18n="indices.period">Période</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-i18n="indices.breteau_index_short">IB (%)</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-i18n="indices.house_index_short">IM (%)</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-i18n="indices.container_index_short">IR (%)</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-i18n="indices.pupae_index_short">IPP (%)</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-i18n="indices.nymphal_index_short">ICN (%)</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-i18n="indices.adult_bg_short">IAP BG</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-i18n="indices.adult_prokopack_short">IAP Prokopack</th>
                             </tr>
                         </thead>
                         <tbody id="indices-table-body" class="bg-white divide-y divide-gray-200">
@@ -256,27 +193,35 @@
                         </tbody>
                     </table>
                 </div>
-                
+
                 <!-- Pagination -->
-                <div class="mt-6 flex items-center justify-between">
+                <div class="flex items-center justify-between mt-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
                     <div class="flex items-center space-x-2">
-                        <label for="lignes-par-page" class="text-sm text-gray-700">Lignes par page:</label>
-                        <select id="lignes-par-page" class="px-2 py-1 border border-gray-300 rounded text-sm">
-                            <option value="10">10</option>
-                            <option value="20">20</option>
-                            <option value="50">50</option>
-                        </select>
+                        <button id="first-page" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <i class="fas fa-angle-double-left mr-1"></i>
+                            <span data-i18n="indices.first">Première</span>
+                        </button>
+                        <button id="prev-page" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <i class="fas fa-angle-left mr-1"></i>
+                            <span data-i18n="common.previous">Précédent</span>
+                        </button>
                     </div>
                     
                     <div class="flex items-center space-x-2">
-                        <button id="btn-precedent" class="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-                            <i class="fas fa-chevron-left mr-1"></i>Précédent
+                        <span class="text-sm text-gray-700" data-i18n="indices.page">Page</span>
+                        <input type="number" id="current-page-input" min="1" class="w-16 px-2 py-1 text-sm border border-gray-300 rounded-md text-center" value="1">
+                        <span class="text-sm text-gray-700" data-i18n="indices.of">sur</span>
+                        <span id="total-pages" class="text-sm font-medium text-gray-900">1</span>
+                    </div>
+                    
+                    <div class="flex items-center space-x-2">
+                        <button id="next-page" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span data-i18n="common.next">Suivant</span>
+                            <i class="fas fa-angle-right ml-1"></i>
                         </button>
-                        
-                        <span id="info-pagination" class="text-sm text-gray-700">Page 1 sur 5</span>
-                        
-                        <button id="btn-suivant" class="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-                            Suivant<i class="fas fa-chevron-right ml-1"></i>
+                        <button id="last-page" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span data-i18n="indices.last">Dernière</span>
+                            <i class="fas fa-angle-double-right ml-1"></i>
                         </button>
                     </div>
                 </div>
@@ -296,7 +241,38 @@
         </div>
     </footer>
 
+    <script src="./js/translation.js"></script>
     <script src="./js/app.js"></script>
     <script src="./js/indices.js"></script>
+    
+    <script>
+        // Initialiser le sélecteur de langue si app.js ne l'a pas fait
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                const languageSelector = document.getElementById('languageSelector');
+                if (languageSelector && window.translationManager) {
+                    // Vérifier si app.js a déjà créé le sélecteur
+                    const existingSelect = languageSelector.querySelector('select');
+                    if (!existingSelect) {
+                        console.log('Initialisation manuelle du sélecteur de langue...');
+                        const selector = window.translationManager.createLanguageSelector();
+                        languageSelector.appendChild(selector);
+                        
+                        // Ajouter l'écouteur
+                        const select = selector.querySelector('select');
+                        if (select) {
+                            select.addEventListener('change', (e) => {
+                                console.log('Changement de langue:', e.target.value);
+                                window.translationManager.changeLanguage(e.target.value);
+                            });
+                        }
+                        console.log('Sélecteur de langue initialisé manuellement');
+                    } else {
+                        console.log('Sélecteur de langue déjà créé par app.js');
+                    }
+                }
+            }, 1000);
+        });
+    </script>
 </body>
 </html>

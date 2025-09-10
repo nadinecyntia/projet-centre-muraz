@@ -167,56 +167,7 @@ router.get('/entomological-data', async (req, res) => {
     }
 });
 
-// Route pour récupérer les indices entomologiques
-router.get('/entomological-indices', async (req, res) => {
-    try {
-        const { sector, period_start, period_end } = req.query;
-        
-        let query = 'SELECT * FROM entomological_indices';
-        const whereConditions = [];
-        const queryParams = [];
-        let paramCount = 1;
-        
-        if (sector) {
-            whereConditions.push(`sector = $${paramCount}`);
-            queryParams.push(sector);
-            paramCount++;
-        }
-        
-        if (period_start) {
-            whereConditions.push(`period_start >= $${paramCount}`);
-            queryParams.push(period_start);
-            paramCount++;
-        }
-        
-        if (period_end) {
-            whereConditions.push(`period_end <= $${paramCount}`);
-            queryParams.push(period_end);
-            paramCount++;
-        }
-        
-        if (whereConditions.length > 0) {
-            query += ` WHERE ${whereConditions.join(' AND ')}`;
-        }
-        
-        query += ' ORDER BY period_start DESC';
-        
-        const result = await pool.query(query, queryParams);
-        
-        res.json({
-            success: true,
-            data: result.rows
-        });
-        
-    } catch (error) {
-        console.error('❌ Erreur lors de la récupération des indices:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erreur lors de la récupération des indices',
-            error: error.message
-        });
-    }
-});
+
 
 // Route pour récupérer les données de biologie moléculaire
 router.get('/molecular-biology', async (req, res) => {
@@ -418,6 +369,8 @@ router.get('/data', async (req, res) => {
     }
 });
 
+
+
 // Route pour récupérer les données par type de formulaire
 router.get('/data/:formType', async (req, res) => {
     try {
@@ -534,6 +487,7 @@ router.get('/analyses', async (req, res) => {
                 bs.negative_sites,
                 bs.larvae_count,
                 bs.nymphs_count,
+                ec.eggs_count,
                 am.prokopack_traps_count,
                 am.bg_traps_count,
                 am.total_mosquitoes_count,
@@ -543,6 +497,7 @@ router.get('/analyses', async (req, res) => {
                 am.species
             FROM household_visits hv
             LEFT JOIN breeding_sites bs ON hv.id = bs.household_visit_id
+            LEFT JOIN eggs_collection ec ON hv.id = ec.household_visit_id
             LEFT JOIN adult_mosquitoes am ON hv.id = am.household_visit_id
             ORDER BY hv.created_at DESC
         `);
@@ -570,43 +525,275 @@ router.get('/analyses', async (req, res) => {
     }
 });
 
+// =====================================================
+// ENDPOINT SPÉCIFIQUE POUR LES ŒUFS PAR SECTEUR
+// =====================================================
+router.get('/analyses/oeufs', async (req, res) => {
+    try {
+        console.log('🥚 Récupération des données œufs par secteur...');
+        
+        const client = await pool.connect();
+        
+        // Requête spécifique pour les œufs avec jointure household_visits
+        const result = await client.query(`
+            SELECT 
+                hv.id as household_visit_id,
+                hv.sector,
+                hv.environment,
+                hv.visit_start_date,
+                hv.created_at,
+                ec.id as eggs_collection_id,
+                ec.nest_number,
+                ec.nest_code,
+                ec.pass_order,
+                ec.eggs_count,
+                ec.observations as eggs_observations
+            FROM household_visits hv
+            INNER JOIN eggs_collection ec ON hv.id = ec.household_visit_id
+            WHERE ec.eggs_count IS NOT NULL 
+            AND ec.eggs_count >= 0
+            ORDER BY hv.visit_start_date DESC, hv.sector ASC
+        `);
+        
+        client.release();
+        
+        // Traiter les données spécifiquement pour les œufs par secteur
+        const oeufsData = processOeufsData(result.rows);
+        
+        console.log(`✅ ${result.rows.length} enregistrements d'œufs traités`);
+        console.log(`📊 Secteurs trouvés: ${oeufsData.secteurs.join(', ')}`);
+        console.log(`📅 Périodes trouvées: ${oeufsData.periodes.length} périodes`);
+        
+        res.json({
+            success: true,
+            message: 'Données œufs par secteur récupérées avec succès',
+            data: oeufsData
+        });
+        
+    } catch (error) {
+        console.error('❌ Erreur lors de la récupération des données œufs:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la récupération des données œufs',
+            error: error.message
+        });
+    }
+});
+
+// =====================================================
+// ENDPOINT SPÉCIFIQUE POUR LES ŒUFS PAR MOIS
+// =====================================================
+router.get('/analyses/oeufs-mois', async (req, res) => {
+    try {
+        console.log('📅 Récupération des données œufs par mois...');
+        
+        const client = await pool.connect();
+        
+        // Requête pour les œufs groupés par mois et secteur
+        const result = await client.query(`
+            SELECT 
+                hv.sector,
+                hv.visit_start_date,
+                ec.eggs_count,
+                DATE_TRUNC('month', hv.visit_start_date) as mois_periode
+            FROM household_visits hv
+            INNER JOIN eggs_collection ec ON hv.id = ec.household_visit_id
+            WHERE ec.eggs_count IS NOT NULL 
+            AND ec.eggs_count >= 0
+            AND hv.visit_start_date IS NOT NULL
+            ORDER BY hv.visit_start_date ASC
+        `);
+        
+        client.release();
+        
+        // Traiter les données spécifiquement pour les œufs par mois
+        const oeufsMoisData = processOeufsMoisData(result.rows);
+        
+        console.log(`✅ ${result.rows.length} enregistrements d'œufs traités pour l'évolution mensuelle`);
+        console.log(`📊 Périodes trouvées: ${oeufsMoisData.periodes.length} mois`);
+        console.log(`📊 Secteurs: ${oeufsMoisData.secteurs.join(', ')}`);
+        
+        res.json({
+            success: true,
+            message: 'Données œufs par mois récupérées avec succès',
+            data: oeufsMoisData
+        });
+        
+    } catch (error) {
+        console.error('❌ Erreur lors de la récupération des données œufs par mois:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la récupération des données œufs par mois',
+            error: error.message
+        });
+    }
+});
+
 // Route pour récupérer les données pour le calcul des indices entomologiques
 router.get('/indices', async (req, res) => {
     try {
         console.log('🧮 Récupération des données pour calcul des indices entomologiques...');
         
+        // PHASE 1 : OPTIMISATION - Pagination et filtres
+        const { page = 1, limit = 50, start_date, end_date, sector } = req.query;
+        const offset = (parseInt(page) - 1) * parseInt(limit);
+        
         const client = await pool.connect();
         
-        // Récupérer toutes les données entomologiques depuis les nouvelles tables
+        // Construction des conditions WHERE
+        let whereConditions = ['hv.visit_start_date IS NOT NULL'];
+        let queryParams = [];
+        let paramIndex = 1;
+        
+        if (start_date) {
+            whereConditions.push(`hv.visit_start_date >= $${paramIndex++}`);
+            queryParams.push(start_date);
+        }
+        
+        if (end_date) {
+            whereConditions.push(`hv.visit_start_date <= $${paramIndex++}`);
+            queryParams.push(end_date);
+        }
+        
+        if (sector) {
+            whereConditions.push(`hv.sector = $${paramIndex++}`);
+            queryParams.push(sector);
+        }
+        
+        const whereClause = whereConditions.join(' AND ');
+        
+        // REQUÊTE SQL OPTIMISÉE AVEC PAGINATION
         const result = await client.query(`
+            -- Données breeding_sites pour IB, IM, IR, ICN
+            WITH breeding_data AS (
+                SELECT 
+                    DATE_TRUNC('month', hv.visit_start_date) as month,
+                    hv.sector,
+                    COUNT(bs.id) as total_breeding_visits,
+                    COUNT(CASE WHEN bs.positive_sites > 0 THEN bs.id END) as positive_breeding_visits,
+                    COALESCE(SUM(bs.total_sites), 0) as total_sites,
+                    COALESCE(SUM(bs.positive_sites), 0) as positive_sites,
+                    COALESCE(SUM(bs.nymphs_count), 0) as total_nymphs,
+                    COUNT(CASE WHEN bs.nymphs_count > 0 THEN bs.id END) as visits_with_nymphs
+                FROM household_visits hv
+                INNER JOIN breeding_sites bs ON hv.id = bs.household_visit_id
+                WHERE ${whereClause}
+                GROUP BY DATE_TRUNC('month', hv.visit_start_date), hv.sector
+            ),
+            -- Données eggs_collection pour IPP
+            eggs_data AS (
+                SELECT 
+                    DATE_TRUNC('month', hv.visit_start_date) as month,
+                    hv.sector,
+                    COUNT(ec.id) as total_eggs_visits,
+                    COUNT(CASE WHEN ec.eggs_count > 0 THEN ec.id END) as visits_with_eggs,
+                    COALESCE(SUM(ec.eggs_count), 0) as total_eggs
+                FROM household_visits hv
+                INNER JOIN eggs_collection ec ON hv.id = ec.household_visit_id
+                WHERE ${whereClause}
+                GROUP BY DATE_TRUNC('month', hv.visit_start_date), hv.sector
+            ),
+            -- Données adult_mosquitoes pour IAP
+            adult_data AS (
+                SELECT 
+                    DATE_TRUNC('month', hv.visit_start_date) as month,
+                    hv.sector,
+                    COUNT(am.id) as total_adult_visits,
+                    COALESCE(SUM(am.bg_traps_count), 0) as total_bg_traps,
+                    COALESCE(SUM(am.bg_trap_mosquitoes_count), 0) as total_bg_mosquitoes,
+                    COALESCE(SUM(am.prokopack_traps_count), 0) as total_prokopack_traps,
+                    COALESCE(SUM(am.prokopack_mosquitoes_count), 0) as total_prokopack_mosquitoes
+                FROM household_visits hv
+                INNER JOIN adult_mosquitoes am ON hv.id = am.household_visit_id
+                WHERE ${whereClause}
+                GROUP BY DATE_TRUNC('month', hv.visit_start_date), hv.sector
+            ),
+            -- Fusion des données
+            monthly_data AS (
+                SELECT 
+                    COALESCE(bd.month, ed.month, ad.month) as month,
+                    COALESCE(bd.sector, ed.sector, ad.sector) as sector,
+                    bd.total_breeding_visits,
+                    bd.positive_breeding_visits,
+                    bd.total_sites,
+                    bd.positive_sites,
+                    bd.total_nymphs,
+                    bd.visits_with_nymphs,
+                    ed.total_eggs_visits,
+                    ed.visits_with_eggs,
+                    ed.total_eggs,
+                    ad.total_adult_visits,
+                    ad.total_bg_traps,
+                    ad.total_bg_mosquitoes,
+                    ad.total_prokopack_traps,
+                    ad.total_prokopack_mosquitoes
+                FROM breeding_data bd
+                FULL OUTER JOIN eggs_data ed ON bd.month = ed.month AND bd.sector = ed.sector
+                FULL OUTER JOIN adult_data ad ON COALESCE(bd.month, ed.month) = ad.month AND COALESCE(bd.sector, ed.sector) = ad.sector
+            )
             SELECT 
-                hv.id,
-                hv.sector,
-                hv.environment,
-                hv.visit_start_date,
-                hv.created_at,
-                bs.total_sites,
-                bs.positive_sites,
-                bs.negative_sites,
-                bs.larvae_count,
-                bs.nymphs_count,
-                am.prokopack_traps_count,
-                am.bg_traps_count,
-                am.total_mosquitoes_count,
-                am.prokopack_mosquitoes_count,
-                am.bg_trap_mosquitoes_count
-            FROM household_visits hv
-            LEFT JOIN breeding_sites bs ON hv.id = bs.household_visit_id
-            LEFT JOIN adult_mosquitoes am ON hv.id = am.household_visit_id
-            ORDER BY hv.created_at DESC
+                TO_CHAR(month, 'YYYY-MM') as periode,
+                sector,
+                total_breeding_visits,
+                positive_breeding_visits,
+                total_sites,
+                positive_sites,
+                total_nymphs,
+                visits_with_nymphs,
+                total_eggs_visits,
+                visits_with_eggs,
+                total_eggs,
+                total_adult_visits,
+                total_bg_traps,
+                total_bg_mosquitoes,
+                total_prokopack_traps,
+                total_prokopack_mosquitoes,
+                -- FORMULE 1: Indice de Breteau (IB) = (Sites positifs × 100) ÷ Maisons breeding_sites
+                CASE 
+                    WHEN total_breeding_visits > 0 THEN (ROUND((positive_sites * 100.0) / total_breeding_visits, 2))::numeric
+                    ELSE 0 
+                END as ib,
+                -- FORMULE 2: Indice de Maison (IM) = (Maisons positives × 100) ÷ Maisons breeding_sites
+                CASE 
+                    WHEN total_breeding_visits > 0 THEN (ROUND((positive_breeding_visits * 100.0) / total_breeding_visits, 2))::numeric
+                    ELSE 0 
+                END as im,
+                -- FORMULE 3: Indice de Récipient (IR) = (Sites positifs × 100) ÷ Total sites
+                CASE 
+                    WHEN total_sites > 0 THEN (ROUND((positive_sites * 100.0) / total_sites, 2))::numeric
+                    ELSE 0 
+                END as ir,
+                -- FORMULE 4: Indice de Positivité Pondoire (IPP) = (Maisons avec œufs × 100) ÷ Maisons eggs_collection
+                CASE 
+                    WHEN total_eggs_visits > 0 THEN (ROUND((visits_with_eggs * 100.0) / total_eggs_visits, 2))::numeric
+                    ELSE 0 
+                END as ipp,
+                -- FORMULE 5: Indice de Colonisation Nymphale (ICN) = (Maisons avec nymphes × 100) ÷ Maisons breeding_sites
+                CASE 
+                    WHEN total_breeding_visits > 0 THEN (ROUND((visits_with_nymphs * 100.0) / total_breeding_visits, 2))::numeric
+                    ELSE 0 
+                END as icn,
+                -- FORMULE 6: Indice Adultes par Piège BG = Moustiques BG ÷ Pièges BG
+                CASE 
+                    WHEN total_bg_traps > 0 THEN (ROUND(total_bg_mosquitoes / total_bg_traps, 2))::numeric
+                    ELSE 0 
+                END as iap_bg,
+                -- FORMULE 7: Indice Adultes par Piège Prokopack = Moustiques Prokopack ÷ Pièges Prokopack
+                CASE 
+                    WHEN total_prokopack_traps > 0 THEN (ROUND(total_prokopack_mosquitoes / total_prokopack_traps, 2))::numeric
+                    ELSE 0 
+                END as iap_prokopack
+            FROM monthly_data
+            ORDER BY month DESC, sector
+            LIMIT ${parseInt(limit)} OFFSET ${offset}
         `);
         
         client.release();
         
-        // Calculer les indices entomologiques
-        const indicesData = calculateEntomologicalIndicesNew(result.rows);
+        // Organiser les données pour l'interface
+        const indicesData = organizeIndicesData(result.rows);
         
-        console.log(`✅ Indices entomologiques calculés avec succès`);
+        console.log(`✅ Indices entomologiques calculés avec succès - ${result.rows.length} périodes`);
         
         res.json({
             success: true,
@@ -623,6 +810,90 @@ router.get('/indices', async (req, res) => {
         });
     }
 });
+
+// Fonction pour organiser les données des indices
+function organizeIndicesData(rows) {
+    const organized = {
+        periodes: [],
+        secteurs: [],
+        data: {},
+        moyennes: {}
+    };
+    
+    // Extraire les périodes et secteurs uniques
+    rows.forEach(row => {
+        if (!organized.periodes.includes(row.periode)) {
+            organized.periodes.push(row.periode);
+        }
+        if (!organized.secteurs.includes(row.sector)) {
+            organized.secteurs.push(row.sector);
+        }
+    });
+    
+    // Organiser par période et secteur
+    rows.forEach(row => {
+        if (!organized.data[row.periode]) {
+            organized.data[row.periode] = {};
+        }
+        organized.data[row.periode][row.sector] = {
+            ib: row.ib,
+            im: row.im,
+            ir: row.ir,
+            ipp: row.ipp,
+            icn: row.icn,
+            iap_bg: row.iap_bg,
+            iap_prokopack: row.iap_prokopack,
+            // Données brutes pour référence
+            total_breeding_visits: row.total_breeding_visits,
+            positive_breeding_visits: row.positive_breeding_visits,
+            total_sites: row.total_sites,
+            positive_sites: row.positive_sites,
+            total_nymphs: row.total_nymphs,
+            visits_with_nymphs: row.visits_with_nymphs,
+            total_eggs: row.total_eggs,
+            total_eggs_visits: row.total_eggs_visits,
+            visits_with_eggs: row.visits_with_eggs
+        };
+    });
+    
+    // Calculer les moyennes globales
+    const allIndices = rows.map(row => ({
+        ib: row.ib,
+        im: row.im,
+        ir: row.ir,
+        ipp: row.ipp,
+        icn: row.icn,
+        iap_bg: row.iap_bg,
+        iap_prokopack: row.iap_prokopack
+    }));
+    
+    // Calculer les totaux bruts pour l'IB et IM
+    const totalPositiveSites = rows.reduce((sum, row) => sum + (parseFloat(row.positive_sites) || 0), 0);
+    const totalBreedingVisits = rows.reduce((sum, row) => sum + (parseFloat(row.total_breeding_visits) || 0), 0);
+    const totalPositiveBreedingVisits = rows.reduce((sum, row) => sum + (parseFloat(row.positive_breeding_visits) || 0), 0);
+    
+    organized.moyennes = {
+        // CORRECTION: IB calculé sur le total global, pas la moyenne
+        ib: totalBreedingVisits > 0 ? Math.round((totalPositiveSites * 100.0 / totalBreedingVisits) * 100) / 100 : 0,
+        // CORRECTION: IM calculé sur le total global, pas la moyenne
+        im: totalBreedingVisits > 0 ? Math.round((totalPositiveBreedingVisits * 100.0 / totalBreedingVisits) * 100) / 100 : 0,
+        ir: calculateAverage(allIndices.map(i => i.ir)),
+        ipp: calculateAverage(allIndices.map(i => i.ipp)),
+        icn: calculateAverage(allIndices.map(i => i.icn)),
+        iap_bg: calculateAverage(allIndices.map(i => i.iap_bg)),
+        iap_prokopack: calculateAverage(allIndices.map(i => i.iap_prokopack))
+    };
+    
+    return organized;
+}
+
+// Fonction utilitaire pour calculer la moyenne
+function calculateAverage(values) {
+    const validValues = values.filter(v => v !== null && v !== undefined && !isNaN(v))
+        .map(v => typeof v === 'string' ? parseFloat(v) : v);
+    if (validValues.length === 0) return 0;
+    return Math.round((validValues.reduce((sum, val) => sum + val, 0) / validValues.length) * 100) / 100;
+}
 
 // Fonction pour traiter les données pour les analyses entomologiques
 function processDataForAnalyses(data) {
@@ -764,29 +1035,29 @@ function processDataForAnalyses(data) {
             }
         }
         
-        // Pour les œufs, on utilise les données de gîtes comme proxy (puisqu'on n'a pas de table œufs séparée)
-        if (item.larvae_count && item.larvae_count > 0) {
+        // Traiter les données d'œufs depuis la table eggs_collection
+        if (item.eggs_count !== null && item.eggs_count !== undefined && item.eggs_count >= 0) {
             analyses.oeufs.push({
                 id: item.id,
                 secteur: secteur,
                 periode: periode,
                 date: item.visit_start_date || item.created_at,
                 data: {
-                    larvae_count: item.larvae_count,
+                    eggs_count: item.eggs_count,
                     sector: item.sector,
                     environment: item.environment,
                     visit_start_date: item.visit_start_date
                 }
             });
             
-            // Données pour graphiques - Œufs (basé sur les larves)
+            // Données pour graphiques - Œufs (vraies données d'œufs)
             if (!analyses.chartData.oeufs[periode]) {
                 analyses.chartData.oeufs[periode] = {};
             }
             if (!analyses.chartData.oeufs[periode][secteur]) {
                 analyses.chartData.oeufs[periode][secteur] = 0;
             }
-            analyses.chartData.oeufs[periode][secteur] += (item.larvae_count || 0);
+            analyses.chartData.oeufs[periode][secteur] += (item.eggs_count || 0);
         } else {
             // Si pas de données d'œufs, initialiser quand même pour les graphiques
             if (!analyses.chartData.oeufs[periode]) {
@@ -816,135 +1087,275 @@ function processDataForAnalyses(data) {
     return analyses;
 }
 
-// Fonction pour calculer les indices entomologiques avec les nouvelles tables
-function calculateEntomologicalIndicesNew(data) {
-    const indices = {
-        breteau: {},
-        maison: {},
-        recipient: {},
-        pondoir: {},
-        nymphal_colonization: {},
-        adult_per_trap_bg: {},
-        adult_per_trap_prokopack: {},
+// =====================================================
+// FONCTION SPÉCIFIQUE POUR TRAITER LES DONNÉES ŒUFS
+// =====================================================
+function processOeufsData(data) {
+    console.log('🥚 Traitement des données œufs spécifiques...');
+    
+    const oeufsData = {
+        // Données brutes
+        rawData: data,
+        
+        // Métadonnées
+        secteurs: [],
         periodes: [],
-        secteurs: []
+        environments: [],
+        
+        // Données agrégées par secteur
+        oeufsParSecteur: {},
+        
+        // Données agrégées par période
+        oeufsParPeriode: {},
+        
+        // Données pour graphiques
+        chartData: {
+            oeufsParSecteur: {},
+            oeufsParPeriode: {},
+            oeufsParSecteurEtPeriode: {}
+        },
+        
+        // Statistiques
+        totalOeufs: 0,
+        totalEnregistrements: data.length,
+        moyenneOeufsParSecteur: {},
+        moyenneOeufsParPeriode: {}
     };
     
-    // Grouper par période et secteur
-    const groupedData = {};
-    
+    // Traiter chaque enregistrement
     data.forEach(item => {
+        const secteur = item.sector;
         const date = new Date(item.visit_start_date || item.created_at);
         const periode = getPeriode(date);
-        const secteur = item.sector || 'N/A';
+        const environment = item.environment;
+        const eggsCount = parseInt(item.eggs_count) || 0;
         
-        if (!groupedData[periode]) {
-            groupedData[periode] = {};
+        // Ajouter aux listes uniques
+        if (!oeufsData.secteurs.includes(secteur)) {
+            oeufsData.secteurs.push(secteur);
         }
-        if (!groupedData[periode][secteur]) {
-            groupedData[periode][secteur] = {
-                total_households: 0,
-                positive_households: 0,
-                total_sites: 0,
-                positive_sites: 0,
-                total_sites: 0,
-                positive_sites: 0,
-                total_traps_bg: 0,
-                total_traps_prokopack: 0,
-                total_mosquitoes_bg: 0,
-                total_mosquitoes_prokopack: 0
+        if (!oeufsData.periodes.includes(periode)) {
+            oeufsData.periodes.push(periode);
+        }
+        if (!oeufsData.environments.includes(environment)) {
+            oeufsData.environments.push(environment);
+        }
+        
+        // Agrégation par secteur
+        if (!oeufsData.oeufsParSecteur[secteur]) {
+            oeufsData.oeufsParSecteur[secteur] = {
+                totalOeufs: 0,
+                nombreEnregistrements: 0,
+                moyenne: 0,
+                details: []
             };
         }
+        oeufsData.oeufsParSecteur[secteur].totalOeufs += eggsCount;
+        oeufsData.oeufsParSecteur[secteur].nombreEnregistrements += 1;
+        oeufsData.oeufsParSecteur[secteur].details.push({
+            id: item.eggs_collection_id,
+            nest_number: item.nest_number,
+            nest_code: item.nest_code,
+            eggs_count: eggsCount,
+            date: date,
+            periode: periode,
+            environment: environment
+        });
         
-        // Compter les maisons
-        groupedData[periode][secteur].total_households++;
-        
-        // Compter les gîtes positifs
-        if (item.positive_sites > 0) {
-            groupedData[periode][secteur].positive_households++;
+        // Agrégation par période
+        if (!oeufsData.oeufsParPeriode[periode]) {
+            oeufsData.oeufsParPeriode[periode] = {
+                totalOeufs: 0,
+                nombreEnregistrements: 0,
+                moyenne: 0,
+                secteurs: {}
+            };
         }
+        oeufsData.oeufsParPeriode[periode].totalOeufs += eggsCount;
+        oeufsData.oeufsParPeriode[periode].nombreEnregistrements += 1;
         
-        // Ajouter les sites et conteneurs
-        if (item.total_sites) {
-            groupedData[periode][secteur].total_sites += item.total_sites;
-            groupedData[periode][secteur].positive_sites += item.positive_sites || 0;
+        // Agrégation par secteur dans la période
+        if (!oeufsData.oeufsParPeriode[periode].secteurs[secteur]) {
+            oeufsData.oeufsParPeriode[periode].secteurs[secteur] = {
+                totalOeufs: 0,
+                nombreEnregistrements: 0
+            };
         }
+        oeufsData.oeufsParPeriode[periode].secteurs[secteur].totalOeufs += eggsCount;
+        oeufsData.oeufsParPeriode[periode].secteurs[secteur].nombreEnregistrements += 1;
         
-        // Sites = Containers (même concept)
-        if (item.positive_sites) {
-            groupedData[periode][secteur].total_sites += item.total_sites || 0;
-            groupedData[periode][secteur].positive_sites += item.positive_sites;
+        // Données pour graphiques - Par secteur (total)
+        if (!oeufsData.chartData.oeufsParSecteur[secteur]) {
+            oeufsData.chartData.oeufsParSecteur[secteur] = 0;
         }
+        oeufsData.chartData.oeufsParSecteur[secteur] += eggsCount;
         
-        // Ajouter les pièges et moustiques
-        if (item.bg_traps_count) {
-            groupedData[periode][secteur].total_traps_bg += item.bg_traps_count;
-            groupedData[periode][secteur].total_mosquitoes_bg += item.bg_trap_mosquitoes_count || 0;
+        // Données pour graphiques - Par période
+        if (!oeufsData.chartData.oeufsParPeriode[periode]) {
+            oeufsData.chartData.oeufsParPeriode[periode] = {};
         }
+        if (!oeufsData.chartData.oeufsParPeriode[periode][secteur]) {
+            oeufsData.chartData.oeufsParPeriode[periode][secteur] = 0;
+        }
+        oeufsData.chartData.oeufsParPeriode[periode][secteur] += eggsCount;
         
-        if (item.prokopack_traps_count) {
-            groupedData[periode][secteur].total_traps_prokopack += item.prokopack_traps_count;
-            groupedData[periode][secteur].total_mosquitoes_prokopack += item.prokopack_mosquitoes_count || 0;
+        // Données pour graphiques - Par secteur et période
+        if (!oeufsData.chartData.oeufsParSecteurEtPeriode[secteur]) {
+            oeufsData.chartData.oeufsParSecteurEtPeriode[secteur] = {};
         }
+        if (!oeufsData.chartData.oeufsParSecteurEtPeriode[secteur][periode]) {
+            oeufsData.chartData.oeufsParSecteurEtPeriode[secteur][periode] = 0;
+        }
+        oeufsData.chartData.oeufsParSecteurEtPeriode[secteur][periode] += eggsCount;
+        
+        // Total général
+        oeufsData.totalOeufs += eggsCount;
     });
     
-    // Calculer les indices pour chaque période et secteur
-    Object.keys(groupedData).forEach(periode => {
-        indices.periodes.push(periode);
+    // Calculer les moyennes
+    oeufsData.secteurs.forEach(secteur => {
+        const secteurData = oeufsData.oeufsParSecteur[secteur];
+        secteurData.moyenne = secteurData.nombreEnregistrements > 0 ? 
+            secteurData.totalOeufs / secteurData.nombreEnregistrements : 0;
+        oeufsData.moyenneOeufsParSecteur[secteur] = secteurData.moyenne;
+    });
+    
+    oeufsData.periodes.forEach(periode => {
+        const periodeData = oeufsData.oeufsParPeriode[periode];
+        periodeData.moyenne = periodeData.nombreEnregistrements > 0 ? 
+            periodeData.totalOeufs / periodeData.nombreEnregistrements : 0;
+        oeufsData.moyenneOeufsParPeriode[periode] = periodeData.moyenne;
+    });
+    
+    // Trier les périodes chronologiquement
+    oeufsData.periodes.sort((a, b) => {
+        const [moisA, anneeA] = a.split(' ');
+        const [moisB, anneeB] = b.split(' ');
+        const moisIndex = {
+            'Janvier': 1, 'Février': 2, 'Mars': 3, 'Avril': 4,
+            'Mai': 5, 'Juin': 6, 'Juillet': 7, 'Août': 8,
+            'Septembre': 9, 'Octobre': 10, 'Novembre': 11, 'Décembre': 12
+        };
         
-        Object.keys(groupedData[periode]).forEach(secteur => {
-            if (!indices.secteurs.includes(secteur)) {
-                indices.secteurs.push(secteur);
-            }
+        if (anneeA !== anneeB) return parseInt(anneeA) - parseInt(anneeB);
+        return moisIndex[moisA] - moisIndex[moisB];
+    });
+    
+    console.log('🥚 RÉSUMÉ DES DONNÉES ŒUFS TRAITÉES:');
+    console.log(`   • Total œufs: ${oeufsData.totalOeufs}`);
+    console.log(`   • Enregistrements: ${oeufsData.totalEnregistrements}`);
+    console.log(`   • Secteurs: ${oeufsData.secteurs.join(', ')}`);
+    console.log(`   • Périodes: ${oeufsData.periodes.length} (${oeufsData.periodes.join(', ')})`);
+    console.log(`   • Environnements: ${oeufsData.environments.join(', ')}`);
+    
+    return oeufsData;
+}
+
+// =====================================================
+// FONCTION SPÉCIFIQUE POUR TRAITER LES DONNÉES ŒUFS PAR MOIS
+// =====================================================
+function processOeufsMoisData(data) {
+    console.log('📅 Traitement des données œufs par mois...');
+    
+    const oeufsMoisData = {
+        // Données brutes
+        rawData: data,
+        
+        // Métadonnées
+        secteurs: [],
+        periodes: [],
+        
+        // Données pour graphiques - Évolution par mois
+        chartData: {
+            evolutionParMois: {}, // {periode: {secteur: total}}
+            evolutionParSecteur: {} // {secteur: [{periode, total}]}
+        },
+        
+        // Statistiques
+        totalOeufs: 0,
+        totalEnregistrements: data.length,
+        moyenneParMois: {},
+        moyenneParSecteur: {}
+    };
+    
+    // Traiter chaque enregistrement
+    data.forEach(item => {
+        const secteur = item.sector;
+        const date = new Date(item.visit_start_date);
+        const periode = getPeriode(date);
+        const eggsCount = parseInt(item.eggs_count) || 0;
+        
+        // Ajouter aux listes uniques
+        if (!oeufsMoisData.secteurs.includes(secteur)) {
+            oeufsMoisData.secteurs.push(secteur);
+        }
+        if (!oeufsMoisData.periodes.includes(periode)) {
+            oeufsMoisData.periodes.push(periode);
+        }
+        
+        // Données pour graphiques - Évolution par mois
+        if (!oeufsMoisData.chartData.evolutionParMois[periode]) {
+            oeufsMoisData.chartData.evolutionParMois[periode] = {};
+        }
+        if (!oeufsMoisData.chartData.evolutionParMois[periode][secteur]) {
+            oeufsMoisData.chartData.evolutionParMois[periode][secteur] = 0;
+        }
+        oeufsMoisData.chartData.evolutionParMois[periode][secteur] += eggsCount;
+        
+        // Données pour graphiques - Évolution par secteur
+        if (!oeufsMoisData.chartData.evolutionParSecteur[secteur]) {
+            oeufsMoisData.chartData.evolutionParSecteur[secteur] = [];
+        }
+        
+        // Trouver ou créer l'entrée pour cette période
+        let secteurData = oeufsMoisData.chartData.evolutionParSecteur[secteur].find(d => d.periode === periode);
+        if (!secteurData) {
+            secteurData = { periode: periode, total: 0 };
+            oeufsMoisData.chartData.evolutionParSecteur[secteur].push(secteurData);
+        }
+        secteurData.total += eggsCount;
+        
+        // Total général
+        oeufsMoisData.totalOeufs += eggsCount;
+    });
+    
+    // Trier les périodes chronologiquement
+    oeufsMoisData.periodes.sort((a, b) => {
+        const [moisA, anneeA] = a.split(' ');
+        const [moisB, anneeB] = b.split(' ');
+        const moisIndex = {
+            'Janvier': 1, 'Février': 2, 'Mars': 3, 'Avril': 4,
+            'Mai': 5, 'Juin': 6, 'Juillet': 7, 'Août': 8,
+            'Septembre': 9, 'Octobre': 10, 'Novembre': 11, 'Décembre': 12
+        };
+        
+        if (anneeA !== anneeB) return parseInt(anneeA) - parseInt(anneeB);
+        return moisIndex[moisA] - moisIndex[moisB];
+    });
+    
+    // Trier les données par secteur chronologiquement
+    oeufsMoisData.secteurs.forEach(secteur => {
+        oeufsMoisData.chartData.evolutionParSecteur[secteur].sort((a, b) => {
+            const [moisA, anneeA] = a.periode.split(' ');
+            const [moisB, anneeB] = b.periode.split(' ');
+            const moisIndex = {
+                'Janvier': 1, 'Février': 2, 'Mars': 3, 'Avril': 4,
+                'Mai': 5, 'Juin': 6, 'Juillet': 7, 'Août': 8,
+                'Septembre': 9, 'Octobre': 10, 'Novembre': 11, 'Décembre': 12
+            };
             
-            const data = groupedData[periode][secteur];
-            
-            // Calcul des indices selon les formules officielles
-            // Indice de Breteau = (Nombre de gîtes positifs × 100) / Nombre de maisons visitées
-            const ib = data.total_households > 0 ? (data.positive_sites * 100) / data.total_households : 0;
-            
-            // Indice de Maison = (Nombre de maisons avec gîtes positifs × 100) / Nombre de maisons visitées
-            const im = data.total_households > 0 ? (data.positive_households * 100) / data.total_households : 0;
-            
-            // Indice de Récipient = (Nombre de sites positifs × 100) / Nombre total de sites
-            const ir = data.total_sites > 0 ? (data.positive_sites * 100) / data.total_sites : 0;
-            
-            // Indice de Positivité Pondoire = (Nombre de sites positifs × 100) / Nombre total de sites
-            const ipp = data.total_sites > 0 ? (data.positive_sites * 100) / data.total_sites : 0;
-            
-            // Indice de Colonisation Nymphale = (Nombre de maisons avec nymphes × 100) / Nombre de maisons visitées
-            // On doit d'abord identifier les maisons avec nymphes (positive_sites > 0)
-            const icn = data.total_households > 0 ? (data.positive_households * 100) / data.total_households : 0;
-            
-            // Indice Adultes par Piège BG = Nombre de moustiques adultes / Nombre de pièges BG
-            // PAS de multiplication par 100 - c'est un nombre absolu !
-            const iap_bg = data.total_traps_bg > 0 ? data.total_mosquitoes_bg / data.total_traps_bg : 0;
-            
-            // Indice Adultes par Piège Prokopack = Nombre de moustiques adultes / Nombre de pièges Prokopack  
-            // PAS de multiplication par 100 - c'est un nombre absolu !
-            const iap_prokopack = data.total_traps_prokopack > 0 ? data.total_mosquitoes_prokopack / data.total_traps_prokopack : 0;
-            
-            // Initialiser les objets de période si nécessaire
-            if (!indices.breteau[periode]) indices.breteau[periode] = {};
-            if (!indices.maison[periode]) indices.maison[periode] = {};
-            if (!indices.recipient[periode]) indices.recipient[periode] = {};
-            if (!indices.pondoir[periode]) indices.pondoir[periode] = {};
-            if (!indices.nymphal_colonization[periode]) indices.nymphal_colonization[periode] = {};
-            if (!indices.adult_per_trap_bg[periode]) indices.adult_per_trap_bg[periode] = {};
-            if (!indices.adult_per_trap_prokopack[periode]) indices.adult_per_trap_prokopack[periode] = {};
-            
-            // Stocker les valeurs calculées
-            indices.breteau[periode][secteur] = Math.round(ib * 100) / 100;
-            indices.maison[periode][secteur] = Math.round(im * 100) / 100;
-            indices.recipient[periode][secteur] = Math.round(ir * 100) / 100;
-            indices.pondoir[periode][secteur] = Math.round(ipp * 100) / 100;
-            indices.nymphal_colonization[periode][secteur] = Math.round(icn * 100) / 100;
-            indices.adult_per_trap_bg[periode][secteur] = Math.round(iap_bg * 100) / 100;
-            indices.adult_per_trap_prokopack[periode][secteur] = Math.round(iap_prokopack * 100) / 100;
+            if (anneeA !== anneeB) return parseInt(anneeA) - parseInt(anneeB);
+            return moisIndex[moisA] - moisIndex[moisB];
         });
     });
     
-    return indices;
+    console.log('📅 RÉSUMÉ DES DONNÉES ŒUFS PAR MOIS TRAITÉES:');
+    console.log(`   • Total œufs: ${oeufsMoisData.totalOeufs}`);
+    console.log(`   • Enregistrements: ${oeufsMoisData.totalEnregistrements}`);
+    console.log(`   • Secteurs: ${oeufsMoisData.secteurs.join(', ')}`);
+    console.log(`   • Périodes: ${oeufsMoisData.periodes.length} mois (${oeufsMoisData.periodes.join(', ')})`);
+    
+    return oeufsMoisData;
 }
 
 // Fonction utilitaire pour déterminer la période (1 mois)
@@ -1344,6 +1755,7 @@ router.get('/biologie/statistics', async (req, res) => {
         });
     }
 });
+
 
 // ===== ROUTES DE SYNCHRONISATION KOBCOLLECT =====
 

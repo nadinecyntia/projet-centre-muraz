@@ -45,6 +45,11 @@ class BiologieMoleculaire {
         document.getElementById('detail-modal').addEventListener('click', (e) => {
             if (e.target.id === 'detail-modal') this.closeModal();
         });
+        
+        // Écouter les changements de langue
+        window.addEventListener('languageChanged', () => {
+            this.renderTable();
+        });
     }
 
     setupCharts() {
@@ -188,7 +193,7 @@ class BiologieMoleculaire {
             tbody.innerHTML = `
                 <tr>
                     <td colspan="6" class="px-6 py-4 text-center text-gray-500">
-                        Aucune donnée trouvée
+                        ${window.translationManager ? window.translationManager.t('analyses.no_data') : 'Aucune donnée trouvée'}
                     </td>
                 </tr>
             `;
@@ -207,22 +212,44 @@ class BiologieMoleculaire {
         const row = document.createElement('tr');
         row.className = 'hover:bg-gray-50 fade-in';
         
-        // Déterminer le type d'analyse
+        // Déterminer le type d'analyse avec traduction
         let analysisType = item.analysis_type;
-        if (item.analysis_type === 'pcr' || item.analysis_type === 'rt_pcr') {
-            analysisType = 'PCR/RT-PCR';
-        } else if (item.analysis_type === 'origine_repas_sanguin') {
-            analysisType = 'Repas Sanguin';
+        if (window.translationManager) {
+            if (item.analysis_type === 'pcr' || item.analysis_type === 'rt_pcr') {
+                analysisType = window.translationManager.t('molecular_biology.pcr_analyses');
+            } else if (item.analysis_type === 'bioessai') {
+                analysisType = window.translationManager.t('molecular_biology.bioassays');
+            } else if (item.analysis_type === 'origine_repas_sanguin') {
+                analysisType = window.translationManager.t('molecular_biology.blood_meal_analyses');
+            }
+        } else {
+            // Fallback sans traduction
+            if (item.analysis_type === 'pcr' || item.analysis_type === 'rt_pcr') {
+                analysisType = 'PCR/RT-PCR';
+            } else if (item.analysis_type === 'origine_repas_sanguin') {
+                analysisType = 'Repas Sanguin';
+            }
         }
         
-        // Créer les détails selon le type
+        // Créer les détails selon le type avec traduction
         let details = '';
-        if (item.allelic_frequency_a !== null) {
-            details = `Fréq. A: ${(item.allelic_frequency_a * 100).toFixed(2)}%`;
-        } else if (item.mortality_percentage !== null) {
-            details = `Mortalité: ${item.mortality_percentage}%`;
-        } else if (item.blood_meal_origins) {
-            details = `Origines: ${item.blood_meal_origins.join(', ')}`;
+        if (window.translationManager) {
+            if (item.allelic_frequency_a !== null) {
+                details = `${window.translationManager.t('molecular_biology.allelic_frequencies')}: ${(item.allelic_frequency_a * 100).toFixed(2)}%`;
+            } else if (item.mortality_percentage !== null) {
+                details = `${window.translationManager.t('molecular_biology.statistics.mortality_rate')}: ${item.mortality_percentage}%`;
+            } else if (item.blood_meal_origins) {
+                details = `${window.translationManager.t('molecular_biology.blood_meal_analyses')}: ${item.blood_meal_origins.join(', ')}`;
+            }
+        } else {
+            // Fallback sans traduction
+            if (item.allelic_frequency_a !== null) {
+                details = `Fréq. A: ${(item.allelic_frequency_a * 100).toFixed(2)}%`;
+            } else if (item.mortality_percentage !== null) {
+                details = `Mortalité: ${item.mortality_percentage}%`;
+            } else if (item.blood_meal_origins) {
+                details = `Origines: ${item.blood_meal_origins.join(', ')}`;
+            }
         }
         
         row.innerHTML = `
@@ -250,7 +277,7 @@ class BiologieMoleculaire {
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <button onclick="biologieMoleculaire.showDetails('${item.infos_id}')" 
                         class="text-blue-600 hover:text-blue-900 bg-blue-100 hover:bg-blue-200 px-3 py-1 rounded-md transition-colors">
-                    <i class="fas fa-eye mr-1"></i>Voir
+                    <i class="fas fa-eye mr-1"></i>${window.translationManager ? window.translationManager.t('common.view') : 'Voir'}
                 </button>
             </td>
         `;
@@ -308,64 +335,96 @@ class BiologieMoleculaire {
     }
 
     populateModal(item) {
-        document.getElementById('modal-title').textContent = `Détails de l'Analyse - ${item.analysis_type.toUpperCase()}`;
+        const modalTitle = window.translationManager ? 
+            `${window.translationManager.t('molecular_biology.analysis_details')} - ${item.analysis_type.toUpperCase()}` :
+            `Détails de l'Analyse - ${item.analysis_type.toUpperCase()}`;
+        document.getElementById('modal-title').textContent = modalTitle;
         
+        // Traduire les labels
+        const generalInfo = window.translationManager ? window.translationManager.t('molecular_biology.general_info') : 'Informations Générales';
+        const specificDetails = window.translationManager ? window.translationManager.t('molecular_biology.specific_details') : 'Détails Spécifiques';
+        const analysisType = window.translationManager ? window.translationManager.t('molecular_biology.analysis_type') : 'Type d\'analyse';
+        const sampleStage = window.translationManager ? window.translationManager.t('molecular_biology.sample_stage') : 'Stade des échantillons';
+        const genus = window.translationManager ? window.translationManager.t('forms.adult_mosquitoes.genus') : 'Genre';
+        const species = window.translationManager ? window.translationManager.t('forms.adult_mosquitoes.species') : 'Espèce';
+        const sector = window.translationManager ? window.translationManager.t('forms.household_visits.sector') : 'Secteur';
+        const sampleCount = window.translationManager ? window.translationManager.t('molecular_biology.samples') : 'Nombre d\'échantillons';
+        const collectionDate = window.translationManager ? window.translationManager.t('molecular_biology.collection_date') : 'Date de collecte';
+        const analysisDate = window.translationManager ? window.translationManager.t('molecular_biology.analysis_date') : 'Date d\'analyse';
+
         let content = `
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="space-y-4">
-                    <h4 class="font-semibold text-gray-800 border-b pb-2">Informations Générales</h4>
+                    <h4 class="font-semibold text-gray-800 border-b pb-2">${generalInfo}</h4>
                     <div class="space-y-2">
-                        <p><span class="font-medium">Type d'analyse:</span> ${item.analysis_type}</p>
-                        <p><span class="font-medium">Stade des échantillons:</span> ${item.sample_stage}</p>
-                        <p><span class="font-medium">Genre:</span> ${Array.isArray(item.genus) ? item.genus.join(', ') : item.genus}</p>
-                        <p><span class="font-medium">Espèce:</span> ${item.species}</p>
-                        <p><span class="font-medium">Secteur:</span> ${item.sector}</p>
-                        <p><span class="font-medium">Nombre d'échantillons:</span> ${item.sample_count}</p>
-                        <p><span class="font-medium">Date de collecte:</span> ${new Date(item.collection_date).toLocaleDateString('fr-FR')}</p>
-                        <p><span class="font-medium">Date d'analyse:</span> ${new Date(item.analysis_date).toLocaleDateString('fr-FR')}</p>
+                        <p><span class="font-medium">${analysisType}:</span> ${item.analysis_type}</p>
+                        <p><span class="font-medium">${sampleStage}:</span> ${item.sample_stage}</p>
+                        <p><span class="font-medium">${genus}:</span> ${Array.isArray(item.genus) ? item.genus.join(', ') : item.genus}</p>
+                        <p><span class="font-medium">${species}:</span> ${item.species}</p>
+                        <p><span class="font-medium">${sector}:</span> ${item.sector}</p>
+                        <p><span class="font-medium">${sampleCount}:</span> ${item.sample_count}</p>
+                        <p><span class="font-medium">${collectionDate}:</span> ${new Date(item.collection_date).toLocaleDateString('fr-FR')}</p>
+                        <p><span class="font-medium">${analysisDate}:</span> ${new Date(item.analysis_date).toLocaleDateString('fr-FR')}</p>
                     </div>
                 </div>
                 
                 <div class="space-y-4">
-                    <h4 class="font-semibold text-gray-800 border-b pb-2">Détails Spécifiques</h4>
+                    <h4 class="font-semibold text-gray-800 border-b pb-2">${specificDetails}</h4>
         `;
         
         // Ajouter les détails selon le type d'analyse
         if (item.allelic_frequency_a !== null) {
+            const identifiedSpecies = window.translationManager ? window.translationManager.t('molecular_biology.identified_species') : 'Espèces identifiées';
+            const virusTypes = window.translationManager ? window.translationManager.t('molecular_biology.virus_types') : 'Types de virus';
+            const homozygousAA = window.translationManager ? window.translationManager.t('molecular_biology.homozygous_aa') : 'Homozygotes AA';
+            const heterozygousAa = window.translationManager ? window.translationManager.t('molecular_biology.heterozygous_aa') : 'Hétérozygotes Aa';
+            const totalPopulation = window.translationManager ? window.translationManager.t('molecular_biology.total_population') : 'Total population';
+            const calculatedFrequencies = window.translationManager ? window.translationManager.t('molecular_biology.calculated_frequencies') : 'Fréquences Alléliques Calculées';
+            const alleleA = window.translationManager ? window.translationManager.t('molecular_biology.allele_a') : 'Allèle A';
+            const alleleAPrime = window.translationManager ? window.translationManager.t('molecular_biology.allele_a_prime') : 'Allèle A\'';
+
             content += `
                 <div class="space-y-2">
-                    <p><span class="font-medium">Espèces identifiées:</span> ${Array.isArray(item.identified_species) ? item.identified_species.join(', ') : item.identified_species}</p>
-                    <p><span class="font-medium">Types de virus:</span> ${Array.isArray(item.virus_types) ? item.virus_types.join(', ') : item.virus_types}</p>
-                    <p><span class="font-medium">Homozygotes AA:</span> ${item.homozygous_count}</p>
-                    <p><span class="font-medium">Hétérozygotes Aa:</span> ${item.heterozygous_count}</p>
-                    <p><span class="font-medium">Total population:</span> ${item.total_population}</p>
+                    <p><span class="font-medium">${identifiedSpecies}:</span> ${Array.isArray(item.identified_species) ? item.identified_species.join(', ') : item.identified_species}</p>
+                    <p><span class="font-medium">${virusTypes}:</span> ${Array.isArray(item.virus_types) ? item.virus_types.join(', ') : item.virus_types}</p>
+                    <p><span class="font-medium">${homozygousAA}:</span> ${item.homozygous_count}</p>
+                    <p><span class="font-medium">${heterozygousAa}:</span> ${item.heterozygous_count}</p>
+                    <p><span class="font-medium">${totalPopulation}:</span> ${item.total_population}</p>
                     <div class="bg-green-50 p-3 rounded-lg">
-                        <p class="font-medium text-green-800">Fréquences Alléliques Calculées:</p>
-                        <p class="text-green-700">Allèle A: ${(item.allelic_frequency_a * 100).toFixed(2)}%</p>
-                        <p class="text-green-700">Allèle A': ${(item.allelic_frequency_a_prime * 100).toFixed(2)}%</p>
+                        <p class="font-medium text-green-800">${calculatedFrequencies}:</p>
+                        <p class="text-green-700">${alleleA}: ${(item.allelic_frequency_a * 100).toFixed(2)}%</p>
+                        <p class="text-green-700">${alleleAPrime}: ${(item.allelic_frequency_a_prime * 100).toFixed(2)}%</p>
                     </div>
                 </div>
             `;
         } else if (item.mortality_percentage !== null) {
+            const insecticideTypes = window.translationManager ? window.translationManager.t('molecular_biology.insecticide_types') : 'Types d\'insecticides';
+            const mortalityPercentage = window.translationManager ? window.translationManager.t('molecular_biology.statistics.mortality_rate') : 'Pourcentage de mortalité';
+            const survivalPercentage = window.translationManager ? window.translationManager.t('molecular_biology.survival_percentage') : 'Pourcentage de survie';
+
             content += `
                 <div class="space-y-2">
-                    <p><span class="font-medium">Types d'insecticides:</span> ${Array.isArray(item.insecticide_types) ? item.insecticide_types.join(', ') : item.insecticide_types}</p>
-                    <p><span class="font-medium">Pourcentage de mortalité:</span> ${item.mortality_percentage}%</p>
-                    <p><span class="font-medium">Pourcentage de survie:</span> ${item.survival_percentage}%</p>
+                    <p><span class="font-medium">${insecticideTypes}:</span> ${Array.isArray(item.insecticide_types) ? item.insecticide_types.join(', ') : item.insecticide_types}</p>
+                    <p><span class="font-medium">${mortalityPercentage}:</span> ${item.mortality_percentage}%</p>
+                    <p><span class="font-medium">${survivalPercentage}:</span> ${item.survival_percentage}%</p>
                 </div>
             `;
         } else if (item.blood_meal_origins) {
+            const bloodMealOrigins = window.translationManager ? window.translationManager.t('molecular_biology.blood_meal_origins') : 'Origines du repas sanguin';
+
             content += `
                 <div class="space-y-2">
-                    <p><span class="font-medium">Origines du repas sanguin:</span> ${Array.isArray(item.blood_meal_origins) ? item.blood_meal_origins.join(', ') : item.blood_meal_origins}</p>
+                    <p><span class="font-medium">${bloodMealOrigins}:</span> ${Array.isArray(item.blood_meal_origins) ? item.blood_meal_origins.join(', ') : item.blood_meal_origins}</p>
                 </div>
             `;
         }
         
         if (item.complementary_info) {
+            const complementaryInfo = window.translationManager ? window.translationManager.t('molecular_biology.complementary_info') : 'Informations Complémentaires';
+
             content += `
                 <div class="space-y-2">
-                    <h4 class="font-semibold text-gray-800 border-b pb-2">Informations Complémentaires</h4>
+                    <h4 class="font-semibold text-gray-800 border-b pb-2">${complementaryInfo}</h4>
                     <p class="text-gray-700">${item.complementary_info}</p>
                 </div>
             `;
@@ -423,24 +482,67 @@ class BiologieMoleculaire {
             return;
         }
         
-        // Créer le contenu CSV
+        // Fonction pour échapper les valeurs CSV
+        const escapeCSV = (value) => {
+            if (value === null || value === undefined || value === '') return '';
+            const str = String(value);
+            if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+                return '"' + str.replace(/"/g, '""') + '"';
+            }
+            return str;
+        };
+        
+        // Créer le contenu CSV optimisé
         const headers = [
-            'Type d\'analyse', 'Secteur', 'Échantillons', 'Date d\'analyse', 
-            'Genre', 'Espèce', 'Stade', 'Informations complémentaires'
+            'ID', 'Type_Analyse', 'Secteur', 'Espece', 'Genre', 'Stade', 'Echantillons', 'Date_Analyse',
+            'PCR_Frequence_A', 'PCR_Frequence_A_Prime', 'PCR_Especes_Identifiees', 'PCR_Types_Virus',
+            'PCR_Homozygotes', 'PCR_Heterozygotes', 'PCR_Population_Totale',
+            'Bioessai_Mortalite', 'Bioessai_Survie', 'Bioessai_Insecticides',
+            'Repas_Origines'
         ];
         
         const csvContent = [
-            headers.join(','),
-            ...this.filteredData.map(item => [
-                item.analysis_type,
-                item.sector,
-                item.sample_count,
-                new Date(item.analysis_date).toLocaleDateString('fr-FR'),
-                Array.isArray(item.genus) ? item.genus.join(';') : item.genus,
-                item.species,
-                item.sample_stage,
-                item.complementary_info || ''
-            ].join(','))
+            headers.map(escapeCSV).join(','),
+            ...this.filteredData.map(item => {
+                // Données de base
+                const baseData = [
+                    item.infos_id || '',
+                    item.analysis_type || '',
+                    item.sector || '',
+                    item.species || '',
+                    Array.isArray(item.genus) ? item.genus.join(';') : (item.genus || ''),
+                    item.sample_stage || '',
+                    item.sample_count || '',
+                    new Date(item.analysis_date).toLocaleDateString('fr-FR')
+                ];
+                
+                // Données PCR spécifiques
+                const pcrData = [
+                    item.allelic_frequency_a ? (item.allelic_frequency_a * 100).toFixed(2) + '%' : '',
+                    item.allelic_frequency_a_prime ? (item.allelic_frequency_a_prime * 100).toFixed(2) + '%' : '',
+                    Array.isArray(item.identified_species) ? item.identified_species.join(';') : (item.identified_species || ''),
+                    Array.isArray(item.virus_types) ? item.virus_types.join(';') : (item.virus_types || ''),
+                    item.homozygous_count || '',
+                    item.heterozygous_count || '',
+                    item.total_population || ''
+                ];
+                
+                // Données bioessai spécifiques
+                const bioessaiData = [
+                    item.mortality_percentage ? item.mortality_percentage + '%' : '',
+                    item.survival_percentage ? item.survival_percentage + '%' : '',
+                    Array.isArray(item.insecticide_types) ? item.insecticide_types.join(';') : (item.insecticide_types || '')
+                ];
+                
+                // Données repas sanguin spécifiques
+                const repasData = [
+                    Array.isArray(item.blood_meal_origins) ? item.blood_meal_origins.join(';') : (item.blood_meal_origins || '')
+                ];
+                
+                // Combiner toutes les données et les échapper
+                const allData = [...baseData, ...pcrData, ...bioessaiData, ...repasData];
+                return allData.map(escapeCSV).join(',');
+            })
         ].join('\n');
         
         // Télécharger le fichier
@@ -454,7 +556,7 @@ class BiologieMoleculaire {
         link.click();
         document.body.removeChild(link);
         
-        console.log('📊 Export CSV terminé');
+        console.log('📊 Export CSV optimisé terminé');
     }
 
     showLoading() {

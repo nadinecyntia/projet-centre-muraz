@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-i18n="auth.login_title">Connexion - Centre MURAZ</title>
+    <title>Connexion - Centre MURAZ</title>
     <link href="./css/style.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -56,35 +56,35 @@
             <div class="w-16 h-16 mx-auto mb-4 rounded-full overflow-hidden border-4 border-gray-100">
                 <img src="/logo-centre-muraz.jpg" alt="Logo Centre MURAZ" class="w-full h-full object-cover">
             </div>
-            <h1 class="text-2xl font-bold text-gray-900 mb-2" data-i18n="dashboard.title">Centre MURAZ</h1>
-            <p class="text-gray-600" data-i18n="dashboard.subtitle">Plateforme de Surveillance des Arboviroses</p>
+            <h1 class="text-2xl font-bold text-gray-900 mb-2">Centre MURAZ</h1>
+            <p class="text-gray-600">Plateforme de Surveillance des Arboviroses</p>
         </div>
 
         <!-- Formulaire -->
         <div class="login-card p-8">
-            <h2 class="text-xl font-semibold text-gray-900 mb-6 text-center" data-i18n="auth.login_title">Connexion</h2>
+            <h2 class="text-xl font-semibold text-gray-900 mb-6 text-center">Connexion</h2>
             
             <form id="loginForm" class="space-y-4">
                 <div>
-                    <label for="username" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="auth.username">
+                    <label for="username" class="block text-sm font-medium text-gray-700 mb-2">
                         Nom d'utilisateur
                     </label>
                     <input type="text" id="username" name="username" required
                         class="input-field"
-                        placeholder="Entrez votre nom d'utilisateur" data-i18n="auth.username">
+                        placeholder="Entrez votre nom d'utilisateur">
                 </div>
                 
                 <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="auth.password">
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
                         Mot de passe
                     </label>
                     <input type="password" id="password" name="password" required
                         class="input-field"
-                        placeholder="Entrez votre mot de passe" data-i18n="auth.password">
+                        placeholder="Entrez votre mot de passe">
                 </div>
                 
                 <button type="submit" id="loginBtn" class="btn-primary w-full">
-                    <span id="loginBtnText" data-i18n="auth.login_button">Se connecter</span>
+                    <span id="loginBtnText">Se connecter</span>
                 </button>
             </form>
 
@@ -111,7 +111,6 @@
         </div>
     </div>
 
-    <script src="./js/translation.js"></script>
     <script>
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -165,3 +164,4 @@
     </script>
 </body>
 </html>
+

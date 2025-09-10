@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Simple - Centre MURAZ</title>
+    <link href="./css/style.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+    <header class="bg-white shadow-lg p-4">
+        <div class="flex items-center justify-between">
+            <h1 class="text-xl font-bold text-muraz-blue">Test Simple</h1>
+            <div id="languageSelector" class="language-selector"></div>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-6">
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h2 data-i18n="dashboard.title">Centre MURAZ Dashboard</h2>
+            <p data-i18n="dashboard.subtitle">Arbovirus Surveillance Platform</p>
+            <button data-i18n="navigation.home">Accueil</button>
+        </div>
+    </main>
+
+    <script src="./js/translation.js"></script>
+    <script src="./js/app.js"></script>
+    
+    <script>
+        // Test simple
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🧪 TEST SIMPLE - Page chargée');
+            
+            setTimeout(() => {
+                const languageSelector = document.getElementById('languageSelector');
+                console.log('🎯 Sélecteur trouvé:', !!languageSelector);
+                
+                if (languageSelector && window.translationManager) {
+                    const existingSelect = languageSelector.querySelector('select');
+                    console.log('🔍 Sélecteur existant:', !!existingSelect);
+                    
+                    if (!existingSelect) {
+                        console.log('➕ Création manuelle du sélecteur...');
+                        const selector = window.translationManager.createLanguageSelector();
+                        languageSelector.appendChild(selector);
+                        
+                        const select = selector.querySelector('select');
+                        if (select) {
+                            select.addEventListener('change', (e) => {
+                                console.log('🔄 Changement:', e.target.value);
+                                window.translationManager.changeLanguage(e.target.value);
+                            });
+                        }
+                        console.log('✅ Sélecteur créé manuellement');
+                    } else {
+                        console.log('✅ Sélecteur déjà présent');
+                    }
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

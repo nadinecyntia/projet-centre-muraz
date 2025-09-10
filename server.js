@@ -7,6 +7,7 @@ require('dotenv').config();
 
 const { pool } = require('./config/database');
 const apiRoutes = require('./routes/api');
+const apiArchiveRoutes = require('./routes/api-archive');
 const authController = require('./controllers/authController');
 const { requireAuth, requireSuperAdmin, requireViewer } = require('./middleware/auth');
 
@@ -54,6 +55,7 @@ app.get('/api/auth/check', authController.checkAuth);
 
 // Routes API
 app.use('/api', apiRoutes);
+app.use('/api', apiArchiveRoutes);
 
 // Route de login
 app.get('/login', (req, res) => {
@@ -87,6 +89,13 @@ app.get('/admin', requireAuth, requireSuperAdmin, (req, res) => {
 app.get('/indices', requireAuth, requireViewer, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'indices.html'));
 });
+
+
+// Route principale pour tester les indices sans authentification
+
+
+// Route temporaire pour tester les graphiques sans authentification
+
 
 // Route de test pour la navigation
 app.get('/test', (req, res) => {

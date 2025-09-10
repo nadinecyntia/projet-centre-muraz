@@ -139,7 +139,7 @@ class KoboCollectSync {
                     }
 
                     if (wasInserted) {
-                        processedCount++;
+                    processedCount++;
                         console.log(`✅ ${formType} traité: ${mappedData.concession_code} - ${mappedData.house_code}`);
                     } else {
                         console.log(`ℹ️ ${formType} déjà présent: ${mappedData.concession_code} - ${mappedData.house_code}`);
@@ -167,7 +167,7 @@ class KoboCollectSync {
     // Traiter les gîtes larvaires
     async processBreedingSites(client, householdId, mappedData) {
         const result = await client.query(`
-            INSERT INTO breeding_sites (
+                    INSERT INTO breeding_sites (
                 household_visit_id, total_sites, positive_sites, negative_sites,
                 larvae_count, larvae_genus, aedes_larvae_count, culex_larvae_count, anopheles_larvae_count, other_larvae_count,
                 nymphs_count, nymphs_genus, aedes_nymphs_count, culex_nymphs_count, anopheles_nymphs_count, other_nymphs_count,
@@ -229,19 +229,25 @@ class KoboCollectSync {
         const captureLocationsArray = mappedData.capture_locations ? mappedData.capture_locations.split(' ') : [];
 
         const result = await client.query(`
-            INSERT INTO adult_mosquitoes (
-                household_visit_id, genus, species, collection_methods,
+                INSERT INTO adult_mosquitoes (
+                household_visit_id, genus, 
+                aedes_count, culex_count, anopheles_count, other_genus_count,
+                species, collection_methods,
                 prokopack_traps_count, bg_traps_count, capture_locations,
                 prokopack_mosquitoes_count, bg_trap_mosquitoes_count, total_mosquitoes_count,
                 male_count, female_count,
                 blood_fed_females_count, gravid_females_count, starved_females_count,
                 observations, kobo_uuid
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
             ON CONFLICT (kobo_uuid) DO NOTHING
             RETURNING id
         `, [
             householdId,
             genusArray,
+            mappedData.aedes_count || 0,
+            mappedData.culex_count || 0,
+            mappedData.anopheles_count || 0,
+            mappedData.other_genus_count || 0,
             speciesArray,
             collectionMethodsArray,
             mappedData.prokopack_traps_count,

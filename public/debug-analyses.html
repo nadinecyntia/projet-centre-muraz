@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Analyses</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>Debug Page Analyses</h1>
+    
+    <div class="test">
+        <h2>1. Test TranslationManager</h2>
+        <div id="manager-test">Chargement...</div>
+    </div>
+    
+    <div class="test">
+        <h2>2. Test languageSelector</h2>
+        <div id="selector-test">Chargement...</div>
+        <div id="languageSelector" style="border: 1px solid red; padding: 10px; margin: 10px 0;">
+            <p>Zone du sélecteur de langue</p>
+        </div>
+    </div>
+    
+    <div class="test">
+        <h2>3. Test création sélecteur</h2>
+        <button onclick="createSelector()">Créer le sélecteur</button>
+        <div id="create-test">Cliquez sur le bouton</div>
+    </div>
+
+    <script src="./js/translation.js"></script>
+    <script>
+        // Test automatique
+        setTimeout(() => {
+            const managerTest = document.getElementById('manager-test');
+            const selectorTest = document.getElementById('selector-test');
+            const languageSelector = document.getElementById('languageSelector');
+            
+            // Test 1: TranslationManager
+            if (window.translationManager) {
+                managerTest.innerHTML = '<span class="success">TranslationManager trouvé</span><br>';
+                managerTest.innerHTML += 'Langue: ' + window.translationManager.getCurrentLanguage() + '<br>';
+                managerTest.innerHTML += 'Chargé: ' + window.translationManager.isLoaded + '<br>';
+            } else {
+                managerTest.innerHTML = '<span class="error">TranslationManager non trouvé</span>';
+            }
+            
+            // Test 2: languageSelector
+            selectorTest.innerHTML = 'Element languageSelector trouvé: ' + (!!languageSelector) + '<br>';
+            selectorTest.innerHTML += 'Enfants: ' + languageSelector.children.length + '<br>';
+            selectorTest.innerHTML += 'Contenu: ' + languageSelector.innerHTML + '<br>';
+            
+        }, 1000);
+        
+        // Test 3: Création manuelle
+        function createSelector() {
+            const createTest = document.getElementById('create-test');
+            const languageSelector = document.getElementById('languageSelector');
+            
+            try {
+                if (window.translationManager) {
+                    const selector = window.translationManager.createLanguageSelector();
+                    languageSelector.innerHTML = '';
+                    languageSelector.appendChild(selector);
+                    
+                    // Ajouter l'écouteur
+                    const select = selector.querySelector('select');
+                    if (select) {
+                        select.addEventListener('change', (e) => {
+                            console.log('Changement de langue:', e.target.value);
+                            window.translationManager.changeLanguage(e.target.value);
+                        });
+                    }
+                    
+                    createTest.innerHTML = '<span class="success">Sélecteur créé avec succès!</span>';
+                } else {
+                    createTest.innerHTML = '<span class="error">TranslationManager non disponible</span>';
+                }
+            } catch (error) {
+                createTest.innerHTML = '<span class="error">Erreur: ' + error.message + '</span>';
+            }
+        }
+    </script>
+</body>
+</html>

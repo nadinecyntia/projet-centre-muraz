@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Translation</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug Translation System</h1>
+    
+    <div class="test-section">
+        <h2>1. Test de chargement des fichiers</h2>
+        <div id="file-test">Chargement...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Test du TranslationManager</h2>
+        <div id="manager-test">Chargement...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Test des traductions</h2>
+        <div id="translation-test">Chargement...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Test du sélecteur de langue</h2>
+        <div id="selector-test">Chargement...</div>
+        <div id="languageSelector" style="margin-top: 10px;"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>5. Test de changement de langue</h2>
+        <button onclick="testLanguageChange()">Tester changement EN/FR</button>
+        <div id="change-test">Cliquez sur le bouton</div>
+    </div>
+
+    <script>
+        // Test 1: Chargement des fichiers
+        async function testFileLoading() {
+            const fileTest = document.getElementById('file-test');
+            try {
+                const response = await fetch('/translations/fr.json');
+                if (response.ok) {
+                    const data = await response.json();
+                    fileTest.innerHTML = `<span class="success">✅ Fichier fr.json chargé (${Object.keys(data).length} sections)</span>`;
+                } else {
+                    fileTest.innerHTML = `<span class="error">❌ Erreur chargement fr.json: ${response.status}</span>`;
+                }
+            } catch (error) {
+                fileTest.innerHTML = `<span class="error">❌ Erreur: ${error.message}</span>`;
+            }
+        }
+
+        // Test 2: TranslationManager
+        function testTranslationManager() {
+            const managerTest = document.getElementById('manager-test');
+            if (window.translationManager) {
+                managerTest.innerHTML = `
+                    <span class="success">✅ TranslationManager trouvé</span><br>
+                    <span class="info">- Langue: ${window.translationManager.getCurrentLanguage()}</span><br>
+                    <span class="info">- Chargé: ${window.translationManager.isLoaded}</span><br>
+                    <span class="info">- Traductions: ${Object.keys(window.translationManager.translations || {}).length} langues</span>
+                `;
+            } else {
+                managerTest.innerHTML = `<span class="error">❌ TranslationManager non trouvé</span>`;
+            }
+        }
+
+        // Test 3: Traductions
+        function testTranslations() {
+            const translationTest = document.getElementById('translation-test');
+            if (window.translationManager && window.translationManager.isLoaded) {
+                const currentLang = window.translationManager.getCurrentLanguage();
+                const translations = window.translationManager.translations[currentLang];
+                if (translations) {
+                    translationTest.innerHTML = `
+                        <span class="success">✅ Traductions chargées pour ${currentLang}</span><br>
+                        <span class="info">- admin.title: ${window.translationManager.t('admin.title')}</span><br>
+                        <span class="info">- dashboard.title: ${window.translationManager.t('dashboard.title')}</span><br>
+                        <span class="info">- navigation.home: ${window.translationManager.t('navigation.home')}</span>
+                    `;
+                } else {
+                    translationTest.innerHTML = `<span class="error">❌ Aucune traduction pour ${currentLang}</span>`;
+                }
+            } else {
+                translationTest.innerHTML = `<span class="error">❌ Traductions non chargées</span>`;
+            }
+        }
+
+        // Test 4: Sélecteur de langue
+        function testLanguageSelector() {
+            const selectorTest = document.getElementById('selector-test');
+            const selectorDiv = document.getElementById('languageSelector');
+            
+            if (window.translationManager) {
+                try {
+                    const selector = window.translationManager.createLanguageSelector();
+                    selectorDiv.appendChild(selector);
+                    selectorTest.innerHTML = `<span class="success">✅ Sélecteur créé</span>`;
+                    
+                    // Ajouter l'écouteur
+                    const select = selector.querySelector('select');
+                    if (select) {
+                        select.addEventListener('change', (e) => {
+                            console.log('Changement de langue:', e.target.value);
+                            window.translationManager.changeLanguage(e.target.value).then(() => {
+                                testTranslations();
+                            });
+                        });
+                        selectorTest.innerHTML += `<br><span class="success">✅ Écouteur ajouté</span>`;
+                    }
+                } catch (error) {
+                    selectorTest.innerHTML = `<span class="error">❌ Erreur création sélecteur: ${error.message}</span>`;
+                }
+            } else {
+                selectorTest.innerHTML = `<span class="error">❌ TranslationManager non disponible</span>`;
+            }
+        }
+
+        // Test 5: Changement de langue
+        async function testLanguageChange() {
+            const changeTest = document.getElementById('change-test');
+            changeTest.innerHTML = '<span class="info">Test en cours...</span>';
+            
+            try {
+                // Test vers EN
+                await window.translationManager.changeLanguage('en');
+                changeTest.innerHTML += '<br><span class="success">✅ Changement vers EN réussi</span>';
+                
+                // Attendre un peu
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Test vers FR
+                await window.translationManager.changeLanguage('fr');
+                changeTest.innerHTML += '<br><span class="success">✅ Changement vers FR réussi</span>';
+                
+                changeTest.innerHTML += '<br><span class="success">✅ Test de changement terminé</span>';
+            } catch (error) {
+                changeTest.innerHTML += `<br><span class="error">❌ Erreur: ${error.message}</span>`;
+            }
+        }
+
+        // Lancer tous les tests
+        async function runAllTests() {
+            await testFileLoading();
+            testTranslationManager();
+            testTranslations();
+            testLanguageSelector();
+        }
+
+        // Attendre que le DOM soit chargé
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', runAllTests);
+        } else {
+            runAllTests();
+        }
+    </script>
+    
+    <!-- Charger le script de traduction -->
+    <script src="./js/translation.js"></script>
+</body>
+</html>
