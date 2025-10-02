@@ -1,471 +1,535 @@
 // =====================================================
-// API D'ACCÈS AUX DONNÉES ARCHIVÉES - CENTRE MURAZ
+// API D'ARCHIVAGE COMPLET
+// Centre MURAZ - Gestion de l'archivage des données
 // =====================================================
 
 const express = require('express');
+const { Pool } = require('pg');
 const router = express.Router();
+
 const { pool } = require('../config/database');
-
-// Cache pour les données archivées
-const archiveCache = new Map();
-const CACHE_TTL = 3600000; // 1 heure
+const { requireAuth, requireSuperAdmin } = require('../middleware/auth');
 
 // =====================================================
-// ROUTE PRINCIPALE - STATISTIQUES D'ARCHIVAGE
+// 1. ENDPOINTS DE GESTION D'ARCHIVAGE
 // =====================================================
 
-router.get('/archive/stats', async (req, res) => {
+// Lister les opérations d'archivage
+router.get('/archive/runs', requireAuth, async (req, res) => {
     try {
         const client = await pool.connect();
         
+        try {
         const query = `
             SELECT 
-                COUNT(*) as total_archived_months,
-                COALESCE(SUM(total_visits_archived), 0) as total_visits_archived,
-                COALESCE(SUM(total_breeding_sites_archived), 0) as total_breeding_sites_archived,
-                COALESCE(SUM(total_eggs_collection_archived), 0) as total_eggs_collection_archived,
-                COALESCE(SUM(total_adult_mosquitoes_archived), 0) as total_adult_mosquitoes_archived,
-                MIN(archive_month) as oldest_archive,
-                MAX(archive_month) as newest_archive,
-                AVG(archive_duration_ms) as avg_archive_duration
-            FROM archive_metadata
+                    id,
+                    archive_year,
+                    archive_date,
+                    status,
+                    eggs_records_count,
+                    breeding_sites_records_count,
+                    mosquitoes_records_count,
+                    analyses_pcr_records_count,
+                    analyses_bioessai_records_count,
+                    analyses_repas_sanguin_records_count,
+                    infos_communes_records_count,
+                    started_by,
+                    completed_at,
+                    error_message,
+                    total_duration_seconds,
+                    created_at
+                FROM archive_runs 
+                ORDER BY archive_date DESC
         `;
         
         const result = await client.query(query);
-        const stats = result.rows[0];
-        
-        // Calculer l'espace économisé
-        const activeDataQuery = `
-            SELECT 
-                COUNT(*) as active_visits,
-                (SELECT COUNT(*) FROM breeding_sites) as active_breeding_sites,
-                (SELECT COUNT(*) FROM eggs_collection) as active_eggs,
-                (SELECT COUNT(*) FROM adult_mosquitoes) as active_mosquitoes
-            FROM household_visits
-        `;
-        
-        const activeResult = await client.query(activeDataQuery);
-        const activeData = activeResult.rows[0];
-        
-        const response = {
+            
+            res.json({
             success: true,
-            archive_stats: {
-                total_archived_months: parseInt(stats.total_archived_months),
-                total_visits_archived: parseInt(stats.total_visits_archived),
-                total_breeding_sites_archived: parseInt(stats.total_breeding_sites_archived),
-                total_eggs_collection_archived: parseInt(stats.total_eggs_collection_archived),
-                total_adult_mosquitoes_archived: parseInt(stats.total_adult_mosquitoes_archived),
-                oldest_archive: stats.oldest_archive,
-                newest_archive: stats.newest_archive,
-                avg_archive_duration_ms: parseInt(stats.avg_archive_duration) || 0
-            },
-            active_data: {
-                active_visits: parseInt(activeData.active_visits),
-                active_breeding_sites: parseInt(activeData.active_breeding_sites),
-                active_eggs: parseInt(activeData.active_eggs),
-                active_mosquitoes: parseInt(activeData.active_mosquitoes)
-            },
-            performance_metrics: {
-                storage_optimization: stats.total_visits_archived > 0 ? 
-                    Math.round((stats.total_visits_archived / (stats.total_visits_archived + activeData.active_visits)) * 100) : 0,
-                data_ratio: activeData.active_visits > 0 ? 
-                    Math.round((stats.total_visits_archived / activeData.active_visits) * 100) : 0
-            }
-        };
-        
-        client.release();
-        res.json(response);
-        
-    } catch (error) {
-        console.error('Erreur API archive stats:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Erreur lors de la récupération des statistiques d\'archive'
-        });
-    }
-});
-
-// =====================================================
-// ROUTE - INDICES ARCHIVÉS PAR MOIS
-// =====================================================
-
-router.get('/archive/indices', async (req, res) => {
-    try {
-        const { page = 1, limit = 12, start_date, end_date } = req.query;
-        const offset = (parseInt(page) - 1) * parseInt(limit);
-        
-        const client = await pool.connect();
-        
-        // Construire les conditions WHERE
-        let whereClause = '';
-        const queryParams = [];
-        
-        if (start_date && end_date) {
-            whereClause = 'WHERE archive_month >= $1 AND archive_month <= $2';
-            queryParams.push(start_date, end_date);
-        } else if (start_date) {
-            whereClause = 'WHERE archive_month >= $1';
-            queryParams.push(start_date);
-        } else if (end_date) {
-            whereClause = 'WHERE archive_month <= $1';
-            queryParams.push(end_date);
-        }
-        
-        // Requête principale
-        const query = `
-            SELECT 
-                archive_month,
-                archive_date,
-                total_visits_archived,
-                ib_average,
-                im_average,
-                ir_average,
-                ipp_average,
-                icn_average,
-                iap_bg_average,
-                iap_prokopack_average,
-                sectors_count,
-                villages_count,
-                archive_status
-            FROM archive_metadata
-            ${whereClause}
-            ORDER BY archive_month DESC
-            LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}
-        `;
-        
-        queryParams.push(parseInt(limit), offset);
-        
-        const result = await client.query(query, queryParams);
-        
-        // Compter le total
-        const countQuery = `
-            SELECT COUNT(*) as total
-            FROM archive_metadata
-            ${whereClause}
-        `;
-        
-        const countResult = await client.query(countQuery, 
-            queryParams.slice(0, -2) // Exclure LIMIT et OFFSET
-        );
-        
-        const total = parseInt(countResult.rows[0].total);
-        const totalPages = Math.ceil(total / parseInt(limit));
-        
-        // Formater les données
-        const formattedData = result.rows.map(row => ({
-            month: row.archive_month,
-            archive_date: row.archive_date,
-            visits_count: parseInt(row.total_visits_archived),
-            indices: {
-                ib: parseFloat(row.ib_average) || 0,
-                im: parseFloat(row.im_average) || 0,
-                ir: parseFloat(row.ir_average) || 0,
-                ipp: parseFloat(row.ipp_average) || 0,
-                icn: parseFloat(row.icn_average) || 0,
-                iap_bg: parseFloat(row.iap_bg_average) || 0,
-                iap_prokopack: parseFloat(row.iap_prokopack_average) || 0
-            },
-            sectors_count: parseInt(row.sectors_count) || 0,
-            villages_count: parseInt(row.villages_count) || 0,
-            status: row.archive_status
-        }));
-        
-        const response = {
-            success: true,
-            data: formattedData,
-            pagination: {
-                current_page: parseInt(page),
-                total_pages: totalPages,
-                total_records: total,
-                limit: parseInt(limit),
-                has_next: parseInt(page) < totalPages,
-                has_previous: parseInt(page) > 1
-            }
-        };
-        
-        client.release();
-        res.json(response);
-        
-    } catch (error) {
-        console.error('Erreur API archive indices:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Erreur lors de la récupération des indices archivés'
-        });
-    }
-});
-
-// =====================================================
-// ROUTE - RECHERCHE DANS LES ARCHIVES
-// =====================================================
-
-router.get('/archive/search', async (req, res) => {
-    try {
-        const { q, sector, village, start_date, end_date, page = 1, limit = 50 } = req.query;
-        const offset = (parseInt(page) - 1) * parseInt(limit);
-        
-        const client = await pool.connect();
-        
-        // Construire les conditions WHERE
-        const conditions = [];
-        const queryParams = [];
-        let paramIndex = 1;
-        
-        if (q) {
-            conditions.push(`(hv.household_head_name ILIKE $${paramIndex} OR hv.household_id ILIKE $${paramIndex})`);
-            queryParams.push(`%${q}%`);
-            paramIndex++;
-        }
-        
-        if (sector) {
-            conditions.push(`hv.sector = $${paramIndex}`);
-            queryParams.push(sector);
-            paramIndex++;
-        }
-        
-        if (village) {
-            conditions.push(`hv.village = $${paramIndex}`);
-            queryParams.push(village);
-            paramIndex++;
-        }
-        
-        if (start_date) {
-            conditions.push(`hv.visit_start_date >= $${paramIndex}`);
-            queryParams.push(start_date);
-            paramIndex++;
-        }
-        
-        if (end_date) {
-            conditions.push(`hv.visit_start_date <= $${paramIndex}`);
-            queryParams.push(end_date);
-            paramIndex++;
-        }
-        
-        const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
-        
-        // Requête principale
-        const query = `
-            SELECT 
-                hv.household_visit_id,
-                hv.visit_start_date,
-                hv.sector,
-                hv.village,
-                hv.household_id,
-                hv.household_head_name,
-                hv.archived_at,
-                COUNT(bs.id) as breeding_sites_count,
-                COUNT(ec.id) as eggs_collection_count,
-                COUNT(am.id) as adult_mosquitoes_count
-            FROM household_visits_archive hv
-            LEFT JOIN breeding_sites_archive bs ON hv.household_visit_id = bs.household_visit_id
-            LEFT JOIN eggs_collection_archive ec ON hv.household_visit_id = ec.household_visit_id
-            LEFT JOIN adult_mosquitoes_archive am ON hv.household_visit_id = am.household_visit_id
-            ${whereClause}
-            GROUP BY hv.id, hv.household_visit_id, hv.visit_start_date, hv.sector, hv.village, 
-                     hv.household_id, hv.household_head_name, hv.archived_at
-            ORDER BY hv.visit_start_date DESC
-            LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
-        `;
-        
-        queryParams.push(parseInt(limit), offset);
-        
-        const result = await client.query(query, queryParams);
-        
-        // Compter le total
-        const countQuery = `
-            SELECT COUNT(DISTINCT hv.id) as total
-            FROM household_visits_archive hv
-            ${whereClause}
-        `;
-        
-        const countResult = await client.query(countQuery, 
-            queryParams.slice(0, -2) // Exclure LIMIT et OFFSET
-        );
-        
-        const total = parseInt(countResult.rows[0].total);
-        const totalPages = Math.ceil(total / parseInt(limit));
-        
-        const response = {
-            success: true,
-            data: result.rows.map(row => ({
-                household_visit_id: row.household_visit_id,
-                visit_date: row.visit_start_date,
-                sector: row.sector,
-                village: row.village,
-                household_id: row.household_id,
-                household_head_name: row.household_head_name,
-                archived_at: row.archived_at,
-                data_counts: {
-                    breeding_sites: parseInt(row.breeding_sites_count),
-                    eggs_collection: parseInt(row.eggs_collection_count),
-                    adult_mosquitoes: parseInt(row.adult_mosquitoes_count)
-                }
-            })),
-            pagination: {
-                current_page: parseInt(page),
-                total_pages: totalPages,
-                total_records: total,
-                limit: parseInt(limit),
-                has_next: parseInt(page) < totalPages,
-                has_previous: parseInt(page) > 1
-            }
-        };
-        
-        client.release();
-        res.json(response);
-        
-    } catch (error) {
-        console.error('Erreur API archive search:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Erreur lors de la recherche dans les archives'
-        });
-    }
-});
-
-// =====================================================
-// ROUTE - EXPORT DES DONNÉES ARCHIVÉES
-// =====================================================
-
-router.get('/archive/export', async (req, res) => {
-    try {
-        const { format = 'json', month } = req.query;
-        const client = await pool.connect();
-        
-        if (format !== 'json' && format !== 'csv') {
-            return res.status(400).json({
-                success: false,
-                error: 'Format non supporté. Utilisez "json" ou "csv"'
+                data: result.rows,
+                total: result.rows.length
             });
+            
+        } finally {
+        client.release();
         }
         
-        let whereClause = '';
-        const queryParams = [];
+    } catch (error) {
+        console.error('❌ Erreur lors de la récupération des opérations d\'archivage:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erreur lors de la récupération des opérations d\'archivage',
+            details: error.message
+        });
+    }
+});
+
+// Obtenir les détails d'une opération d'archivage
+router.get('/archive/runs/:runId', requireAuth, async (req, res) => {
+    try {
+        const { runId } = req.params;
+        const client = await pool.connect();
         
-        if (month) {
-            whereClause = 'WHERE DATE_TRUNC(\'month\', hv.visit_start_date) = $1';
-            queryParams.push(month);
-        }
-        
+        try {
         const query = `
             SELECT 
-                hv.household_visit_id,
-                hv.visit_start_date,
-                hv.sector,
-                hv.village,
-                hv.household_id,
-                hv.household_head_name,
-                hv.latitude,
-                hv.longitude,
-                hv.archived_at,
-                bs.site_type,
-                bs.positive_sites,
-                bs.total_sites,
-                bs.nymphs_present,
-                ec.ovitrap_location,
-                ec.eggs_count,
-                ec.eggs_present,
-                am.trap_type,
-                am.genus,
-                am.aedes_count,
-                am.culex_count,
-                am.anopheles_count,
-                am.other_genus_count,
-                am.total_mosquitoes_count
-            FROM household_visits_archive hv
-            LEFT JOIN breeding_sites_archive bs ON hv.household_visit_id = bs.household_visit_id
-            LEFT JOIN eggs_collection_archive ec ON hv.household_visit_id = ec.household_visit_id
-            LEFT JOIN adult_mosquitoes_archive am ON hv.household_visit_id = am.household_visit_id
-            ${whereClause}
-            ORDER BY hv.visit_start_date DESC
-        `;
+                    id,
+                    archive_year,
+                archive_date,
+                    status,
+                    eggs_records_count,
+                    breeding_sites_records_count,
+                    mosquitoes_records_count,
+                    analyses_pcr_records_count,
+                    analyses_bioessai_records_count,
+                    analyses_repas_sanguin_records_count,
+                    infos_communes_records_count,
+                    started_by,
+                    completed_at,
+                    error_message,
+                    total_duration_seconds,
+                    created_at
+                FROM archive_runs 
+                WHERE id = $1
+            `;
+            
+            const result = await client.query(query, [runId]);
+            
+            if (result.rows.length === 0) {
+                return res.status(404).json({
+                    success: false,
+                    error: 'Opération d\'archivage non trouvée'
+                });
+            }
+            
+            res.json({
+            success: true,
+                data: result.rows[0]
+            });
+            
+        } finally {
+        client.release();
+        }
         
-        const result = await client.query(query, queryParams);
+    } catch (error) {
+        console.error('❌ Erreur lors de la récupération de l\'opération d\'archivage:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erreur lors de la récupération de l\'opération d\'archivage',
+            details: error.message
+        });
+    }
+});
+
+// =====================================================
+// 2. ENDPOINTS D'ARCHIVAGE MANUEL
+// =====================================================
+
+// Archiver les données d'une année spécifique
+router.post('/archive/year/:year', requireSuperAdmin, async (req, res) => {
+    const { year } = req.params;
+    const startedBy = req.session.user?.username || 'system';
+    
+    try {
+        const client = await pool.connect();
         
-        if (format === 'csv') {
-            // Générer CSV
-            const headers = [
-                'household_visit_id', 'visit_start_date', 'sector', 'village',
-                'household_id', 'household_head_name', 'latitude', 'longitude',
-                'archived_at', 'site_type', 'positive_sites', 'total_sites',
-                'nymphs_present', 'ovitrap_location', 'eggs_count', 'eggs_present',
-                'trap_type', 'genus', 'aedes_count', 'culex_count', 'anopheles_count',
-                'other_genus_count', 'total_mosquitoes_count'
+        try {
+            await client.query('BEGIN');
+            
+            const startTime = Date.now();
+            
+            // Créer l'enregistrement d'opération d'archivage
+            const archiveRunQuery = `
+                INSERT INTO archive_runs (archive_year, started_by, status)
+                VALUES ($1, $2, 'running')
+                RETURNING id
+            `;
+            
+            const archiveRunResult = await client.query(archiveRunQuery, [year, startedBy]);
+            const archiveRunId = archiveRunResult.rows[0].id;
+            
+            console.log(`🔄 Début de l'archivage de l'année ${year} (Run ID: ${archiveRunId})`);
+            
+            // 1. Archiver les œufs
+            const eggsArchiveQuery = `
+                INSERT INTO eggs_collection_archive (
+                    id, eggs_concession_code, eggs_sector, eggs_environment, eggs_visit_start_date,
+                    eggs_gps_code, nest_number, nest_code, pass_order, eggs_count, observations,
+                    status, created_at, updated_at, validated_by, validated_at, validation_notes,
+                    batch_id, batch_start_date, batch_end_date, batch_investigator, submitted_by,
+                    archived_year, archive_run_id
+                )
+                SELECT 
+                    id, eggs_concession_code, eggs_sector, eggs_environment, eggs_visit_start_date,
+                    eggs_gps_code, nest_number, nest_code, pass_order, eggs_count, observations,
+                    status, created_at, updated_at, validated_by, validated_at, validation_notes,
+                    batch_id, batch_start_date, batch_end_date, batch_investigator, submitted_by,
+                    $1, $2
+                FROM eggs_collection_new 
+                WHERE EXTRACT(YEAR FROM eggs_visit_start_date) = $1
+                AND status = 'approved'
+            `;
+            
+            const eggsResult = await client.query(eggsArchiveQuery, [year, archiveRunId]);
+            const eggsCount = eggsResult.rowCount;
+            
+            // 2. Archiver les gîtes larvaires
+            const breedingSitesArchiveQuery = `
+                INSERT INTO breeding_sites_archive (
+                    id, site_investigator_name, site_concession_code, site_house_code, site_sector,
+                    site_environment, site_visit_start_date, site_visit_end_date, site_visit_start_time,
+                    site_visit_end_time, site_gps_code, site_household_size, site_sleeping_unit_count,
+                    site_head_contact, total_sites_count, positive_sites_count, negative_sites_count,
+                    larvae_genus, larvae_count, aedes_larvae_count, culex_larvae_count, anopheles_larvae_count,
+                    other_larvae_count, nymphs_genus, nymphs_count, aedes_nymphs_count, culex_nymphs_count,
+                    anopheles_nymphs_count, other_nymphs_count, sites_types, site_classes, observations,
+                    status, created_at, updated_at, validated_by, validated_at, validation_notes,
+                    batch_id, batch_start_date, batch_end_date, batch_investigator, submitted_by,
+                    archived_year, archive_run_id
+                )
+                SELECT 
+                    id, site_investigator_name, site_concession_code, site_house_code, site_sector,
+                    site_environment, site_visit_start_date, site_visit_end_date, site_visit_start_time,
+                    site_visit_end_time, site_gps_code, site_household_size, site_sleeping_unit_count,
+                    site_head_contact, total_sites_count, positive_sites_count, negative_sites_count,
+                    larvae_genus, larvae_count, aedes_larvae_count, culex_larvae_count, anopheles_larvae_count,
+                    other_larvae_count, nymphs_genus, nymphs_count, aedes_nymphs_count, culex_nymphs_count,
+                    anopheles_nymphs_count, other_nymphs_count, sites_types, site_classes, observations,
+                    status, created_at, updated_at, validated_by, validated_at, validation_notes,
+                    batch_id, batch_start_date, batch_end_date, batch_investigator, submitted_by,
+                    $1, $2
+                FROM breeding_sites_new 
+                WHERE EXTRACT(YEAR FROM site_visit_start_date) = $1
+                AND status = 'approved'
+            `;
+            
+            const breedingSitesResult = await client.query(breedingSitesArchiveQuery, [year, archiveRunId]);
+            const breedingSitesCount = breedingSitesResult.rowCount;
+            
+            // 3. Archiver les moustiques adultes
+            const mosquitoesArchiveQuery = `
+                INSERT INTO adult_mosquitoes_archive (
+                    id, mosquitoes_concession_code, mosquitoes_sector, mosquitoes_environment,
+                    mosquitoes_visit_start_date, mosquitoes_visit_start_time, mosquitoes_visit_end_time,
+                    mosquitoes_gps_code, genus, species, collection_methods, capture_locations,
+                    prokopack_traps_count, bg_traps_count, prokopack_mosquitoes_count, bg_trap_mosquitoes_count,
+                    total_mosquitoes_count, male_count, aedes_male_count, culex_male_count, anopheles_male_count,
+                    other_male_count, female_count, blood_fed_females_count, gravid_females_count,
+                    starved_females_count, mosquitoes_aedes_count, mosquitoes_culex_count, mosquitoes_anopheles_count,
+                    mosquitoes_other_count, observations, status, created_at, updated_at, validated_by,
+                    validated_at, validation_notes, batch_id, batch_start_date, batch_end_date,
+                    batch_investigator, submitted_by, archived_year, archive_run_id
+                )
+                SELECT 
+                    id, mosquitoes_concession_code, mosquitoes_sector, mosquitoes_environment,
+                    mosquitoes_visit_start_date, mosquitoes_visit_start_time, mosquitoes_visit_end_time,
+                    mosquitoes_gps_code, genus, species, collection_methods, capture_locations,
+                    prokopack_traps_count, bg_traps_count, prokopack_mosquitoes_count, bg_trap_mosquitoes_count,
+                    total_mosquitoes_count, male_count, aedes_male_count, culex_male_count, anopheles_male_count,
+                    other_male_count, female_count, blood_fed_females_count, gravid_females_count,
+                    starved_females_count, mosquitoes_aedes_count, mosquitoes_culex_count, mosquitoes_anopheles_count,
+                    mosquitoes_other_count, observations, status, created_at, updated_at, validated_by,
+                    validated_at, validation_notes, batch_id, batch_start_date, batch_end_date,
+                    batch_investigator, submitted_by, $1, $2
+                FROM adult_mosquitoes_new 
+                WHERE EXTRACT(YEAR FROM mosquitoes_visit_start_date) = $1
+                AND status = 'approved'
+            `;
+            
+            const mosquitoesResult = await client.query(mosquitoesArchiveQuery, [year, archiveRunId]);
+            const mosquitoesCount = mosquitoesResult.rowCount;
+            
+            // 4. Archiver les analyses PCR
+            const pcrArchiveQuery = `
+                INSERT INTO analyses_pcr_archive (
+                    id, sample_id, commune, sector, collection_date, analysis_date,
+                    mosquito_genus, mosquito_species, test_type, result, ct_value,
+                    notes, analyst, created_at, updated_at, archived_year, archive_run_id
+                )
+                SELECT 
+                    id, sample_id, commune, sector, collection_date, analysis_date,
+                    mosquito_genus, mosquito_species, test_type, result, ct_value,
+                    notes, analyst, created_at, updated_at, $1, $2
+                FROM analyses_pcr 
+                WHERE EXTRACT(YEAR FROM collection_date) = $1
+            `;
+            
+            const pcrResult = await client.query(pcrArchiveQuery, [year, archiveRunId]);
+            const pcrCount = pcrResult.rowCount;
+            
+            // 5. Archiver les analyses bioessai
+            const bioessaiArchiveQuery = `
+                INSERT INTO analyses_bioessai_archive (
+                    id, sample_id, commune, sector, collection_date, analysis_date,
+                    mosquito_genus, mosquito_species, insecticide_type, concentration,
+                    exposure_time, mortality_rate, resistance_status, notes, analyst,
+                    created_at, updated_at, archived_year, archive_run_id
+                )
+                SELECT 
+                    id, sample_id, commune, sector, collection_date, analysis_date,
+                    mosquito_genus, mosquito_species, insecticide_type, concentration,
+                    exposure_time, mortality_rate, resistance_status, notes, analyst,
+                    created_at, updated_at, $1, $2
+                FROM analyses_bioessai 
+                WHERE EXTRACT(YEAR FROM collection_date) = $1
+            `;
+            
+            const bioessaiResult = await client.query(bioessaiArchiveQuery, [year, archiveRunId]);
+            const bioessaiCount = bioessaiResult.rowCount;
+            
+            // 6. Archiver les analyses de repas sanguin
+            const repasSanguinArchiveQuery = `
+                INSERT INTO analyses_repas_sanguin_archive (
+                    id, sample_id, commune, sector, collection_date, analysis_date,
+                    mosquito_genus, mosquito_species, blood_meal_source, host_species,
+                    feeding_time, notes, analyst, created_at, updated_at, archived_year, archive_run_id
+                )
+                SELECT 
+                    id, sample_id, commune, sector, collection_date, analysis_date,
+                    mosquito_genus, mosquito_species, blood_meal_source, host_species,
+                    feeding_time, notes, analyst, created_at, updated_at, $1, $2
+                FROM analyses_repas_sanguin 
+                WHERE EXTRACT(YEAR FROM collection_date) = $1
+            `;
+            
+            const repasSanguinResult = await client.query(repasSanguinArchiveQuery, [year, archiveRunId]);
+            const repasSanguinCount = repasSanguinResult.rowCount;
+            
+            // 7. Archiver les informations communales (pas de filtre par année car données statiques)
+            const infosCommunesArchiveQuery = `
+                INSERT INTO infos_communes_archive (
+                    id, commune, sector, environment, population, households,
+                    latitude, longitude, altitude, climate_zone, vegetation_type,
+                    water_sources, mosquito_breeding_sites, control_measures,
+                    last_survey_date, notes, created_at, updated_at, archived_year, archive_run_id
+                )
+            SELECT 
+                    id, commune, sector, environment, population, households,
+                    latitude, longitude, altitude, climate_zone, vegetation_type,
+                    water_sources, mosquito_breeding_sites, control_measures,
+                    last_survey_date, notes, created_at, updated_at, $1, $2
+                FROM infos_communes
+            `;
+            
+            const infosCommunesResult = await client.query(infosCommunesArchiveQuery, [year, archiveRunId]);
+            const infosCommunesCount = infosCommunesResult.rowCount;
+            
+            // Mettre à jour l'enregistrement d'opération d'archivage
+            const endTime = Date.now();
+            const durationSeconds = Math.round((endTime - startTime) / 1000);
+            
+            const updateArchiveRunQuery = `
+                UPDATE archive_runs 
+                SET 
+                    status = 'completed',
+                    completed_at = CURRENT_TIMESTAMP,
+                    eggs_records_count = $1,
+                    breeding_sites_records_count = $2,
+                    mosquitoes_records_count = $3,
+                    analyses_pcr_records_count = $4,
+                    analyses_bioessai_records_count = $5,
+                    analyses_repas_sanguin_records_count = $6,
+                    infos_communes_records_count = $7,
+                    total_duration_seconds = $8
+                WHERE id = $9
+            `;
+            
+            await client.query(updateArchiveRunQuery, [
+                eggsCount, breedingSitesCount, mosquitoesCount, pcrCount,
+                bioessaiCount, repasSanguinCount, infosCommunesCount,
+                durationSeconds, archiveRunId
+            ]);
+            
+            await client.query('COMMIT');
+            
+            console.log(`✅ Archivage de l'année ${year} terminé avec succès`);
+            console.log(`📊 Résultats: ${eggsCount} œufs, ${breedingSitesCount} gîtes, ${mosquitoesCount} moustiques, ${pcrCount} PCR, ${bioessaiCount} bioessai, ${repasSanguinCount} repas sanguin, ${infosCommunesCount} communes`);
+            
+            res.json({
+            success: true,
+                message: `Archivage de l'année ${year} terminé avec succès`,
+                data: {
+                    archiveRunId,
+                    year,
+                    durationSeconds,
+                    recordsArchived: {
+                        eggs: eggsCount,
+                        breedingSites: breedingSitesCount,
+                        mosquitoes: mosquitoesCount,
+                        pcr: pcrCount,
+                        bioessai: bioessaiCount,
+                        repasSanguin: repasSanguinCount,
+                        infosCommunes: infosCommunesCount
+                    }
+                }
+            });
+            
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+        client.release();
+        }
+        
+    } catch (error) {
+        console.error(`❌ Erreur lors de l'archivage de l'année ${year}:`, error);
+        res.status(500).json({
+            success: false,
+            error: `Erreur lors de l'archivage de l'année ${year}`,
+            details: error.message
+        });
+    }
+});
+
+// =====================================================
+// 3. ENDPOINTS DE SUPPRESSION DES DONNÉES ARCHIVÉES
+// =====================================================
+
+// Supprimer les données originales après archivage
+router.delete('/archive/cleanup/:year', requireSuperAdmin, async (req, res) => {
+    const { year } = req.params;
+    
+    try {
+        const client = await pool.connect();
+        
+        try {
+            await client.query('BEGIN');
+            
+            console.log(`🗑️ Suppression des données originales de l'année ${year}`);
+            
+            // Supprimer les données originales (seulement les données approuvées)
+            const deleteQueries = [
+                { table: 'eggs_collection_new', dateColumn: 'eggs_visit_start_date' },
+                { table: 'breeding_sites_new', dateColumn: 'site_visit_start_date' },
+                { table: 'adult_mosquitoes_new', dateColumn: 'mosquitoes_visit_start_date' },
+                { table: 'analyses_pcr', dateColumn: 'collection_date' },
+                { table: 'analyses_bioessai', dateColumn: 'collection_date' },
+                { table: 'analyses_repas_sanguin', dateColumn: 'collection_date' }
             ];
             
-            const csvContent = [
-                headers.join(','),
-                ...result.rows.map(row => 
-                    headers.map(header => {
-                        const value = row[header];
-                        return typeof value === 'string' && value.includes(',') ? 
-                            `"${value}"` : value;
-                    }).join(',')
-                )
-            ].join('\n');
+            const deletionResults = {};
             
-            res.setHeader('Content-Type', 'text/csv');
-            res.setHeader('Content-Disposition', `attachment; filename="archive_export_${new Date().toISOString().split('T')[0]}.csv"`);
-            res.send(csvContent);
+            for (const queryInfo of deleteQueries) {
+                const deleteQuery = `
+                    DELETE FROM ${queryInfo.table} 
+                    WHERE EXTRACT(YEAR FROM ${queryInfo.dateColumn}) = $1
+                    ${queryInfo.table.includes('_new') ? "AND status = 'approved'" : ''}
+                `;
+                
+                const result = await client.query(deleteQuery, [year]);
+                deletionResults[queryInfo.table] = result.rowCount;
+                console.log(`🗑️ Supprimé ${result.rowCount} enregistrements de ${queryInfo.table}`);
+            }
             
-        } else {
-            // Retourner JSON
+            await client.query('COMMIT');
+            
             res.json({
                 success: true,
-                data: result.rows,
-                export_info: {
-                    format: 'json',
-                    total_records: result.rows.length,
-                    export_date: new Date().toISOString(),
-                    month_filter: month || 'all'
+                message: `Suppression des données originales de l'année ${year} terminée`,
+                data: {
+                    year,
+                    deletedRecords: deletionResults
                 }
             });
+            
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
         }
         
-        client.release();
-        
     } catch (error) {
-        console.error('Erreur API archive export:', error);
+        console.error(`❌ Erreur lors de la suppression des données de l'année ${year}:`, error);
         res.status(500).json({
             success: false,
-            error: 'Erreur lors de l\'export des données archivées'
+            error: `Erreur lors de la suppression des données de l'année ${year}`,
+            details: error.message
         });
     }
 });
 
 // =====================================================
-// ROUTE - NETTOYAGE DU CACHE
+// 4. ENDPOINTS DE CONSULTATION DES ARCHIVES
 // =====================================================
 
-router.delete('/archive/cache/clear', (req, res) => {
-    archiveCache.clear();
+// Obtenir les statistiques des archives
+router.get('/archive/statistics', requireAuth, async (req, res) => {
+    try {
+        const client = await pool.connect();
+        
+        try {
+            const query = `
+                SELECT 
+                    archive_year,
+                    COUNT(*) as total_runs,
+                    SUM(eggs_records_count) as total_eggs_archived,
+                    SUM(breeding_sites_records_count) as total_breeding_sites_archived,
+                    SUM(mosquitoes_records_count) as total_mosquitoes_archived,
+                    SUM(analyses_pcr_records_count) as total_pcr_archived,
+                    SUM(analyses_bioessai_records_count) as total_bioessai_archived,
+                    SUM(analyses_repas_sanguin_records_count) as total_repas_sanguin_archived,
+                    SUM(infos_communes_records_count) as total_infos_communes_archived,
+                    MAX(archive_date) as last_archive_date
+                FROM archive_runs 
+                WHERE status = 'completed'
+                GROUP BY archive_year
+                ORDER BY archive_year DESC
+            `;
+            
+            const result = await client.query(query);
+            
     res.json({
         success: true,
-        message: 'Cache d\'archive vidé avec succès'
-    });
+                data: result.rows
+            });
+            
+        } finally {
+            client.release();
+        }
+        
+    } catch (error) {
+        console.error('❌ Erreur lors de la récupération des statistiques d\'archivage:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erreur lors de la récupération des statistiques d\'archivage',
+            details: error.message
+        });
+    }
 });
 
-// =====================================================
-// ROUTE - STATISTIQUES DU CACHE
-// =====================================================
-
-router.get('/archive/cache/stats', (req, res) => {
-    const cacheStats = {
-        total_entries: archiveCache.size,
-        cache_size_mb: 0, // Approximation
-        cache_hits: 0, // À implémenter si nécessaire
-        cache_misses: 0 // À implémenter si nécessaire
-    };
+// Obtenir les années disponibles dans les archives (public)
+router.get('/years', async (req, res) => {
+    try {
+        const client = await pool.connect();
+        
+        try {
+            const query = `
+                SELECT DISTINCT archive_year 
+                FROM archive_runs 
+                WHERE status = 'completed'
+                ORDER BY archive_year DESC
+            `;
+            
+            const result = await client.query(query);
     
     res.json({
         success: true,
-        cache_stats: cacheStats
-    });
+                data: result.rows.map(row => row.archive_year)
+            });
+            
+        } finally {
+            client.release();
+        }
+        
+    } catch (error) {
+        console.error('❌ Erreur lors de la récupération des années archivées:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erreur lors de la récupération des années archivées',
+            details: error.message
+        });
+    }
 });
 
 module.exports = router;
-
-
-
-
-

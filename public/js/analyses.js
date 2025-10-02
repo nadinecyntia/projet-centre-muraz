@@ -1,680 +1,1738 @@
-// =====================================================
-// ARCHITECTURE MODULAIRE PARFAITEMENT PROPRE - CENTRE MURAZ
-// =====================================================
-
-// Classe de base abstraite pour tous les graphiques
-class BaseChart {
-    constructor(containerId, chartName) {
-        this.containerId = containerId;
-        this.chartName = chartName;
-        this.chart = null;
-        this.data = null;
-        this.isInitialized = false;
-        this.errorMessage = null;
-        
-        console.log(`🚀 Initialisation ${this.chartName} (${this.containerId})`);
+// Gestionnaire de thème pour les graphiques
+class ThemeManager {
+    constructor() {
+        this.currentTheme = 'sober'; // Force toujours les couleurs sobres
+        this.initThemeToggle();
+        this.updateThemeIndicator();
     }
-    
+
+    initThemeToggle() {
+        // Pas de basculement - toujours couleurs sobres
+        this.updateThemeIndicator();
+    }
+
+    updateThemeIndicator() {
+        const indicator = document.getElementById('currentTheme');
+        if (indicator) {
+            indicator.textContent = 'Couleurs légères';
+        }
+    }
+
+    getThemeColors() {
+        // Couleurs légères et professionnelles
+        return {
+            primary: '#4a90e2',      // Bleu léger professionnel
+            secondary: '#7b68ee',    // Violet léger
+            accent: '#50c878',       // Vert léger
+            background: '#ffffff',   // Blanc pur
+            border: '#e0e0e0'        // Gris très clair
+        };
+    }
+
+    getColorArray(count) {
+        // Palette de couleurs légères et professionnelles
+        return [
+            '#4a90e2',  // Bleu léger
+            '#7b68ee',  // Violet léger
+            '#50c878',  // Vert léger
+            '#ffa500',  // Orange léger
+            '#ff6b6b',  // Rouge léger
+            '#20b2aa',  // Turquoise léger
+            '#98fb98',  // Vert clair
+            '#ffb6c1',  // Rose léger
+            '#dda0dd',  // Violet clair
+            '#f0e68c'   // Jaune léger
+        ].slice(0, count);
+    }
+
+    getColorWithAlpha(color, alpha = 0.8) {
+        const colors = this.getThemeColors();
+        const colorMap = {
+            primary: colors.primary,
+            secondary: colors.secondary,
+            accent: colors.accent
+        };
+        const baseColor = colorMap[color] || color;
+        return baseColor + Math.round(alpha * 255).toString(16).padStart(2, '0');
+    }
+
+    // Fonction simplifiée pour obtenir des couleurs sobres
+    getSoberColors(count) {
+        const soberPalette = [
+            '#2c3e50',  // Bleu-gris foncé
+            '#34495e',  // Gris anthracite  
+            '#5d6d7e',  // Gris bleuté
+            '#7f8c8d',  // Gris moyen
+            '#95a5a6',  // Gris clair
+            '#85929e',  // Gris bleu clair
+            '#566573',  // Gris foncé
+            '#a6acaf'   // Gris très clair
+        ];
+        return soberPalette.slice(0, count);
+    }
+
+    updateAllCharts() {
+        // Mettre à jour tous les graphiques qui dépendent des filtres
+        if (this.charts.eggsSectorMonth) {
+            const data = this.processEggsSectorMonthData();
+            this.charts.eggsSectorMonth.data.labels = data.labels;
+            this.charts.eggsSectorMonth.data.datasets = data.datasets;
+            this.charts.eggsSectorMonth.update();
+        }
+
+        if (this.charts.eggsMonthEnvironment) {
+            const data = this.processEggsMonthEnvironmentData();
+            this.charts.eggsMonthEnvironment.data.labels = data.labels;
+            this.charts.eggsMonthEnvironment.data.datasets = data.datasets;
+            this.charts.eggsMonthEnvironment.update();
+        }
+
+        if (this.charts.sitesSectorMonth) {
+            const data = this.processSitesSectorMonthData();
+            this.charts.sitesSectorMonth.data.labels = data.labels;
+            this.charts.sitesSectorMonth.data.datasets = data.datasets;
+            this.charts.sitesSectorMonth.update();
+        }
+
+        if (this.charts.aedesSectorMonth) {
+            const data = this.processAedesSectorMonthData();
+            this.charts.aedesSectorMonth.data.labels = data.labels;
+            this.charts.aedesSectorMonth.data.datasets = data.datasets;
+            this.charts.aedesSectorMonth.update();
+        }
+
+        if (this.charts.siteTypeEnvironment) {
+            const data = this.processSiteTypeEnvironmentData();
+            this.charts.siteTypeEnvironment.data.labels = data.labels;
+            this.charts.siteTypeEnvironment.data.datasets = data.datasets;
+            this.charts.siteTypeEnvironment.update();
+        }
+
+        if (this.charts.aedesMethodLocation) {
+            const data = this.processAedesMethodLocationData();
+            this.charts.aedesMethodLocation.data.labels = data.labels;
+            this.charts.aedesMethodLocation.data.datasets = data.datasets;
+            this.charts.aedesMethodLocation.update();
+        }
+    }
+}
+
+// Gestionnaire principal des analyses
+class AnalysesManager {
+    constructor() {
+        this.themeManager = new ThemeManager();
+        this.charts = {};
+        this.data = {};
+        this.currentYear = this.getYearFromQuery() || 'current';
+        this.currentEnvironment = 'all'; // Filtre milieu par défaut
+        this.init();
+    }
+
     async init() {
         try {
+            console.log('🚀 Initialisation des analyses entomologiques...');
             await this.loadData();
-            this.createChart();
-            this.setupEventListeners();
-            this.isInitialized = true;
-            console.log(`✅ ${this.chartName} initialisé avec succès`);
+            this.createCharts();
+            console.log('✅ Analyses initialisées avec succès');
         } catch (error) {
-            console.error(`❌ Erreur ${this.chartName}:`, error);
-            this.showError(`Erreur lors du chargement de ${this.chartName}: ${error.message}`);
+            console.error('❌ Erreur lors de l\'initialisation:', error);
+            this.showError('Erreur lors du chargement des données');
         }
     }
-    
+
     async loadData() {
-        // Pour les graphiques œufs, ne pas charger les données ici car les graphiques indépendants le font
-        if (this.chartName === 'Œufs par Secteur' || this.chartName === 'Œufs par Mois') {
-            console.log(`📊 Pas de chargement de données pour ${this.chartName} (géré par le graphique indépendant)`);
-            return;
-        }
+        console.log('📊 Chargement des données...');
         
-        const response = await fetch('/api/analyses');
-        if (!response.ok) {
-            throw new Error(`Erreur API: ${response.status}`);
+        try {
+            // Charger toutes les données en parallèle
+            await this.populateYearSelector();
+            const [eggsData, larvaeData, adultsData] = await Promise.all([
+                this.fetchEggsData(),
+                this.fetchLarvaeData(),
+                this.fetchAdultsData()
+            ]);
+
+            this.data = {
+                eggs: eggsData,
+                larvae: larvaeData,
+                adults: adultsData
+            };
+
+            console.log('✅ Données chargées:', {
+                eggs: eggsData?.length || 0,
+                larvae: larvaeData?.length || 0,
+                adults: adultsData?.length || 0
+            });
+
+            // Initialiser les filtres après le chargement des données
+            this.initializeFilters();
+
+        } catch (error) {
+            console.error('❌ Erreur lors du chargement des données:', error);
+            throw error;
         }
-        
+    }
+
+    async fetchEggsData() {
+        const query = this.currentYear && this.currentYear !== 'current' ? `?year=${encodeURIComponent(this.currentYear)}` : '';
+        const response = await fetch(`/api/analyses/eggs${query}`);
+        if (!response.ok) throw new Error('Erreur lors du chargement des données œufs');
         const result = await response.json();
-        if (!result.success) {
-            throw new Error(result.message || 'Erreur lors du chargement des données');
-        }
-        
-        this.data = result.data;
-        console.log(`📊 Données chargées pour ${this.chartName}`);
+        this.updateArchiveBanner(result.year, result.mode);
+        return result.data || [];
     }
-    
-    createChart() {
-        const ctx = document.getElementById(this.containerId);
-        if (!ctx) {
-            throw new Error(`Container ${this.containerId} non trouvé`);
-        }
-        
-        this.chart = new Chart(ctx, {
-            type: this.getChartType(),
-            data: this.prepareData(),
-            options: this.getOptions()
-        });
-        
-        console.log(`🎨 Graphique ${this.chartName} créé`);
-    }
-    
-    updateChart(newData = null) {
-        if (!this.chart) {
-            console.warn(`⚠️ Tentative de mise à jour ${this.chartName} non initialisé`);
-            return;
-        }
-        
-        if (newData) {
-            this.data = newData;
-        }
-        
-        this.chart.data = this.prepareData();
-        this.chart.update();
-        console.log(`🔄 ${this.chartName} mis à jour`);
-    }
-    
-    destroy() {
-        if (this.chart) {
-            this.chart.destroy();
-            this.chart = null;
-            console.log(`🗑️ ${this.chartName} détruit`);
-        }
-    }
-    
-    showError(message) {
-        this.errorMessage = message;
-        const container = document.getElementById(this.containerId);
-        if (container) {
-            container.innerHTML = `
-                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-                    <div class="flex">
-                        <div class="flex-shrink-0">
-                            <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                            </svg>
-                        </div>
-                        <div class="ml-3">
-                            <h3 class="text-sm font-medium text-red-800">Erreur ${this.chartName}</h3>
-                            <div class="mt-2 text-sm text-red-700">${message}</div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-    }
-    
-    // Méthodes abstraites à implémenter par les classes filles
-    getChartType() {
-        throw new Error('getChartType() doit être implémentée par la classe fille');
-    }
-    
-    prepareData() {
-        throw new Error('prepareData() doit être implémentée par la classe fille');
-    }
-    
-    getOptions() {
-        throw new Error('getOptions() doit être implémentée par la classe fille');
-    }
-    
-    setupEventListeners() {
-        // Par défaut, pas d'événements spécifiques
-    }
-}
 
-// =====================================================
-// GRAPHIQUE 1: ŒUFS PAR SECTEUR - UTILISE LE NOUVEAU SYSTÈME
-// =====================================================
-class OeufsSecteurChart extends BaseChart {
-    constructor() {
-        super('oeufs-secteur-chart', 'Œufs par Secteur');
-        this.selectedMonth = '';
-        this.independentChart = null; // Référence au graphique indépendant
+    async fetchLarvaeData() {
+        const query = this.currentYear && this.currentYear !== 'current' ? `?year=${encodeURIComponent(this.currentYear)}` : '';
+        const response = await fetch(`/api/analyses/breeding${query}`);
+        if (!response.ok) throw new Error('Erreur lors du chargement des données larves');
+        const result = await response.json();
+        return result.data || [];
     }
-    
-    async init() {
-        try {
-            console.log('🚀 Initialisation du graphique œufs avec le nouveau système...');
-            
-            // Créer le graphique indépendant
-            this.independentChart = new OeufsSecteurChartIndependent('oeufs-secteur-chart');
-            await this.independentChart.init();
-            
-            this.isInitialized = true;
-            console.log('✅ Graphique œufs initialisé avec le nouveau système');
-        } catch (error) {
-            console.error('❌ Erreur lors de l\'initialisation du graphique œufs:', error);
-            this.showError(`Erreur lors du chargement du graphique œufs: ${error.message}`);
-        }
-    }
-    
-    // Déléguer toutes les méthodes au graphique indépendant
-    updateChart(newData = null) {
-        if (this.independentChart) {
-            this.independentChart.updateChart(newData);
-        }
-    }
-    
-    destroy() {
-        if (this.independentChart) {
-            this.independentChart.destroy();
-        }
-    }
-    
-    // Méthodes abstraites requises par BaseChart (non utilisées)
-    getChartType() { return 'bar'; }
-    prepareData() { return { labels: [], datasets: [] }; }
-    getOptions() { return {}; }
-    setupEventListeners() {}
-}
 
-// =====================================================
-// GRAPHIQUE 2: ŒUFS PAR MOIS - UTILISE LE NOUVEAU SYSTÈME
-// =====================================================
-class OeufsMoisChart extends BaseChart {
-    constructor() {
-        super('oeufs-mois-chart', 'Œufs par Mois');
-        this.independentChart = null; // Référence au graphique indépendant
+    async fetchAdultsData() {
+        const query = this.currentYear && this.currentYear !== 'current' ? `?year=${encodeURIComponent(this.currentYear)}` : '';
+        const response = await fetch(`/api/analyses/mosquitoes${query}`);
+        if (!response.ok) throw new Error('Erreur lors du chargement des données adultes');
+        const result = await response.json();
+        return result.data || [];
     }
-    
-    async init() {
-        try {
-            console.log('🚀 Initialisation du graphique œufs par mois avec le nouveau système...');
-            
-            // Créer le graphique indépendant
-            this.independentChart = new OeufsMoisChartIndependent('oeufs-mois-chart');
-            await this.independentChart.init();
-            
-            this.isInitialized = true;
-            console.log('✅ Graphique œufs par mois initialisé avec le nouveau système');
-        } catch (error) {
-            console.error('❌ Erreur lors de l\'initialisation du graphique œufs par mois:', error);
-            this.showError(`Erreur lors du chargement du graphique œufs par mois: ${error.message}`);
-        }
-    }
-    
-    // Déléguer toutes les méthodes au graphique indépendant
-    updateChart(newData = null) {
-        if (this.independentChart) {
-            this.independentChart.updateChart(newData);
-        }
-    }
-    
-    destroy() {
-        if (this.independentChart) {
-            this.independentChart.destroy();
-        }
-    }
-    
-    // Méthodes abstraites requises par BaseChart (non utilisées)
-    getChartType() { return 'line'; }
-    prepareData() { return { labels: [], datasets: [] }; }
-    getOptions() { return {}; }
-    setupEventListeners() {}
-}
 
-// =====================================================
-// GRAPHIQUE 3: DENSITÉ ANNUELLE
-// =====================================================
-class DensiteAnnuelleChart extends BaseChart {
-    constructor() {
-        super('densite-annuelle-chart', 'Densité Annuelle');
-    }
-    
-    getChartType() {
-        return 'line';
-    }
-    
-    prepareData() {
-        if (!this.data?.chartData?.adultes) {
-            return { labels: [], datasets: [] };
-        }
+    createCharts() {
+        console.log('📈 Création des graphiques...');
         
-        const periodes = Object.keys(this.data.chartData.adultes);
-        const periodesTriees = this.sortPeriodesChronologiquement(periodes);
+        // 1. Œufs par secteur et par mois
+        this.createEggsSectorMonthChart();
         
-        const data = periodesTriees.map(periode => {
-            const secteurData = this.data.chartData.adultes[periode] || {};
-            return Object.values(secteurData).reduce((sum, value) => sum + (value || 0), 0);
-        });
+        // 2. Évolution des œufs dans l'année
+        this.createEggsEvolutionChart();
         
-        return {
-            labels: periodesTriees,
-            datasets: [{
-                label: 'Total Moustiques Adultes',
-                data: data,
-                backgroundColor: '#3b82f620',
-                borderColor: '#3b82f6',
-                borderWidth: 3,
-                fill: true,
-                tension: 0.1
-            }]
-        };
+        // 2.5. Œufs par mois et par milieu
+        this.createEggsMonthEnvironmentChart();
+        
+        // 3. Larves par mois par secteur
+        this.createLarvaeSectorChart();
+        
+        // 3.1. Gîtes par secteur par mois
+        this.createSitesSectorMonthChart();
+        
+        // 3.2. Aedes par secteur par mois
+        this.createAedesSectorMonthChart();
+        
+        // 3.3. Types de gîtes par milieu
+        this.createSiteTypeEnvironmentChart();
+        
+        // 3.4. Aedes par méthode et lieu de capture
+        this.createAedesMethodLocationChart();
+        
+        // 4. Courbe densité moustiques adultes
+        this.createAdultsDensityChart();
+        
+        // 5. Densité par secteur par mois
+        this.createAdultsSectorChart();
+        
+        // 6. Densité par genre
+        this.createAdultsGenusChart();
     }
-    
-    getOptions() {
-        return {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Densité Annuelle des Moustiques Adultes',
-                    font: { size: 16, weight: 'bold' }
-                },
-                legend: {
-                    display: true,
-                    position: 'top'
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function(value) {
-                            if (value >= 100000) return (value / 1000000).toFixed(1) + 'M';
-                            if (value >= 100) return (value / 1000).toFixed(1) + 'k';
-                            return value;
-                        }
-                    }
-                }
-            }
-        };
-    }
-    
-    sortPeriodesChronologiquement(periodes) {
-        return periodes.sort((a, b) => {
-            const [moisA, anneeA] = a.split(' ');
-            const [moisB, anneeB] = b.split(' ');
-            const moisIndex = {
-                'Janvier': 1, 'Février': 2, 'Mars': 3, 'Avril': 4,
-                'Mai': 5, 'Juin': 6, 'Juillet': 7, 'Août': 8,
-                'Septembre': 9, 'Octobre': 10, 'Novembre': 11, 'Décembre': 12
-            };
-            
-            if (anneeA !== anneeB) return parseInt(anneeA) - parseInt(anneeB);
-            return moisIndex[moisA] - moisIndex[moisB];
-        });
-    }
-}
 
-// =====================================================
-// GRAPHIQUE 4: DENSITÉ PAR SECTEUR
-// =====================================================
-class DensiteSecteurChart extends BaseChart {
-    constructor() {
-        super('densite-secteur-chart', 'Densité par Secteur');
-    }
-    
-    getChartType() {
-        return 'bar';
-    }
-    
-    prepareData() {
-        if (!this.data?.chartData?.adultes) {
-            return { labels: [], datasets: [] };
-        }
+    // Initialiser les filtres
+    initializeFilters() {
+        console.log('🎛️ Initialisation des filtres...');
         
-        const secteurs = this.data.secteurs || [];
-        const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
-        
-        const data = secteurs.map(secteur => {
-            return Object.values(this.data.chartData.adultes).reduce((sum, periode) => {
-                return sum + (periode[secteur] || 0);
-            }, 0);
-        });
-        
-        return {
-            labels: secteurs,
-            datasets: [{
-                label: 'Moustiques Adultes (total)',
-                data: data,
-                backgroundColor: colors.slice(0, secteurs.length),
-                borderWidth: 2,
-                borderColor: '#ffffff'
-            }]
-        };
-    }
-    
-    getOptions() {
-        return {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Densité des Moustiques Adultes par Secteur',
-                    font: { size: 16, weight: 'bold' }
-                },
-                legend: {
-                    display: true,
-                    position: 'top'
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function(value) {
-                            if (value >= 100000) return (value / 1000000).toFixed(1) + 'M';
-                            if (value >= 100) return (value / 1000).toFixed(1) + 'k';
-                            return value;
-                        }
-                    }
-                }
-            }
-        };
-    }
-}
-
-// =====================================================
-// GRAPHIQUE 5: RÉPARTITION PAR GENRE
-// =====================================================
-class GenreChart extends BaseChart {
-    constructor() {
-        super('genre-chart', 'Répartition par Genre');
-        this.selectedMonth = '';
-    }
-    
-    getChartType() {
-        return 'doughnut';
-    }
-    
-    prepareData() {
-        if (!this.data?.chartData?.adultesParGenre) {
-            return { labels: [], datasets: [] };
-        }
-        
-        const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
-        
-        if (this.selectedMonth) {
-            // Données pour le mois sélectionné
-            const genreData = this.data.chartData.adultesParGenre[this.selectedMonth] || {};
-            const labels = Object.keys(genreData);
-            const data = Object.values(genreData);
-            
-            return {
-                labels: labels,
-                datasets: [{
-                    label: `Répartition - ${this.selectedMonth}`,
-                    data: data,
-                    backgroundColor: colors.slice(0, labels.length),
-                    borderWidth: 2,
-                    borderColor: '#ffffff'
-                }]
-            };
-        } else {
-            // Total de tous les mois
-            const periodes = Object.keys(this.data.chartData.adultesParGenre);
-            const genreTotals = {};
-            
-            periodes.forEach(periode => {
-                const periodeData = this.data.chartData.adultesParGenre[periode] || {};
-                Object.keys(periodeData).forEach(genre => {
-                    genreTotals[genre] = (genreTotals[genre] || 0) + (periodeData[genre] || 0);
+        // Sélecteur d'année global (analyses)
+        const yearSelect = document.getElementById('year-selection-analyses');
+        if (yearSelect) {
+            yearSelect.addEventListener('change', (e) => {
+                this.currentYear = e.target.value;
+                this.setYearInQuery(this.currentYear);
+                this.loadData().then(() => {
+                    // Recréer les graphiques après rechargement
+                    Object.values(this.charts).forEach(ch => ch?.destroy?.());
+                    this.charts = {};
+                    this.createCharts();
                 });
             });
-            
-            const labels = Object.keys(genreTotals);
-            const data = Object.values(genreTotals);
-            
-            return {
-                labels: labels,
-                datasets: [{
-                    label: 'Répartition (total)',
-                    data: data,
-                    backgroundColor: colors.slice(0, labels.length),
-                    borderWidth: 2,
-                    borderColor: '#ffffff'
-                }]
-            };
         }
+
+        // Gestion du filtre milieu
+        const environmentSelect = document.getElementById('environment-filter-analyses');
+        if (environmentSelect) {
+            environmentSelect.addEventListener('change', (e) => {
+                this.currentEnvironment = e.target.value;
+                this.updateAllCharts();
+            });
+        }
+
+        // Initialiser le filtre des secteurs pour l'évolution des œufs
+        this.initializeSectorFilter();
+        
+        // Initialiser le filtre des mois pour la densité par genre
+        this.initializeMonthFilter();
     }
-    
-    getOptions() {
-        return {
+
+    // Initialiser le filtre des secteurs
+    initializeSectorFilter() {
+        const sectorFilter = document.getElementById('sectorFilter');
+        if (!sectorFilter) {
+            console.error('❌ Élément sectorFilter non trouvé');
+            return;
+        }
+
+        // Récupérer tous les secteurs uniques des données œufs
+        const sectors = new Set();
+        this.data.eggs.forEach(item => {
+            if (item.sector) {
+                // Gérer les secteurs comme string simple
+                sectors.add(item.sector);
+            }
+        });
+        
+        const sectorsArray = Array.from(sectors);
+        console.log('🎯 Secteurs trouvés:', sectorsArray);
+        
+        // Vider le select et ajouter les options
+        sectorFilter.innerHTML = '<option value="all">Tous les secteurs</option>';
+        sectorsArray.forEach(sector => {
+            const option = document.createElement('option');
+            option.value = sector;
+            option.textContent = sector;
+            sectorFilter.appendChild(option);
+        });
+
+        // Ajouter l'événement de changement
+        sectorFilter.addEventListener('change', (e) => {
+            console.log('🔄 Changement de secteur:', e.target.value);
+            this.updateEggsEvolutionChart(e.target.value);
+        });
+    }
+
+    // Initialiser le filtre des mois
+    initializeMonthFilter() {
+        const monthFilter = document.getElementById('monthFilter');
+        if (!monthFilter) return;
+
+        // Récupérer tous les mois uniques des données moustiques adultes
+        const months = [...new Set(this.data.adults.map(item => {
+            const date = new Date(item.visit_date);
+            return this.getMonthLabel(date);
+        }).filter(Boolean))];
+        
+        // Vider le select et ajouter les options
+        monthFilter.innerHTML = '<option value="all">Tous les mois</option>';
+        months.forEach(month => {
+            const option = document.createElement('option');
+            option.value = month;
+            option.textContent = month;
+            monthFilter.appendChild(option);
+        });
+
+        // Ajouter l'événement de changement
+        monthFilter.addEventListener('change', (e) => {
+            this.updateAdultsGenusChart(e.target.value);
+        });
+    }
+
+    // 1. Œufs par secteur et par mois
+    createEggsSectorMonthChart() {
+        const ctx = document.getElementById('eggsSectorMonthChart');
+        if (!ctx) return;
+
+        const data = this.processEggsSectorMonthData();
+        
+        // Calculer la valeur maximale pour adapter l'échelle
+        const maxValue = Math.max(...data.datasets.flatMap(dataset => dataset.data));
+        
+        this.charts.eggsSectorMonth = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: data.datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Nombre d\'œufs par secteur et par mois',
+                        font: { size: 16, weight: 'bold' }
+                    },
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                const value = context.parsed.y;
+                                return `${context.dataset.label}: ${this.formatLargeValue(value)} œufs`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: this.getAdaptiveScaleConfig('Nombre d\'œufs', maxValue),
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Mois'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // 2. Évolution des œufs dans l'année
+    createEggsEvolutionChart() {
+        const ctx = document.getElementById('eggsEvolutionChart');
+        if (!ctx) return;
+
+        const data = this.processEggsEvolutionData('all');
+        
+        // Calculer la valeur maximale pour adapter l'échelle
+        const maxValue = Math.max(...data.values);
+        
+        this.charts.eggsEvolution = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.labels,
+            datasets: [{
+                    label: 'Total œufs collectés',
+                    data: data.values,
+                    borderColor: this.themeManager.getThemeColors().primary,
+                    backgroundColor: this.themeManager.getColorWithAlpha('primary', 0.1),
+                borderWidth: 3,
+                fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Évolution du nombre total d\'œufs collectés dans l\'année',
+                        font: { size: 16, weight: 'bold' }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                const value = context.parsed.y;
+                                return `Total œufs: ${this.formatLargeValue(value)}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: this.getAdaptiveScaleConfig('Nombre d\'œufs', maxValue),
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Mois'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // 2.5. Œufs par mois et par milieu
+    createEggsMonthEnvironmentChart() {
+        const ctx = document.getElementById('eggsMonthEnvironmentChart');
+        if (!ctx) return;
+
+        const data = this.processEggsMonthEnvironmentData();
+        
+        // Calculer la valeur maximale pour adapter l'échelle
+        const maxValue = Math.max(...data.datasets.flatMap(dataset => dataset.data));
+        
+        this.charts.eggsMonthEnvironment = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: data.datasets
+            },
+            options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
                 title: {
                     display: true,
-                    text: 'Répartition des Moustiques par Genre',
+                        text: 'Nombre d\'œufs par mois et par milieu',
                     font: { size: 16, weight: 'bold' }
                 },
                 legend: {
                     display: true,
-                    position: 'right'
+                    position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                const value = context.parsed.y;
+                                return `${context.dataset.label}: ${this.formatLargeValue(value)} œufs`;
+                            }
+                        }
+                }
+            },
+            scales: {
+                    y: this.getAdaptiveScaleConfig('Nombre d\'œufs', maxValue),
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Mois'
+                        }
+                    }
                 }
             }
+        });
+    }
+
+    // 3. Larves par mois par secteur
+    createLarvaeSectorChart() {
+        const ctx = document.getElementById('larvaeSectorChart');
+        if (!ctx) return;
+
+        const data = this.processLarvaeSectorData();
+        
+        // Calculer la valeur maximale pour adapter l'échelle
+        const maxValue = Math.max(...data.datasets.flatMap(dataset => dataset.data));
+        
+        this.charts.larvaeSector = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: data.datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Nombre total de larves et nymphes par mois par secteur',
+                        font: { size: 16, weight: 'bold' }
+                    },
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                const value = context.parsed.y;
+                                return `${context.dataset.label}: ${this.formatLargeValue(value)} larves + nymphes`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: this.getAdaptiveScaleConfig('Nombre de larves + nymphes', maxValue),
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Mois'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    createSitesSectorMonthChart() {
+        const ctx = document.getElementById('sitesSectorMonthChart');
+        if (!ctx) return;
+
+        const data = this.processSitesSectorMonthData();
+        
+        // Calculer la valeur maximale pour adapter l'échelle
+        const maxValue = Math.max(...data.datasets.flatMap(dataset => dataset.data));
+        
+        this.charts.sitesSectorMonth = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: data.datasets
+            },
+            options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                        text: 'Nombre de gîtes par secteur par mois',
+                    font: { size: 16, weight: 'bold' }
+                },
+                legend: {
+                    display: true,
+                    position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                const value = context.parsed.y;
+                                return `${context.dataset.label}: ${this.formatLargeValue(value)} gîtes`;
+                            }
+                        }
+                }
+            },
+            scales: {
+                    y: this.getAdaptiveScaleConfig('Nombre de gîtes', maxValue),
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Mois'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    createAedesSectorMonthChart() {
+        const ctx = document.getElementById('aedesSectorMonthChart');
+        if (!ctx) return;
+
+        const data = this.processAedesSectorMonthData();
+        
+        // Calculer la valeur maximale pour adapter l'échelle
+        const maxValue = Math.max(...data.datasets.flatMap(dataset => dataset.data));
+        
+        this.charts.aedesSectorMonth = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: data.datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Nombre d\'Aedes par secteur et par mois',
+                        font: { size: 16, weight: 'bold' }
+                    },
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                const value = context.parsed.y;
+                                return `${context.dataset.label}: ${this.formatLargeValue(value)} Aedes`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: this.getAdaptiveScaleConfig('Nombre d\'Aedes', maxValue),
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Mois'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    createSiteTypeEnvironmentChart() {
+        const ctx = document.getElementById('siteTypeEnvironmentChart');
+        if (!ctx) return;
+
+        const data = this.processSiteTypeEnvironmentData();
+        
+        // Calculer la valeur maximale pour adapter l'échelle
+        const maxValue = Math.max(...data.datasets.flatMap(dataset => dataset.data));
+        
+        this.charts.siteTypeEnvironment = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: data.datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Quantité par classe de gîtes selon le milieu',
+                        font: { size: 16, weight: 'bold' }
+                    },
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                const value = context.parsed.y;
+                                return `${context.dataset.label}: ${this.formatLargeValue(value)} gîtes`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: this.getAdaptiveScaleConfig('Nombre de gîtes', maxValue),
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Milieu'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    createAedesMethodLocationChart() {
+        const ctx = document.getElementById('aedesMethodLocationChart');
+        if (!ctx) return;
+
+        const data = this.processAedesMethodLocationData();
+        
+        // Calculer la valeur maximale pour adapter l'échelle
+        const maxValue = Math.max(...data.datasets.flatMap(dataset => dataset.data));
+        
+        this.charts.aedesMethodLocation = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: data.datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Nombre d\'Aedes par méthode de collecte et lieu de capture',
+                        font: { size: 16, weight: 'bold' }
+                    },
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                const value = context.parsed.y;
+                                return `${context.dataset.label}: ${this.formatLargeValue(value)} Aedes`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: this.getAdaptiveScaleConfig('Nombre d\'Aedes', maxValue),
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Lieu de capture'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // 4. Courbe densité moustiques adultes
+    createAdultsDensityChart() {
+        const ctx = document.getElementById('adultsDensityChart');
+        if (!ctx) return;
+
+        const data = this.processAdultsDensityData();
+        
+        // Calculer la valeur maximale pour adapter l'échelle
+        const maxValue = Math.max(...data.values);
+        
+        this.charts.adultsDensity = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: 'Densité moustiques adultes',
+                    data: data.values,
+                    borderColor: this.themeManager.getThemeColors().accent,
+                    backgroundColor: this.themeManager.getColorWithAlpha('accent', 0.1),
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Courbe du nombre total ou densité/an des moustiques adultes',
+                        font: { size: 16, weight: 'bold' }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                const value = context.parsed.y;
+                                return `Densité: ${this.formatLargeValue(value)} moustiques`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: this.getAdaptiveScaleConfig('Nombre de moustiques', maxValue),
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Mois'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // 5. Densité par secteur par mois
+    createAdultsSectorChart() {
+        const ctx = document.getElementById('adultsSectorChart');
+        if (!ctx) return;
+
+        const data = this.processAdultsSectorData();
+        
+        // Calculer la valeur maximale pour adapter l'échelle
+        const maxValue = Math.max(...data.datasets.flatMap(dataset => dataset.data));
+        
+        this.charts.adultsSector = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: data.datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Densité par secteur par mois',
+                        font: { size: 16, weight: 'bold' }
+                    },
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                const value = context.parsed.y;
+                                return `${context.dataset.label}: ${this.formatLargeValue(value)} moustiques`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: this.getAdaptiveScaleConfig('Nombre de moustiques', maxValue),
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Mois'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // 6. Densité par genre
+    createAdultsGenusChart() {
+        const ctx = document.getElementById('adultsGenusChart');
+        if (!ctx) return;
+
+        const data = this.processAdultsGenusData();
+        
+        this.charts.adultsGenus = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    data: data.values,
+                    backgroundColor: this.themeManager.getColorArray(data.labels.length),
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                        text: 'Densité par genre',
+                    font: { size: 16, weight: 'bold' }
+                },
+                legend: {
+                    display: true,
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                const value = context.parsed;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return `${context.label}: ${this.formatLargeValue(value)} moustiques (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Méthodes de traitement des données
+    processEggsSectorMonthData() {
+        if (!this.data.eggs || this.data.eggs.length === 0) {
+            return { labels: [], datasets: [] };
+        }
+
+        // Grouper par secteur et mois, puis sommer eggs_count
+        const groupedData = {};
+        const months = new Set();
+        const sectors = new Set();
+
+        this.data.eggs.forEach(item => {
+            if (!item.visit_date || !item.sector || !item.eggs_count) return;
+            
+            // Appliquer le filtre milieu
+            if (this.currentEnvironment !== 'all' && item.environment !== this.currentEnvironment) {
+                return;
+            }
+            
+            const date = new Date(item.visit_date);
+            const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            const monthLabel = this.getMonthLabel(date);
+            
+            // Gérer les secteurs comme string (pas d'array)
+            const sector = item.sector;
+            if (!sector) return;
+            
+            months.add(monthLabel);
+            sectors.add(sector);
+            
+            const key = `${sector}_${monthKey}`;
+            if (!groupedData[key]) {
+                groupedData[key] = { sector: sector, month: monthLabel, count: 0 };
+            }
+            groupedData[key].count += parseInt(item.eggs_count) || 0;
+        });
+
+        // Créer les datasets par secteur
+        const datasets = [];
+        const colors = this.themeManager.getColorArray(sectors.size);
+        let colorIndex = 0;
+
+        Array.from(sectors).forEach(sector => {
+            const data = Array.from(months).map(month => {
+                const key = Object.keys(groupedData).find(k => 
+                    groupedData[k].sector === sector && groupedData[k].month === month
+                );
+                return key ? groupedData[key].count : 0;
+            });
+
+            datasets.push({
+                label: sector,
+                data: data,
+                backgroundColor: this.themeManager.getColorWithAlpha(colors[colorIndex], 0.8),
+                borderColor: colors[colorIndex],
+                borderWidth: 1
+            });
+            colorIndex++;
+        });
+
+        return {
+            labels: this.sortMonthsChronologically(Array.from(months)),
+            datasets: datasets
         };
     }
-    
-    setupEventListeners() {
-        const moisSelect = document.getElementById('mois-selection');
-        if (moisSelect) {
-            this.populateMonthSelector(moisSelect);
-            moisSelect.addEventListener('change', (e) => {
-                this.selectedMonth = e.target.value;
-                this.updateChart();
-            });
-        }
-    }
-    
-    populateMonthSelector(selectElement) {
-        if (!this.data?.chartData?.adultesParGenre) return;
-        
-        selectElement.innerHTML = '<option value="">Tous les mois</option>';
-        const periodes = Object.keys(this.data.chartData.adultesParGenre);
-        const periodesTriees = this.sortPeriodesChronologiquement(periodes);
-        
-        periodesTriees.forEach(periode => {
-            const option = document.createElement('option');
-            option.value = periode;
-            option.textContent = periode;
-            selectElement.appendChild(option);
-        });
-    }
-    
-    sortPeriodesChronologiquement(periodes) {
-        return periodes.sort((a, b) => {
-            const [moisA, anneeA] = a.split(' ');
-            const [moisB, anneeB] = b.split(' ');
-            const moisIndex = {
-                'Janvier': 1, 'Février': 2, 'Mars': 3, 'Avril': 4,
-                'Mai': 5, 'Juin': 6, 'Juillet': 7, 'Août': 8,
-                'Septembre': 9, 'Octobre': 10, 'Novembre': 11, 'Décembre': 12
-            };
-            
-            if (anneeA !== anneeB) return parseInt(anneeA) - parseInt(anneeB);
-            return moisIndex[moisA] - moisIndex[moisB];
-        });
-    }
-}
 
-// =====================================================
-// GRAPHIQUE 6: LARVES ET GÎTES
-// =====================================================
-class LarvesChart extends BaseChart {
-    constructor() {
-        super('larves-chart', 'Larves et Gîtes');
+
+    processLarvaeSectorData() {
+        if (!this.data.larvae || this.data.larvae.length === 0) {
+            return { labels: [], datasets: [] };
+        }
+
+        // Grouper par secteur et par mois
+        const groupedData = {};
+        const months = new Set();
+        const sectors = new Set();
+
+        this.data.larvae.forEach(item => {
+            if (!item.visit_date || !item.sector) return;
+            
+            // Vérifier que au moins une des valeurs n'est pas null/undefined
+            const larvaeCount = (item.larvae_count !== null && item.larvae_count !== undefined) ? parseInt(item.larvae_count) || 0 : 0;
+            const nymphsCount = (item.nymphs_count !== null && item.nymphs_count !== undefined) ? parseInt(item.nymphs_count) || 0 : 0;
+            
+            // Si les deux sont null/undefined, on ignore cette entrée
+            if (item.larvae_count === null && item.nymphs_count === null) return;
+            
+            const date = new Date(item.visit_date);
+            const month = date.getMonth() + 1; // 1-12
+            const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+            const monthName = monthNames[month - 1];
+            
+            // Gérer les secteurs comme string (pas d'array)
+            const sector = item.sector;
+            if (!sector) return;
+            
+            months.add(monthName);
+            sectors.add(sector);
+            
+            const key = `${sector}_${monthName}`;
+            if (!groupedData[key]) {
+                groupedData[key] = { sector: sector, period: monthName, count: 0 };
+            }
+            // Additionner larvae_count + nymphs_count
+            const total = larvaeCount + nymphsCount;
+            groupedData[key].count += total;
+        });
+
+        // Créer les datasets par secteur
+        const datasets = [];
+        const colors = this.themeManager.getColorArray(sectors.size);
+        let colorIndex = 0;
+
+        Array.from(sectors).forEach(sector => {
+            const data = Array.from(months).map(month => {
+                const key = Object.keys(groupedData).find(k => 
+                    groupedData[k].sector === sector && groupedData[k].period === month
+                );
+                return key ? groupedData[key].count : 0;
+            });
+
+            datasets.push({
+                label: sector,
+                data: data,
+                backgroundColor: this.themeManager.getColorWithAlpha(colors[colorIndex], 0.8),
+                borderColor: colors[colorIndex],
+                borderWidth: 1
+            });
+            colorIndex++;
+        });
+
+        return {
+            labels: this.sortMonthsChronologically(Array.from(months)),
+            datasets: datasets
+        };
     }
-    
-    getChartType() {
-        return 'bar';
+
+    processAdultsDensityData() {
+        if (!this.data.adults || this.data.adults.length === 0) {
+            return { labels: [], values: [] };
+        }
+
+        // Grouper par mois et sommer total_mosquitoes_count
+        const monthlyData = {};
+        
+        this.data.adults.forEach(item => {
+            if (!item.visit_date || !item.total_mosquitoes_count) return;
+            
+            const date = new Date(item.visit_date);
+            const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            const monthLabel = this.getMonthLabel(date);
+            
+            if (!monthlyData[monthKey]) {
+                monthlyData[monthKey] = { label: monthLabel, count: 0 };
+            }
+            monthlyData[monthKey].count += parseInt(item.total_mosquitoes_count) || 0;
+        });
+
+        // Trier par mois chronologiquement et extraire les données
+        const sortedMonths = Object.keys(monthlyData).sort((a, b) => {
+            // Comparer les dates YYYY-MM
+            return a.localeCompare(b);
+        });
+        const labels = sortedMonths.map(key => monthlyData[key].label);
+        const values = sortedMonths.map(key => monthlyData[key].count);
+
+        return { labels, values };
     }
-    
-    prepareData() {
-        if (!this.data?.chartData?.larves) {
+
+    processAdultsSectorData() {
+        if (!this.data.adults || this.data.adults.length === 0) {
             return { labels: [], datasets: [] };
         }
         
-        const periodes = Object.keys(this.data.chartData.larves);
-        const periodesTriees = this.sortPeriodesChronologiquement(periodes);
-        const secteurs = this.data.secteurs || [];
-        
-        const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
-        
-        const datasets = secteurs.map((secteur, index) => {
-            const data = periodesTriees.map(periode => {
-                return this.data.chartData.larves[periode]?.[secteur] || 0;
-            });
+        // Grouper par secteur et mois
+        const groupedData = {};
+        const months = new Set();
+        const sectors = new Set();
+
+        this.data.adults.forEach(item => {
+            if (!item.visit_date || !item.sector || !item.total_mosquitoes_count) return;
             
-            return {
-                label: secteur,
+            const date = new Date(item.visit_date);
+            const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            const monthLabel = this.getMonthLabel(date);
+            
+            // Gérer les secteurs comme string (pas d'array)
+            const sector = item.sector;
+            if (!sector) return;
+            
+            months.add(monthLabel);
+            sectors.add(sector);
+            
+            const key = `${sector}_${monthKey}`;
+            if (!groupedData[key]) {
+                groupedData[key] = { sector: sector, month: monthLabel, count: 0 };
+            }
+            groupedData[key].count += parseInt(item.total_mosquitoes_count) || 0;
+        });
+
+        // Créer les datasets par secteur
+        const datasets = [];
+        const colors = this.themeManager.getColorArray(sectors.size);
+        let colorIndex = 0;
+
+        Array.from(sectors).forEach(sector => {
+            const data = Array.from(months).map(month => {
+                const key = Object.keys(groupedData).find(k => 
+                    groupedData[k].sector === sector && groupedData[k].month === month
+                );
+                return key ? groupedData[key].count : 0;
+            });
+
+            datasets.push({
+                label: sector,
                 data: data,
-                backgroundColor: colors[index % colors.length] + '80',
-                borderColor: colors[index % colors.length],
-                borderWidth: 2,
-                fill: false
-            };
+                backgroundColor: this.themeManager.getColorWithAlpha(colors[colorIndex], 0.8),
+                borderColor: colors[colorIndex],
+                borderWidth: 1
+            });
+            colorIndex++;
         });
         
         return {
-            labels: periodesTriees,
+            labels: this.sortMonthsChronologically(Array.from(months)),
             datasets: datasets
         };
     }
     
-    getOptions() {
+    processAdultsGenusData() {
+        if (!this.data.adults || this.data.adults.length === 0) {
+            return { labels: ['Aedes', 'Culex', 'Anopheles', 'Autres'], values: [0, 0, 0, 0] };
+        }
+
+        // Sommer les colonnes de genre spécifiques
+        let aedesCount = 0;
+        let culexCount = 0;
+        let anophelesCount = 0;
+        let otherCount = 0;
+
+        this.data.adults.forEach(item => {
+            aedesCount += (item.mosquitoes_aedes_count !== null && item.mosquitoes_aedes_count !== undefined) ? parseInt(item.mosquitoes_aedes_count) || 0 : 0;
+            culexCount += (item.mosquitoes_culex_count !== null && item.mosquitoes_culex_count !== undefined) ? parseInt(item.mosquitoes_culex_count) || 0 : 0;
+            anophelesCount += (item.mosquitoes_anopheles_count !== null && item.mosquitoes_anopheles_count !== undefined) ? parseInt(item.mosquitoes_anopheles_count) || 0 : 0;
+            otherCount += (item.mosquitoes_other_count !== null && item.mosquitoes_other_count !== undefined) ? parseInt(item.mosquitoes_other_count) || 0 : 0;
+        });
+
         return {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
+            labels: ['Aedes', 'Culex', 'Anopheles', 'Autres'],
+            values: [aedesCount, culexCount, anophelesCount, otherCount]
+        };
+    }
+
+    // Méthode utilitaire pour obtenir le label du mois
+    getMonthLabel(date) {
+        const months = [
+            'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+            'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+        ];
+        return months[date.getMonth()];
+    }
+
+    // Fonction pour trier les mois français chronologiquement
+    sortMonthsChronologically(monthLabels) {
+        const monthOrder = [
+            'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+            'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+        ];
+        
+        return monthLabels.sort((a, b) => {
+            const indexA = monthOrder.indexOf(a);
+            const indexB = monthOrder.indexOf(b);
+            return indexA - indexB;
+        });
+    }
+
+    // Fonction pour trier les mois chronologiquement
+    sortPeriodsChronologically(periodLabels) {
+        const periodOrder = [
+            'Jan-Fév', 'Mar-Avr', 'Mai-Jun', 'Jul-Aoû', 'Sep-Oct', 'Nov-Déc'
+        ];
+        
+        return periodLabels.sort((a, b) => {
+            const indexA = periodOrder.indexOf(a);
+            const indexB = periodOrder.indexOf(b);
+            return indexA - indexB;
+        });
+    }
+
+    // Méthode utilitaire pour formater les grandes valeurs
+    formatLargeValue(value) {
+        if (value >= 1000000) {
+            return (value / 1000000).toFixed(1) + 'M';
+        } else if (value >= 1000) {
+            return (value / 1000).toFixed(1) + 'K';
+        }
+        return value.toLocaleString();
+    }
+
+    // Configuration d'échelle adaptée aux grandes données
+    getAdaptiveScaleConfig(label, maxValue) {
+        return {
+            beginAtZero: true,
                 title: {
                     display: true,
-                    text: 'Évolution des Larves et Gîtes par Secteur',
-                    font: { size: 16, weight: 'bold' }
-                },
-                legend: {
-                    display: true,
-                    position: 'top'
-                }
+                text: label
             },
-            scales: {
-                y: {
-                    beginAtZero: true,
                     ticks: {
-                        callback: function(value) {
-                            if (value >= 100000) return (value / 1000000).toFixed(1) + 'M';
-                            if (value >= 100) return (value / 1000).toFixed(1) + 'k';
-                            return value;
-                        }
-                    }
-                }
+                callback: (value) => this.formatLargeValue(value),
+                maxTicksLimit: maxValue > 100000 ? 8 : 10
             }
         };
     }
-    
-    sortPeriodesChronologiquement(periodes) {
-        return periodes.sort((a, b) => {
-            const [moisA, anneeA] = a.split(' ');
-            const [moisB, anneeB] = b.split(' ');
-            const moisIndex = {
-                'Janvier': 1, 'Février': 2, 'Mars': 3, 'Avril': 4,
-                'Mai': 5, 'Juin': 6, 'Juillet': 7, 'Août': 8,
-                'Septembre': 9, 'Octobre': 10, 'Novembre': 11, 'Décembre': 12
-            };
-            
-            if (anneeA !== anneeB) return parseInt(anneeA) - parseInt(anneeB);
-            return moisIndex[moisA] - moisIndex[moisB];
-        });
-    }
-}
 
-// =====================================================
-// GESTIONNAIRE PRINCIPAL - ARCHITECTURE PROPRE
-// =====================================================
-class AnalysesChartManager {
-    constructor() {
-        this.charts = new Map();
-        this.isInitialized = false;
+
+    showError(message) {
+        console.error('❌ Erreur:', message);
+        // Afficher un message d'erreur à l'utilisateur
     }
-    
-    async init() {
-        console.log('🚀 Initialisation du gestionnaire de graphiques Analyses - Architecture Propre');
-        
+
+    // ===== Gestion année & bannière archives =====
+    getYearFromQuery() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('year');
+    }
+
+    setYearInQuery(year) {
+        const url = new URL(window.location.href);
+        if (!year || year === 'current') {
+            url.searchParams.delete('year');
+        } else {
+            url.searchParams.set('year', year);
+        }
+        window.history.replaceState({}, '', url.toString());
+    }
+
+    async populateYearSelector() {
+        const select = document.getElementById('year-selection-analyses');
+        if (!select) return;
         try {
-            // Créer tous les graphiques de manière indépendante
-            this.charts.set('oeufsSecteur', new OeufsSecteurChart());
-            this.charts.set('oeufsMois', new OeufsMoisChart());
-            this.charts.set('densiteAnnuelle', new DensiteAnnuelleChart());
-            this.charts.set('densiteSecteur', new DensiteSecteurChart());
-            this.charts.set('genre', new GenreChart());
-            this.charts.set('larves', new LarvesChart());
-            
-            // Initialiser chaque graphique indépendamment
-            const initPromises = Array.from(this.charts.values()).map(chart => chart.init());
-            await Promise.allSettled(initPromises);
-            
-            this.isInitialized = true;
-            console.log('✅ Gestionnaire de graphiques Analyses initialisé - Architecture Propre');
-            
-        } catch (error) {
-            console.error('❌ Erreur lors de l\'initialisation du gestionnaire:', error);
+            const res = await fetch('/api/archive/years');
+            const json = await res.json();
+            const years = Array.isArray(json.data) ? json.data : [];
+            const currentOption = '<option value="current">Année en cours</option>';
+            select.innerHTML = currentOption + years.map(y => `<option value="${y}">${y} (archivée)</option>`).join('');
+            // Sync valeur
+            const value = this.currentYear || 'current';
+            select.value = value;
+        } catch (e) {
+            console.warn('⚠️ Impossible de charger les années archives:', e.message);
         }
     }
-    
-    updateAllCharts() {
-        if (!this.isInitialized) {
-            console.warn('⚠️ Gestionnaire non initialisé');
+
+    updateArchiveBanner(year, mode) {
+        const banner = document.getElementById('archive-banner-analyses');
+        const spanYear = document.getElementById('archive-year-analyses');
+        const isArchive = (mode === 'archive') || (this.currentYear && this.currentYear !== 'current');
+        if (banner && spanYear) {
+            if (isArchive) {
+                banner.classList.remove('hidden');
+                spanYear.textContent = (year || this.currentYear);
+            } else {
+                banner.classList.add('hidden');
+                spanYear.textContent = '';
+            }
+        }
+    }
+
+    // Mettre à jour le graphique d'évolution des œufs selon le secteur
+    updateEggsEvolutionChart(selectedSector) {
+        console.log('🔄 Mise à jour du graphique d\'évolution des œufs pour le secteur:', selectedSector);
+        
+        if (!this.charts.eggsEvolution) {
+            console.error('❌ Graphique eggsEvolution non trouvé');
             return;
         }
+
+        const data = this.processEggsEvolutionData(selectedSector);
+        console.log('📊 Données traitées:', data);
         
-        this.charts.forEach(chart => {
-            if (chart.isInitialized) {
-                chart.updateChart();
+        this.charts.eggsEvolution.data.labels = data.labels;
+        this.charts.eggsEvolution.data.datasets[0].data = data.values;
+        
+        // Recalculer l'échelle si nécessaire
+        if (data.values.length > 0) {
+            const maxValue = Math.max(...data.values);
+            this.charts.eggsEvolution.options.scales.y = this.getAdaptiveScaleConfig('Nombre d\'œufs', maxValue);
+        }
+        
+        this.charts.eggsEvolution.update();
+        console.log('✅ Graphique mis à jour');
+    }
+
+    // Mettre à jour le graphique de densité par genre selon le mois
+    updateAdultsGenusChart(selectedMonth) {
+        if (!this.charts.adultsGenus) return;
+
+        const data = this.processAdultsGenusData(selectedMonth);
+        
+        this.charts.adultsGenus.data.labels = data.labels;
+        this.charts.adultsGenus.data.datasets[0].data = data.values;
+        
+        this.charts.adultsGenus.update();
+    }
+
+    // Traitement des données d'évolution des œufs avec filtre secteur
+    processEggsEvolutionData(selectedSector = 'all') {
+        if (!this.data.eggs || this.data.eggs.length === 0) {
+            return { labels: [], values: [] };
+        }
+
+        // Filtrer les données selon le secteur sélectionné
+        const filteredData = selectedSector === 'all' 
+            ? this.data.eggs 
+            : this.data.eggs.filter(item => {
+                // Gérer les secteurs comme string simple
+                return item.sector === selectedSector;
+            });
+
+        // Grouper par mois et sommer eggs_count
+        const monthlyData = {};
+        
+        filteredData.forEach(item => {
+            if (!item.visit_date || !item.eggs_count) return;
+            
+            const date = new Date(item.visit_date);
+            const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            const monthLabel = this.getMonthLabel(date);
+            
+            if (!monthlyData[monthKey]) {
+                monthlyData[monthKey] = { label: monthLabel, count: 0 };
             }
+            monthlyData[monthKey].count += parseInt(item.eggs_count) || 0;
         });
+
+        // Trier par mois chronologiquement
+        const sortedMonths = Object.keys(monthlyData).sort((a, b) => {
+            // Comparer les dates YYYY-MM
+            return a.localeCompare(b);
+        });
+        
+        return {
+            labels: sortedMonths.map(key => monthlyData[key].label),
+            values: sortedMonths.map(key => monthlyData[key].count)
+        };
     }
-    
-    destroyAllCharts() {
-        this.charts.forEach(chart => {
-            chart.destroy();
+
+    // Traitement des données œufs par mois et par milieu
+    processEggsMonthEnvironmentData() {
+        if (!this.data.eggs || this.data.eggs.length === 0) {
+            return { labels: [], datasets: [] };
+        }
+
+        // Grouper par mois et milieu, puis sommer eggs_count
+        const groupedData = {};
+        const months = new Set();
+        const environments = new Set();
+
+        this.data.eggs.forEach(item => {
+            if (!item.visit_date || !item.environment || !item.eggs_count) return;
+            
+            const date = new Date(item.visit_date);
+            const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            const monthLabel = this.getMonthLabel(date);
+            
+            const environment = item.environment;
+            if (!environment) return;
+            
+            months.add(monthLabel);
+            environments.add(environment);
+            
+            const key = `${environment}_${monthKey}`;
+            if (!groupedData[key]) {
+                groupedData[key] = { environment: environment, month: monthLabel, count: 0 };
+            }
+            groupedData[key].count += parseInt(item.eggs_count) || 0;
         });
-        this.charts.clear();
-        this.isInitialized = false;
+
+        // Créer les datasets par milieu
+        const datasets = [];
+        const colors = this.themeManager.getColorArray(environments.size);
+        let colorIndex = 0;
+
+        // Créer un ordre chronologique des mois basé sur les données réelles
+        const allMonths = Array.from(months);
+        const sortedMonths = allMonths.sort((a, b) => {
+            const monthOrder = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+            return monthOrder.indexOf(a) - monthOrder.indexOf(b);
+        });
+
+        environments.forEach(environment => {
+            const data = [];
+
+            sortedMonths.forEach(monthLabel => {
+                // Trouver le monthKey correspondant au monthLabel
+                let foundKey = null;
+                for (const [key, value] of Object.entries(groupedData)) {
+                    if (value.environment === environment && value.month === monthLabel) {
+                        foundKey = key;
+                        break;
+                    }
+                }
+                data.push(foundKey ? groupedData[foundKey].count : 0);
+            });
+
+            datasets.push({
+                label: environment === 'urban' ? 'Urbain' : environment === 'rural' ? 'Rural' : environment,
+                data: data,
+                backgroundColor: colors[colorIndex],
+                borderColor: colors[colorIndex],
+                borderWidth: 1
+            });
+            colorIndex++;
+        });
+
+        return {
+            labels: sortedMonths,
+            datasets: datasets
+        };
     }
-    
-    getChartStatus() {
-        const status = {};
-        this.charts.forEach((chart, name) => {
-            status[name] = {
-                initialized: chart.isInitialized,
-                hasError: !!chart.errorMessage,
-                errorMessage: chart.errorMessage
-            };
+
+    // Traitement des données de types de gîtes par milieu
+    processSiteTypeEnvironmentData() {
+        if (!this.data.larvae || this.data.larvae.length === 0) {
+            return { labels: [], datasets: [] };
+        }
+
+        // Grouper par type de gîte et milieu
+        const groupedData = {};
+        const siteTypes = new Set();
+        const environments = new Set();
+
+        this.data.larvae.forEach(item => {
+            if (!item.site_classes || !item.environment || !item.total_sites_count) return;
+            
+            const environment = item.environment;
+            if (!environment) return;
+            
+            // Traiter les classes de gîtes (array)
+            let siteClasses = item.site_classes;
+            if (typeof siteClasses === 'string') {
+                try {
+                    siteClasses = JSON.parse(siteClasses);
+                } catch (e) {
+                    siteClasses = [siteClasses];
+                }
+            }
+            
+            if (!Array.isArray(siteClasses)) return;
+            
+            environments.add(environment);
+            
+            siteClasses.forEach(siteClass => {
+                if (!siteClass) return;
+                
+                siteTypes.add(siteClass);
+                
+                const key = `${siteClass}_${environment}`;
+                if (!groupedData[key]) {
+                    groupedData[key] = { siteType: siteClass, environment: environment, count: 0 };
+                }
+                groupedData[key].count += parseInt(item.total_sites_count) || 0;
+            });
         });
-        return status;
+
+        // Créer les datasets par type de gîte
+        const datasets = [];
+        const colors = this.themeManager.getColorArray(siteTypes.size);
+        let colorIndex = 0;
+
+        // Créer un ordre des environnements
+        const sortedEnvironments = Array.from(environments).sort();
+
+        siteTypes.forEach(siteType => {
+            const data = [];
+
+            sortedEnvironments.forEach(environment => {
+                const key = `${siteType}_${environment}`;
+                data.push(groupedData[key] ? groupedData[key].count : 0);
+            });
+
+            datasets.push({
+                label: siteType,
+                data: data,
+                backgroundColor: colors[colorIndex],
+                borderColor: colors[colorIndex],
+                borderWidth: 1
+            });
+            colorIndex++;
+        });
+
+        return {
+            labels: sortedEnvironments,
+            datasets: datasets
+        };
+    }
+
+    // Traitement des données d'Aedes par méthode de collecte et lieu de capture
+    processAedesMethodLocationData() {
+        if (!this.data.adults || this.data.adults.length === 0) {
+            return { labels: [], datasets: [] };
+        }
+
+        // Grouper par méthode de collecte et lieu de capture
+        const groupedData = {};
+        const methods = new Set();
+        const locations = new Set();
+
+        this.data.adults.forEach(item => {
+            if (!item.collection_methods || !item.capture_locations || !item.mosquitoes_aedes_count) return;
+            
+            const method = item.collection_methods;
+            const location = item.capture_locations;
+            if (!method || !location) return;
+            
+            methods.add(method);
+            locations.add(location);
+            
+            const key = `${method}_${location}`;
+            if (!groupedData[key]) {
+                groupedData[key] = { method: method, location: location, count: 0 };
+            }
+            groupedData[key].count += parseInt(item.mosquitoes_aedes_count) || 0;
+        });
+
+        // Créer les datasets par méthode de collecte
+        const datasets = [];
+        const colors = this.themeManager.getColorArray(methods.size);
+        let colorIndex = 0;
+
+        // Créer un ordre des lieux de capture
+        const sortedLocations = Array.from(locations).sort();
+
+        methods.forEach(method => {
+            const data = [];
+
+            sortedLocations.forEach(location => {
+                const key = `${method}_${location}`;
+                data.push(groupedData[key] ? groupedData[key].count : 0);
+            });
+
+            datasets.push({
+                label: method,
+                data: data,
+                backgroundColor: colors[colorIndex],
+                borderColor: colors[colorIndex],
+                borderWidth: 1
+            });
+            colorIndex++;
+        });
+
+        return {
+            labels: sortedLocations,
+            datasets: datasets
+        };
+    }
+
+    // Traitement des données de gîtes par secteur et par mois
+    processSitesSectorMonthData() {
+        if (!this.data.larvae || this.data.larvae.length === 0) {
+            return { labels: [], datasets: [] };
+        }
+
+        // Grouper par secteur et mois, puis sommer total_sites_count
+        const groupedData = {};
+        const months = new Set();
+        const sectors = new Set();
+
+        this.data.larvae.forEach(item => {
+            if (!item.visit_date || !item.sector || !item.total_sites_count) return;
+            
+            const date = new Date(item.visit_date);
+            const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            const monthLabel = this.getMonthLabel(date);
+            
+            const sector = item.sector;
+            if (!sector) return;
+            
+            months.add(monthLabel);
+            sectors.add(sector);
+            
+            const key = `${sector}_${monthKey}`;
+            if (!groupedData[key]) {
+                groupedData[key] = { sector: sector, month: monthLabel, count: 0 };
+            }
+            groupedData[key].count += parseInt(item.total_sites_count) || 0;
+        });
+
+        // Créer les datasets par secteur
+        const datasets = [];
+        const colors = this.themeManager.getColorArray(sectors.size);
+        let colorIndex = 0;
+
+        // Créer un ordre chronologique des mois basé sur les données réelles
+        const allMonths = Array.from(months);
+        const sortedMonths = allMonths.sort((a, b) => {
+            const monthOrder = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+            return monthOrder.indexOf(a) - monthOrder.indexOf(b);
+        });
+
+        sectors.forEach(sector => {
+            const data = [];
+
+            sortedMonths.forEach(monthLabel => {
+                // Trouver le monthKey correspondant au monthLabel
+                let foundKey = null;
+                for (const [key, value] of Object.entries(groupedData)) {
+                    if (value.sector === sector && value.month === monthLabel) {
+                        foundKey = key;
+                        break;
+                    }
+                }
+                data.push(foundKey ? groupedData[foundKey].count : 0);
+            });
+
+            datasets.push({
+                label: sector,
+                data: data,
+                backgroundColor: colors[colorIndex],
+                borderColor: colors[colorIndex],
+                borderWidth: 1
+            });
+            colorIndex++;
+        });
+
+        return {
+            labels: sortedMonths,
+            datasets: datasets
+        };
+    }
+
+    // Traitement des données d'Aedes par secteur et par mois
+    processAedesSectorMonthData() {
+        if (!this.data.adults || this.data.adults.length === 0) {
+            return { labels: [], datasets: [] };
+        }
+
+        // Grouper par secteur et mois, puis sommer mosquitoes_aedes_count
+        const groupedData = {};
+        const months = new Set();
+        const sectors = new Set();
+
+        this.data.adults.forEach(item => {
+            if (!item.visit_date || !item.sector || !item.mosquitoes_aedes_count) return;
+            
+            const date = new Date(item.visit_date);
+            const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            const monthLabel = this.getMonthLabel(date);
+            
+            const sector = item.sector;
+            if (!sector) return;
+            
+            months.add(monthLabel);
+            sectors.add(sector);
+            
+            const key = `${sector}_${monthKey}`;
+            if (!groupedData[key]) {
+                groupedData[key] = { sector: sector, month: monthLabel, count: 0 };
+            }
+            groupedData[key].count += parseInt(item.mosquitoes_aedes_count) || 0;
+        });
+
+        // Créer les datasets par secteur
+        const datasets = [];
+        const colors = this.themeManager.getColorArray(sectors.size);
+        let colorIndex = 0;
+
+        // Créer un ordre chronologique des mois basé sur les données réelles
+        const allMonths = Array.from(months);
+        const sortedMonths = allMonths.sort((a, b) => {
+            const monthOrder = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+            return monthOrder.indexOf(a) - monthOrder.indexOf(b);
+        });
+
+        sectors.forEach(sector => {
+            const data = [];
+
+            sortedMonths.forEach(monthLabel => {
+                // Trouver le monthKey correspondant au monthLabel
+                let foundKey = null;
+                for (const [key, value] of Object.entries(groupedData)) {
+                    if (value.sector === sector && value.month === monthLabel) {
+                        foundKey = key;
+                        break;
+                    }
+                }
+                data.push(foundKey ? groupedData[foundKey].count : 0);
+            });
+
+            datasets.push({
+                label: sector,
+                data: data,
+                backgroundColor: colors[colorIndex],
+                borderColor: colors[colorIndex],
+                borderWidth: 1
+            });
+            colorIndex++;
+        });
+
+        return {
+            labels: sortedMonths,
+            datasets: datasets
+        };
+    }
+
+    // Traitement des données de densité par genre avec filtre mois
+    processAdultsGenusData(selectedMonth = 'all') {
+        if (!this.data.adults || this.data.adults.length === 0) {
+            return { labels: ['Aedes', 'Culex', 'Anopheles', 'Autres'], values: [0, 0, 0, 0] };
+        }
+
+        // Filtrer les données selon le mois sélectionné
+        const filteredData = selectedMonth === 'all' 
+            ? this.data.adults 
+            : this.data.adults.filter(item => {
+                const date = new Date(item.visit_date);
+                return this.getMonthLabel(date) === selectedMonth;
+            });
+
+        // Sommer les colonnes de genre
+        let aedesCount = 0;
+        let culexCount = 0;
+        let anophelesCount = 0;
+        let otherCount = 0;
+
+        filteredData.forEach(item => {
+            aedesCount += (item.mosquitoes_aedes_count !== null && item.mosquitoes_aedes_count !== undefined) ? parseInt(item.mosquitoes_aedes_count) || 0 : 0;
+            culexCount += (item.mosquitoes_culex_count !== null && item.mosquitoes_culex_count !== undefined) ? parseInt(item.mosquitoes_culex_count) || 0 : 0;
+            anophelesCount += (item.mosquitoes_anopheles_count !== null && item.mosquitoes_anopheles_count !== undefined) ? parseInt(item.mosquitoes_anopheles_count) || 0 : 0;
+            otherCount += (item.mosquitoes_other_count !== null && item.mosquitoes_other_count !== undefined) ? parseInt(item.mosquitoes_other_count) || 0 : 0;
+        });
+
+        return {
+            labels: ['Aedes', 'Culex', 'Anopheles', 'Autres'],
+            values: [aedesCount, culexCount, anophelesCount, otherCount]
+        };
     }
 }
 
-// =====================================================
-// INITIALISATION GLOBALE - ARCHITECTURE PROPRE
-// =====================================================
-let analysesChartManager = null;
-
-document.addEventListener('DOMContentLoaded', async () => {
-    console.log('🚀 Page Analyses chargée - Architecture Modulaire Propre');
-    
-    try {
-        analysesChartManager = new AnalysesChartManager();
-        await analysesChartManager.init();
-        
-        // Afficher le statut des graphiques
-        const status = analysesChartManager.getChartStatus();
-        console.log('📊 Statut des graphiques:', status);
-        
-    } catch (error) {
-        console.error('❌ Erreur lors de l\'initialisation de la page Analyses:', error);
-    }
+// Initialisation quand la page est chargée
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('📊 Initialisation de la page analyses...');
+    window.analysesManager = new AnalysesManager();
 });
-
-// Fonction utilitaire pour afficher les erreurs
-function showError(message) {
-    console.error('❌ Erreur Analyses:', message);
-}

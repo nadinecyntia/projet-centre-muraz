@@ -5,6 +5,7 @@ class IndicesManager {
     constructor() {
         this.data = null;
         this.currentMonth = '';
+        this.currentYear = this.getYearFromQuery() || 'current';
         this.currentPage = 1;
         this.pageSize = 25;
         this.totalPages = 1;
@@ -21,11 +22,21 @@ class IndicesManager {
     // Charger les données depuis l'API
     async loadData() {
         try {
-            const response = await fetch('/api/indices');
+            // Charger les années disponibles pour alimenter le sélecteur
+            this.populateYearSelector();
+
+            const query = this.currentYear && this.currentYear !== 'current' ? `?year=${encodeURIComponent(this.currentYear)}` : '';
+            const response = await fetch(`/api/indices${query}`);
             const result = await response.json();
             
             if (result.success) {
-                this.data = result.data;
+                // Adapter à la nouvelle structure de l'API: { data, periodes, moyennes }
+                this.data = {
+                    data: result.data || {},
+                    periodes: result.periodes || [],
+                    moyennes: result.moyennes || {}
+                };
+                this.updateArchiveBanner(result.year, result.mode);
                 this.renderAll();
             } else {
                 throw new Error(result.message);
@@ -37,6 +48,18 @@ class IndicesManager {
 
     // Configuration des événements
     setupEventListeners() {
+        // Sélecteur d'année
+        const yearSelector = document.getElementById('year-selection');
+        if (yearSelector) {
+            yearSelector.addEventListener('change', (e) => {
+                const newYear = e.target.value;
+                this.currentYear = newYear;
+                this.setYearInQuery(newYear);
+                // Recharger les données avec la nouvelle année
+                this.loadData();
+            });
+        }
+
         // Sélecteur de mois
         const monthSelector = document.getElementById('mois-selection-indices');
         if (monthSelector) {
@@ -95,6 +118,7 @@ class IndicesManager {
 
     // Rendu complet
     renderAll() {
+        this.syncYearSelector();
         this.renderMonthSelector();
         this.renderIndicesCards();
         this.updatePagination();
@@ -157,8 +181,9 @@ class IndicesManager {
         const paginatedPeriodes = this.data.periodes.slice(startIndex, endIndex);
 
         paginatedPeriodes.forEach(periode => {
-            // Utiliser directement les moyennes globales de l'API
-            const moyennes = this.data.moyennes;
+            // Utiliser les données spécifiques à la période
+            const periodeData = this.data.data[periode];
+            const moyennes = periodeData ? periodeData.all : {};
             
             const row = document.createElement('tr');
             row.innerHTML = `
@@ -250,22 +275,10 @@ class IndicesManager {
 
     // Utilitaires
     calculateAveragesForPeriod(periode) {
-        if (!this.data.data[periode]) return {};
+        if (!this.data.data[periode]) return this.data.moyennes;
 
-        const secteurs = Object.values(this.data.data[periode]);
-        const indices = ['ib', 'im', 'ir', 'ipp', 'icn', 'iap_bg', 'iap_prokopack'];
-        
-        const moyennes = {};
-        indices.forEach(indice => {
-            const valeurs = secteurs.map(secteur => secteur[indice]);
-            const validValues = valeurs
-                .filter(v => v !== null && v !== undefined && !isNaN(v))
-                .map(v => typeof v === 'string' ? parseFloat(v) : v);
-            moyennes[indice] = validValues.length > 0 ? 
-                validValues.reduce((sum, val) => sum + val, 0) / validValues.length : 0;
-        });
-        
-        return moyennes;
+        // Retourner directement les données de la période
+        return this.data.data[periode].all || {};
     }
 
     formatPeriode(periode) {
@@ -302,6 +315,64 @@ class IndicesManager {
 
     showError(message) {
         console.error('❌ Erreur Indices:', message);
+    }
+
+    // ===== Gestion de l'année (URL + UI) =====
+    getYearFromQuery() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('year');
+    }
+
+    setYearInQuery(year) {
+        const url = new URL(window.location.href);
+        if (!year || year === 'current') {
+            url.searchParams.delete('year');
+        } else {
+            url.searchParams.set('year', year);
+        }
+        window.history.replaceState({}, '', url.toString());
+    }
+
+    async populateYearSelector() {
+        const yearSelector = document.getElementById('year-selection');
+        if (!yearSelector) return;
+
+        try {
+            const res = await fetch('/api/archive/years');
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const json = await res.json();
+            const years = Array.isArray(json.data) ? json.data : [];
+
+            // Réinitialiser les options (conserver "current")
+            const currentOption = '<option value="current">Année en cours</option>';
+            yearSelector.innerHTML = currentOption + years.map(y => `<option value="${y}">${y} (archivée)</option>`).join('');
+        } catch (e) {
+            console.warn('⚠️ Impossible de charger les années d\'archive:', e.message);
+        }
+    }
+
+    syncYearSelector() {
+        const yearSelector = document.getElementById('year-selection');
+        if (!yearSelector) return;
+        const value = this.currentYear || 'current';
+        if (yearSelector.value !== value) {
+            yearSelector.value = value;
+        }
+    }
+
+    updateArchiveBanner(year, mode) {
+        const banner = document.getElementById('archive-banner');
+        const spanYear = document.getElementById('archive-year');
+        const isArchive = (mode === 'archive') || (this.currentYear && this.currentYear !== 'current');
+        if (banner && spanYear) {
+            if (isArchive) {
+                banner.classList.remove('hidden');
+                spanYear.textContent = (year || this.currentYear);
+            } else {
+                banner.classList.add('hidden');
+                spanYear.textContent = '';
+            }
+        }
     }
 }
 

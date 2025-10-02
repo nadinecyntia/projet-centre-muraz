@@ -25,8 +25,7 @@ class MurazApp {
                // Démarrer la vérification périodique de session
                this.startSessionCheck();
                
-               // Écouter les changements de langue
-               this.setupLanguageChangeListener();
+               // Fonctionnalités de langue supprimées
     }
 
                async checkAuthentication() {
@@ -105,6 +104,10 @@ class MurazApp {
         // Ajouter les gestionnaires d'événements de navigation
         this.setupNavigationEventListeners();
         
+        // Initialiser le sélecteur de langue après la navigation
+        setTimeout(() => {
+        }, 100);
+        
         // Debug: vérifier le contenu final
         console.log('🔍 Contenu final de main-nav:', nav.innerHTML);
     }
@@ -116,9 +119,8 @@ class MurazApp {
             console.log('❌ Aucun utilisateur connecté');
             // Retourner une navbar statique pour les utilisateurs non connectés
             return `
-                <a href="/" class="text-muraz-blue font-semibold" data-i18n="navigation.home">Accueil</a>
-                <a href="/login" class="text-gray-700 hover:text-muraz-blue transition-colors" data-i18n="navigation.login">Connexion</a>
-                <div id="languageSelector" class="language-selector ml-auto"></div>
+                <a href="/" class="nav-item ${this.currentPage === '/' ? 'active' : ''}" >Accueil</a>
+                <a href="/login" class="nav-item ${this.currentPage === '/login' ? 'active' : ''}" >Connexion</a>
             `;
         }
 
@@ -129,6 +131,7 @@ class MurazApp {
 
         const isSuperAdmin = this.user.role === 'SUPER_ADMIN';
         const isViewer = this.user.role === 'VIEWER';
+        const isInvestigator = this.user.role === 'INVESTIGATOR';
 
         console.log('🎭 Rôle utilisateur:', this.user.role, 'SuperAdmin:', isSuperAdmin, 'Viewer:', isViewer);
 
@@ -138,45 +141,91 @@ class MurazApp {
             // Navigation complète pour SUPER_ADMIN
             navItems = `
                 <a href="/" class="nav-item ${this.currentPage === '/' ? 'active' : ''}">
-                    <i class="fas fa-home mr-2"></i><span data-i18n="navigation.home">Accueil</span>
+                    <i class="fas fa-home mr-2"></i><span >Accueil</span>
                 </a>
                 <a href="/analyses" class="nav-item ${this.currentPage === '/analyses' ? 'active' : ''}">
-                    <i class="fas fa-chart-line mr-2"></i><span data-i18n="navigation.analyses">Analyses</span>
+                    <i class="fas fa-chart-line mr-2"></i><span >Analyses</span>
                 </a>
                 <a href="/indices" class="nav-item ${this.currentPage === '/indices' ? 'active' : ''}">
-                    <i class="fas fa-chart-bar mr-2"></i><span data-i18n="navigation.indices">Indices</span>
+                    <i class="fas fa-chart-bar mr-2"></i><span >Indices</span>
                 </a>
                 <a href="/biologie-moleculaire" class="nav-item ${this.currentPage === '/biologie-moleculaire' ? 'active' : ''}">
-                    <i class="fas fa-dna mr-2"></i><span data-i18n="navigation.molecular_biology">Biologie Moléculaire</span>
+                    <i class="fas fa-dna mr-2"></i><span >Biologie Moléculaire</span>
+                </a>
+                <a href="/admin" class="nav-item nav-admin ${this.currentPage === '/admin' ? 'active' : ''}">
+                    <i class="fas fa-cog mr-2"></i><span >Admin</span>
+                </a>
+                <a href="/admin/users" class="nav-item ${this.currentPage === '/admin/users' ? 'active' : ''}">
+                    <i class="fas fa-users-cog mr-2"></i><span>Utilisateurs</span>
                 </a>
             `;
         } else if (isViewer) {
             // Navigation limitée pour VIEWER
             navItems = `
                 <a href="/" class="nav-item ${this.currentPage === '/' ? 'active' : ''}">
-                    <i class="fas fa-home mr-2"></i><span data-i18n="navigation.home">Accueil</span>
+                    <i class="fas fa-home mr-2"></i><span >Accueil</span>
                 </a>
                 <a href="/analyses" class="nav-item ${this.currentPage === '/analyses' ? 'active' : ''}">
-                    <i class="fas fa-chart-line mr-2"></i><span data-i18n="navigation.analyses">Analyses</span>
+                    <i class="fas fa-chart-line mr-2"></i><span >Analyses</span>
                 </a>
                 <a href="/indices" class="nav-item ${this.currentPage === '/indices' ? 'active' : ''}">
-                    <i class="fas fa-chart-bar mr-2"></i><span data-i18n="navigation.indices">Indices</span>
+                    <i class="fas fa-chart-bar mr-2"></i><span >Indices</span>
+                </a>
+            `;
+        } else if (isInvestigator) {
+            // Navigation pour INVESTIGATOR: Accueil + Collecte
+            navItems = `
+                <a href="/" class="nav-item ${this.currentPage === '/' ? 'active' : ''}">
+                    <i class="fas fa-home mr-2"></i><span >Accueil</span>
+                </a>
+                <a href="/collect" class="nav-item ${this.currentPage === '/collect' ? 'active' : ''}">
+                    <i class="fas fa-clipboard-list mr-2"></i><span>Collecte</span>
                 </a>
             `;
         }
 
-        // Ajouter le menu utilisateur et le sélecteur de langue
+        // Ajouter le menu utilisateur compact + sélecteur de langue
+        const initials = (this.user.username || '?')
+            .split(/\s+/)
+            .map(s => s[0])
+            .join('')
+            .slice(0,2)
+            .toUpperCase();
+
         navItems += `
-            <div class="flex items-center space-x-4 ml-auto">
-                <div class="flex items-center space-x-3">
-                    <span class="font-medium text-gray-700">${this.user.username}</span>
-                    <span class="text-xs bg-gray-200 px-2 py-1 rounded">${this.user.role}</span>
-                    <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center space-x-2 shadow-md">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span data-i18n="navigation.logout">Déconnexion</span>
-                    </button>
+            <div class="ml-auto flex items-center space-x-3">
+                <!-- Informations utilisateur (desktop) -->
+                <div class="hidden md:flex items-center space-x-3 text-sm text-gray-600">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-semibold text-xs">
+                            ${initials}
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-800">${this.user.username}</div>
+                            <div class="text-xs text-gray-500">${this.user.role}</div>
+                        </div>
+                    </div>
                 </div>
-                <div id="languageSelector" class="language-selector"></div>
+                
+                <!-- Bouton de déconnexion visible (desktop) -->
+                <button id="logoutBtn" class="hidden md:flex bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium items-center gap-2 transition-colors">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span >Déconnexion</span>
+                </button>
+                
+                <!-- Menu utilisateur mobile -->
+                <div class="md:hidden relative" id="userMenu">
+                    <button id="userMenuBtn" class="w-9 h-9 rounded-full bg-indigo-600 text-white flex items-center justify-center font-semibold" title="${this.user.username} (${this.user.role})">
+                        ${initials}
+                    </button>
+                    <div id="userDropdown" class="hidden absolute right-0 mt-2 w-44 card p-2 z-50">
+                        <div class="px-2 py-1 text-sm text-gray-600 truncate" title="${this.user.username} (${this.user.role})">${this.user.username} (${this.user.role})</div>
+                        <button id="logoutBtnMobile" class="mt-2 w-full bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-md text-sm flex items-center justify-center gap-2">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span >Déconnexion</span>
+                        </button>
+                    </div>
+                </div>
             </div>
         `;
 
@@ -186,70 +235,45 @@ class MurazApp {
 
     setupNavigationEventListeners() {
         console.log('🎧 Configuration des événements de navigation...');
+        
+        // Bouton de déconnexion desktop
         const logoutBtn = document.getElementById('logoutBtn');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', this.handleLogout.bind(this));
-            console.log('✅ Bouton déconnexion configuré');
+            console.log('✅ Bouton déconnexion desktop configuré');
         } else {
-            console.log('⚠️ Bouton déconnexion non trouvé');
+            console.log('⚠️ Bouton déconnexion desktop non trouvé');
         }
         
-        // Initialiser le sélecteur de langue
-        this.initLanguageSelector();
-    }
-
-    initLanguageSelector() {
-        const languageSelector = document.getElementById('languageSelector');
-        if (!languageSelector) {
-            console.warn('⚠️ Élément languageSelector non trouvé');
-            return;
+        // Bouton de déconnexion mobile
+        const logoutBtnMobile = document.getElementById('logoutBtnMobile');
+        if (logoutBtnMobile) {
+            logoutBtnMobile.addEventListener('click', this.handleLogout.bind(this));
+            console.log('✅ Bouton déconnexion mobile configuré');
+        } else {
+            console.log('⚠️ Bouton déconnexion mobile non trouvé');
         }
 
-        if (!window.translationManager) {
-            console.warn('⚠️ TranslationManager non disponible');
-            return;
-        }
-
-        try {
-            // Vider le conteneur existant
-            languageSelector.innerHTML = '';
-            
-            // Créer le sélecteur
-            const selector = window.translationManager.createLanguageSelector();
-            languageSelector.appendChild(selector);
-            
-            // Ajouter un écouteur d'événement sur le select
-            const selectElement = selector.querySelector('select');
-            if (selectElement) {
-                selectElement.addEventListener('change', async (e) => {
-                    const newLanguage = e.target.value;
-                    console.log('🔄 Changement de langue via sélecteur:', newLanguage);
-                    
-                    try {
-                        await window.translationManager.changeLanguage(newLanguage);
-                        console.log('✅ Changement de langue réussi via sélecteur');
-                    } catch (error) {
-                        console.error('❌ Erreur lors du changement de langue:', error);
+        // Menu utilisateur (dropdown)
+        const userMenuBtn = document.getElementById('userMenuBtn');
+        const userDropdown = document.getElementById('userDropdown');
+        if (userMenuBtn && userDropdown) {
+            userMenuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                userDropdown.classList.toggle('hidden');
+            });
+            document.addEventListener('click', (e) => {
+                if (!userDropdown.classList.contains('hidden')) {
+                    const menu = document.getElementById('userMenu');
+                    if (menu && !menu.contains(e.target)) {
+                        userDropdown.classList.add('hidden');
                     }
-                });
-                
-                console.log('✅ Sélecteur de langue initialisé avec écouteur');
-            } else {
-                console.error('❌ Élément select non trouvé dans le sélecteur');
-            }
-            
-        } catch (error) {
-            console.error('❌ Erreur lors de l\'initialisation du sélecteur de langue:', error);
+                }
+            });
         }
     }
 
-    setupLanguageChangeListener() {
-        window.addEventListener('languageChanged', (event) => {
-            console.log('🌐 Langue changée:', event.detail.language);
-            // Recharger la navigation pour appliquer les nouvelles traductions
-            this.initNavigation();
-        });
-    }
+
 
     async handleLogout() {
         try {
@@ -344,7 +368,11 @@ class MurazApp {
 
     initDashboardPage() {
         console.log('🏠 Initialisation page Dashboard...');
-        // Les fonctionnalités Dashboard sont gérées par dashboard.js
+        // Les fonctionnalités Dashboard ont été supprimées
+        
+        // S'assurer que le sélecteur de langue est initialisé
+        setTimeout(() => {
+        }, 200);
     }
 
     initGlobalEventListeners() {

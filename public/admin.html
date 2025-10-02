@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-i18n="admin.title">Administration - Centre MURAZ</title>
-    <link href="./css/style.css" rel="stylesheet">
+    <title >Administration - Centre MURAZ</title>
+    <link href="/css/style.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="./js/translation.js"></script>
 </head>
 <body class="bg-gray-50 font-sans">
     <!-- Header avec navigation adaptative -->
@@ -19,22 +18,15 @@
                         <img src="/logo-centre-muraz.jpg" alt="Logo Centre MURAZ" class="w-full h-full object-contain rounded-lg">
                     </div>
                     <div>
-                        <h1 class="text-xl font-bold text-muraz-blue" data-i18n="dashboard.title">Centre MURAZ</h1>
-                        <p class="text-sm text-gray-600" data-i18n="dashboard.subtitle">Surveillance Arboviroses</p>
+                        <h1 class="text-xl font-bold text-muraz-blue" >Centre MURAZ</h1>
+                        <p class="text-sm text-gray-600" >Surveillance Arboviroses</p>
                     </div>
                 </div>
 
                 <div id="main-nav" class="hidden md:flex items-center space-x-6">
                     <!-- La navigation sera générée dynamiquement par app.js -->
                 </div>
-                <div class="flex items-center space-x-4">
-                    <div id="languageSelector" class="language-selector"></div>
-                <div class="md:hidden">
-                    <button class="text-gray-700 hover:text-muraz-blue">
-                        <i class="fas fa-bars text-xl"></i>
-                    </button>
-                    </div>
-                </div>
+                <div class="flex items-center space-x-4"></div>
             </div>
         </nav>
     </header>
@@ -43,21 +35,84 @@
     <section id="admin-dashboard" class="py-16 bg-gray-50">
         <div class="container mx-auto px-6">
             <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold text-muraz-orange mb-4" data-i18n="admin.admin_dashboard">
+                <h2 class="text-3xl font-bold text-muraz-orange mb-4" >
                     <i class="fas fa-tachometer-alt text-4xl mr-4"></i>
                     Tableau de Bord Administrateur
                 </h2>
-                <p class="text-lg text-gray-600" data-i18n="admin.data_management">Gestion des données biologiques et entomologiques</p>
+                <p class="text-lg text-gray-600" >Gestion des données biologiques et entomologiques</p>
+            </div>
+
+            <!-- Section Collecte de Données -->
+            <div class="max-w-6xl mx-auto mb-12">
+                <div class="text-center mb-8">
+                    <h3 class="text-2xl font-semibold mb-4 text-muraz-blue" >
+                        <i class="fas fa-database mr-2"></i>
+                        Collecte de Données Entomologiques
+                    </h3>
+                    <p class="text-gray-600" >Gérez la collecte et validation des données de terrain</p>
+                </div>
+                
+                <div class="grid md:grid-cols-3 gap-6">
+                    <!-- Lien vers la collecte de données -->
+                    <div class="card hover:shadow-lg transition-shadow duration-300">
+                        <div class="text-center p-6">
+                            <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-clipboard-list text-indigo-600 text-2xl"></i>
+                            </div>
+                            <h4 class="text-xl font-semibold text-indigo-700 mb-3" >Collecte de Données</h4>
+                            <p class="text-gray-600 mb-4 text-sm" >
+                                Saisissez les données entomologiques (œufs, gîtes larvaires, moustiques adultes)
+                            </p>
+                            <a href="/collect" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 inline-block"  style="background-color: #4f46e5 !important;">
+                                <i class="fas fa-plus mr-2"></i>Commencer la Collecte
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Lien vers la validation des données -->
+                    <div class="card hover:shadow-lg transition-shadow duration-300">
+                        <div class="text-center p-6">
+                            <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-check-circle text-orange-600 text-2xl"></i>
+                            </div>
+                            <h4 class="text-xl font-semibold text-orange-700 mb-3" >Validation des Données</h4>
+                            <p class="text-gray-600 mb-4 text-sm" >
+                                Validez, approuvez ou rejetez les données soumises par les enquêteurs
+                            </p>
+                            <a href="/admin/pending" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 inline-block"  style="background-color: #ea580c !important;">
+                                <i class="fas fa-shield-check mr-2"></i>Valider les Données
+                            </a>
+                    </div>
+                </div>
+
+                    <!-- Section Import CSV -->
+                        <div class="card hover:shadow-lg transition-shadow duration-300">
+                            <div class="text-center p-6">
+                                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-file-csv text-green-600 text-2xl"></i>
+                                </div>
+                            <h4 class="text-xl font-semibold text-green-700 mb-3">Import CSV</h4>
+                                <p class="text-gray-600 mb-4 text-sm">
+                                Importez des données en masse via des fichiers CSV
+                                </p>
+                            <button onclick="showCSVImportModal()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200">
+                                <i class="fas fa-upload mr-2"></i>Importer des Données
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                <!-- Section Validation par lots et Statistiques retirée -->
             </div>
 
             <!-- Boutons d'Accès aux Formulaires d'Analyses Laboratoires -->
             <div class="max-w-6xl mx-auto">
                 <div class="text-center mb-8">
-                    <h3 class="text-2xl font-semibold mb-4 text-muraz-blue" data-i18n="admin.lab_analysis_forms">
+                    <h3 class="text-2xl font-semibold mb-4 text-muraz-blue" >
                         <i class="fas fa-flask mr-2"></i>
                         Formulaires d'Analyses Laboratoires
                     </h3>
-                    <p class="text-gray-600" data-i18n="admin.select_analysis_type">Sélectionnez le type d'analyse à effectuer</p>
+                    <p class="text-gray-600" >Sélectionnez le type d'analyse à effectuer</p>
                 </div>
 
                 <div class="grid md:grid-cols-3 gap-6">
@@ -67,11 +122,11 @@
                             <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <i class="fas fa-dna text-blue-600 text-2xl"></i>
                             </div>
-                            <h4 class="text-xl font-semibold text-blue-700 mb-3" data-i18n="admin.pcr_rt_pcr">PCR et RT-PCR</h4>
-                            <p class="text-gray-600 mb-4 text-sm" data-i18n="admin.pcr_description">
+                            <h4 class="text-xl font-semibold text-blue-700 mb-3" >PCR et RT-PCR</h4>
+                            <p class="text-gray-600 mb-4 text-sm" >
                                 Analyse des fréquences alléliques et identification virale (Dengue, Chikungunya, Zika, Fièvre jaune)
                             </p>
-                            <button onclick="openPCRForm()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200" data-i18n="admin.fill_form">
+                            <button onclick="openPCRForm()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200" >
                                 <i class="fas fa-edit mr-2"></i>Remplir le Formulaire
                             </button>
                         </div>
@@ -83,11 +138,11 @@
                             <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <i class="fas fa-bug text-green-600 text-2xl"></i>
                             </div>
-                            <h4 class="text-xl font-semibold text-green-700 mb-3" data-i18n="admin.bioassay">Bioessai</h4>
-                            <p class="text-gray-600 mb-4 text-sm" data-i18n="admin.bioassay_description">
+                            <h4 class="text-xl font-semibold text-green-700 mb-3" >Bioessai</h4>
+                            <p class="text-gray-600 mb-4 text-sm" >
                                 Tests de résistance aux insecticides et pourcentages de mortalité
                             </p>
-                            <button onclick="openBioessaiForm()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200" data-i18n="admin.fill_form">
+                            <button onclick="openBioessaiForm()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200" >
                                 <i class="fas fa-edit mr-2"></i>Remplir le Formulaire
                             </button>
                         </div>
@@ -99,121 +154,27 @@
                             <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <i class="fas fa-tint text-purple-600 text-2xl"></i>
                             </div>
-                            <h4 class="text-xl font-semibold text-purple-700 mb-3" data-i18n="admin.blood_meal_origin">Origine Repas Sanguin</h4>
-                            <p class="text-gray-600 mb-4 text-sm" data-i18n="admin.blood_meal_description">
+                            <h4 class="text-xl font-semibold text-purple-700 mb-3" >Origine Repas Sanguin</h4>
+                            <p class="text-gray-600 mb-4 text-sm" >
                                 Identification de l'origine des repas sanguins (Homme, Poule, Bœuf, Porc, etc.)
                             </p>
-                            <button onclick="openRepasForm()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200" data-i18n="admin.fill_form">
+                            <button onclick="openRepasForm()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200" >
                                 <i class="fas fa-edit mr-2"></i>Remplir le Formulaire
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Synchronisation KoboCollect -->
-                <div class="mt-8">
-                    <div class="text-center mb-6">
-                        <h3 class="text-xl font-semibold mb-2 text-muraz-blue" data-i18n="admin.kobocollect_sync">
-                            <i class="fas fa-sync-alt mr-2"></i>
-                            Synchronisation KoboCollect
-                        </h3>
-                        <p class="text-sm text-gray-600" data-i18n="admin.field_data_management">Gestion de la synchronisation des données de terrain</p>
-                    </div>
-                    
-                    <div class="max-w-3xl mx-auto">
-                        <!-- Boutons de synchronisation -->
-                        <div class="grid md:grid-cols-2 gap-4 mb-6">
-                            <!-- Synchronisation complète -->
-                            <div class="bg-white rounded-lg shadow-md p-4">
-                                <h4 class="text-base font-semibold text-gray-800 mb-2" data-i18n="admin.complete_sync">
-                                    <i class="fas fa-download mr-2 text-green-600"></i>Synchronisation Complète
-                                </h4>
-                                <p class="text-sm text-gray-600 mb-3" data-i18n="admin.complete_sync_desc">Récupère toutes les données des formulaires KoboCollect.</p>
-                                <button id="sync-complete" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 text-sm" data-i18n="admin.launch_sync">
-                                    <i class="fas fa-sync mr-2"></i>Lancer la Synchronisation
-                                </button>
-                            </div>
-
-                            <!-- Synchronisation par type -->
-                            <div class="bg-white rounded-lg shadow-md p-4">
-                                <h4 class="text-base font-semibold text-gray-800 mb-2" data-i18n="admin.sync_by_type">
-                                    <i class="fas fa-filter mr-2 text-blue-600"></i>Synchronisation par Type
-                                </h4>
-                                <p class="text-sm text-gray-600 mb-3" data-i18n="admin.sync_by_type_desc">Synchronise un type de formulaire spécifique.</p>
-                                <div class="space-y-2">
-                                    <button id="sync-larves" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-1.5 px-3 rounded transition-colors duration-200 text-sm" data-i18n="admin.larvae_sites">
-                                        <i class="fas fa-bug mr-1"></i>Larves et Gîtes
-                                    </button>
-                                    <button id="sync-oeufs" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-1.5 px-3 rounded transition-colors duration-200 text-sm" data-i18n="admin.eggs">
-                                        <i class="fas fa-egg mr-1"></i>Œufs
-                                    </button>
-                                    <button id="sync-adultes" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-1.5 px-3 rounded transition-colors duration-200 text-sm" data-i18n="admin.adult_mosquitoes">
-                                        <i class="fas fa-mosquito mr-1"></i>Moustiques Adultes
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Statut et Logs compacts -->
-                        <div class="grid md:grid-cols-2 gap-4 mb-6">
-                            <!-- Statut de la synchronisation -->
-                            <div class="bg-white rounded-lg shadow-md p-4">
-                                <h4 class="text-base font-semibold text-gray-800 mb-2" data-i18n="admin.status">
-                                    <i class="fas fa-info-circle mr-2 text-blue-600"></i>Statut
-                                </h4>
-                                <div id="sync-status" class="text-center p-3 bg-gray-50 rounded-lg">
-                                    <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto mb-1"></div>
-                                    <p class="text-xs text-gray-600" data-i18n="admin.checking">Vérification...</p>
-                                </div>
-                            </div>
-
-                            <!-- Boutons de rafraîchissement -->
-                            <div class="bg-white rounded-lg shadow-md p-4">
-                                <h4 class="text-base font-semibold text-gray-800 mb-2" data-i18n="common.refresh">
-                                    <i class="fas fa-chart-bar mr-2 text-purple-600"></i>Rafraîchissement
-                                </h4>
-                                <div class="space-y-2">
-                                    <button id="refresh-analyses" class="w-full bg-muraz-orange hover:bg-orange-700 text-white font-medium py-1.5 px-3 rounded transition-colors duration-200 text-sm" data-i18n="admin.refresh_analyses">
-                                        <i class="fas fa-chart-bar mr-1"></i>Analyses
-                                    </button>
-                                    <button id="refresh-indices" class="w-full bg-muraz-green hover:bg-green-700 text-white font-medium py-1.5 px-3 rounded transition-colors duration-200 text-sm" data-i18n="admin.refresh_indices">
-                                        <i class="fas fa-chart-line mr-1"></i>Indices
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Logs de synchronisation -->
-                        <div class="bg-white rounded-lg shadow-md p-4">
-                            <div class="flex items-center justify-between mb-3">
-                                <h4 class="text-base font-semibold text-gray-800" data-i18n="admin.logs">
-                                    <i class="fas fa-list-alt mr-2 text-purple-600"></i>Logs
-                                </h4>
-                                <div class="flex gap-2">
-                                    <button id="clear-logs" class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-1 px-3 rounded transition-colors duration-200 text-xs" data-i18n="admin.clear">
-                                        <i class="fas fa-trash mr-1"></i>Effacer
-                                    </button>
-                                    <button id="refresh-status" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-1 px-3 rounded transition-colors duration-200 text-xs" data-i18n="admin.update">
-                                        <i class="fas fa-refresh mr-1"></i>Actualiser
-                                    </button>
-                                </div>
-                            </div>
-                            <div id="sync-logs" class="bg-gray-900 text-green-400 p-3 rounded-lg font-mono text-xs h-32 overflow-y-auto">
-                                <div class="text-gray-500" data-i18n="admin.waiting_sync">En attente de synchronisation...</div>
-                            </div>
-                        </div>
-                    </div>
-            </div>
 
             <!-- Formulaire PCR et RT-PCR -->
             <div id="pcr-form" class="max-w-4xl mx-auto hidden">
                 <div class="card">
                     <div class="flex items-center justify-between mb-6">
-                        <h3 class="text-xl font-semibold text-blue-600" data-i18n="admin.pcr_form_title">
+                        <h3 class="text-xl font-semibold text-blue-600">
                             <i class="fas fa-dna mr-2"></i>
                             Formulaire PCR et RT-PCR
                         </h3>
-                        <button onclick="closePCRForm()" class="text-gray-500 hover:text-gray-700" data-i18n="common.close">
+                        <button onclick="closePCRForm()" class="text-gray-500 hover:text-gray-700">
                             <i class="fas fa-times text-xl"></i>
                         </button>
                     </div>
@@ -222,24 +183,24 @@
                         <div class="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                             <div class="grid md:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="pcr_analysis_type" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="admin.analysis_type">
+                                    <label for="pcr_analysis_type" class="block text-sm font-medium text-gray-700 mb-2">
                                         Type d'Analyse *
                                     </label>
                                     <select id="pcr_analysis_type" name="analysis_type" required
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
-                                        <option value="" data-i18n="common.select">Sélectionner...</option>
+                                        <option value="">Sélectionner...</option>
                                         <option value="pcr">PCR</option>
                                         <option value="rt_pcr">RT-PCR</option>
                                     </select>
                                 </div>
                                 
                                 <div>
-                                    <label for="pcr_sample_stage" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.sample_stage">
+                                    <label for="pcr_sample_stage" class="block text-sm font-medium text-gray-700 mb-2" >
                                         Stade des Échantillons *
                                     </label>
                                     <select id="pcr_sample_stage" name="sample_stage" required
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
-                                        <option value="" data-i18n="common.select">Sélectionner...</option>
+                                        <option value="" >Sélectionner...</option>
                                         <option value="oeufs">Eggs</option>
                                         <option value="larves">Larvae</option>
                                         <option value="moustiques">Mosquitoes</option>
@@ -249,7 +210,7 @@
 
                             <div class="grid md:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="pcr_genus" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="forms.adult_mosquitoes.genus">
+                                    <label for="pcr_genus" class="block text-sm font-medium text-gray-700 mb-2" >
                                         Genre des Échantillons Analysés *
                                     </label>
                                     <select id="pcr_genus" name="genus" required multiple
@@ -259,43 +220,44 @@
                                         <option value="culex">Culex</option>
                                         <option value="indetermine">Undetermined</option>
                                     </select>
-                                    <p class="text-xs text-gray-500 mt-1" data-i18n="admin.multi_select_hint">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
+                                    <p class="text-xs text-gray-500 mt-1" >Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
                                 </div>
                                 
                                 <div>
-                                    <label for="pcr_species" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="forms.adult_mosquitoes.species">
+                                    <label for="pcr_species" class="block text-sm font-medium text-gray-700 mb-2" >
                                         Espèces des Échantillons Analysés *
                                     </label>
                                     <select id="pcr_species" name="species" required multiple
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
-                                        <option value="" data-i18n="common.select">Sélectionner...</option>
+                                        <option value="" >Sélectionner...</option>
                                         <option value="aedes_aegypti" >Aedes aegypti</option>
                                         <option value="autre_aedes">Other Aedes</option>
                                         <option value="culex">Culex</option>
                                         <option value="anopheles">Anopheles</option>
                                         <option value="indetermine">Undetermined</option>
                                     </select>
-                                    <p class="text-xs text-gray-500 mt-1" data-i18n="admin.multi_select_hint">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
+                                    <p class="text-xs text-gray-500 mt-1" >Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
                                 </div>
                             </div>
 
                             <div class="grid md:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="pcr_sector" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="forms.household_visits.sector">
+                                    <label for="pcr_sector" class="block text-sm font-medium text-gray-700 mb-2" >
                                         Secteur de Collecte *
                                     </label>
                                     <select id="pcr_sector" name="sector" required
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
-                                        <option value="" data-i18n="common.select">Sélectionner...</option>
+                                        <option value="" >Sélectionner...</option>
                                         <option value="secteur_6" >Sector 6</option>
                                         <option value="secteur_9">Sector 9</option>
+                                        <option value="secteur_22">Sector 22</option>
                                         <option value="secteur_26">Sector 26</option>
                                         <option value="secteur_33">Sector 33</option>
                                     </select>
                                 </div>
                                 
                                 <div>
-                                    <label for="pcr_sample_count" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.samples">
+                                    <label for="pcr_sample_count" class="block text-sm font-medium text-gray-700 mb-2" >
                                         Nombre d'Échantillons *
                                     </label>
                                     <input type="number" id="pcr_sample_count" name="sample_count" min="1" required
@@ -306,7 +268,7 @@
 
                             <div class="grid md:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="pcr_collection_date" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.collection_date">
+                                    <label for="pcr_collection_date" class="block text-sm font-medium text-gray-700 mb-2" >
                                         Date de Récolte des Échantillons *
                                     </label>
                                     <input type="date" id="pcr_collection_date" name="collection_date" required
@@ -314,7 +276,7 @@
                                 </div>
                                 
                                 <div>
-                                    <label for="pcr_analysis_date" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.analysis_date">
+                                    <label for="pcr_analysis_date" class="block text-sm font-medium text-gray-700 mb-2" >
                                         Date d'Analyse des Échantillons *
                                     </label>
                                     <input type="date" id="pcr_analysis_date" name="analysis_date" required
@@ -323,23 +285,23 @@
                             </div>
 
                             <div>
-                                <label for="pcr_complementary_info" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.complementary_info">
+                                <label for="pcr_complementary_info" class="block text-sm font-medium text-gray-700 mb-2" >
                                     Informations Complémentaires
                                 </label>
                                 <textarea id="pcr_complementary_info" name="complementary_info" rows="3"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
-                                    placeholder="Remarques supplémentaires, conditions particulières, observations importantes..." data-i18n="admin.complementary_info_placeholder"></textarea>
+                                    placeholder="Remarques supplémentaires, conditions particulières, observations importantes..." ></textarea>
                             </div>
                         </div>
 
                         <!-- Informations Spécifiques PCR et RT-PCR -->
                         <div class="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                            <h4 class="font-semibold text-blue-700 mb-3" data-i18n="admin.pcr_specific_info">
+                            <h4 class="font-semibold text-blue-700 mb-3" >
                                 <i class="fas fa-dna mr-2"></i>Informations Spécifiques PCR et RT-PCR
                             </h4>
                             
                             <div>
-                                <label for="pcr_identified_species" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.identified_species">
+                                <label for="pcr_identified_species" class="block text-sm font-medium text-gray-700 mb-2" >
                                     Identification des Espèces après Analyse *
                                 </label>
                                 <select id="pcr_identified_species" name="identified_species" required multiple
@@ -350,11 +312,11 @@
                                     <option value="anopheles">Anopheles</option>
                                     <option value="indetermine">Undetermined</option>
                                 </select>
-                                <p class="text-xs text-gray-500 mt-1" data-i18n="admin.multi_select_hint">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
+                                <p class="text-xs text-gray-500 mt-1" >Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
                             </div>
 
                             <div>
-                                <label for="pcr_virus_type" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.virus_types">
+                                <label for="pcr_virus_type" class="block text-sm font-medium text-gray-700 mb-2" >
                                     Type de Virus Trouvé
                                 </label>
                                 <select id="pcr_virus_type" name="virus_types" multiple
@@ -364,15 +326,15 @@
                                     <option value="zika">Zika</option>
                                     <option value="fievre_jaune">Yellow Fever</option>
                                 </select>
-                                <p class="text-xs text-gray-500 mt-1" data-i18n="admin.multi_select_hint">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
+                                <p class="text-xs text-gray-500 mt-1" >Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
                             </div>
 
                             <div class="space-y-4">
-                                <h5 class="font-medium text-blue-700 mb-3" data-i18n="admin.allelic_counting">Comptage Allélique :</h5>
+                                <h5 class="font-medium text-blue-700 mb-3" >Comptage Allélique :</h5>
                                 
                                 <div class="grid md:grid-cols-3 gap-6">
                                     <div class="text-center">
-                                        <label for="pcr_homozygous_count" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.homozygous_aa">
+                                        <label for="pcr_homozygous_count" class="block text-sm font-medium text-gray-700 mb-2" >
                                             Homozygotes Allèle A *
                                         </label>
                                         <input type="number" id="pcr_homozygous_count" name="homozygous_count" min="0" required
@@ -381,7 +343,7 @@
                                     </div>
                                     
                                     <div class="text-center">
-                                        <label for="pcr_heterozygous_count" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.heterozygous_aa">
+                                        <label for="pcr_heterozygous_count" class="block text-sm font-medium text-gray-700 mb-2" >
                                             Hétérozygotes *
                                         </label>
                                         <input type="number" id="pcr_heterozygous_count" name="heterozygous_count" min="0" required
@@ -390,7 +352,7 @@
                                     </div>
                                     
                                     <div class="text-center">
-                                        <label for="pcr_total_count" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.total_population">
+                                        <label for="pcr_total_count" class="block text-sm font-medium text-gray-700 mb-2" >
                                             Total Population *
                                         </label>
                                         <input type="number" id="pcr_total_count" name="total_population" min="1" required
@@ -401,7 +363,7 @@
                             </div>
                         </div>
 
-                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200" data-i18n="admin.save_pcr_analysis">
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200" >
                             <i class="fas fa-save mr-2"></i>Enregistrer l'Analyse PCR/RT-PCR
                         </button>
                     </form>
@@ -412,11 +374,11 @@
             <div id="bioessai-form" class="max-w-4xl mx-auto hidden">
                 <div class="card">
                     <div class="flex items-center justify-between mb-6">
-                        <h3 class="text-xl font-semibold text-green-600" data-i18n="admin.bioassay_form_title">
+                        <h3 class="text-xl font-semibold text-green-600">
                             <i class="fas fa-bug mr-2"></i>
                             Formulaire Bioessai
                         </h3>
-                        <button onclick="closeBioessaiForm()" class="text-gray-500 hover:text-gray-700" data-i18n="common.close">
+                        <button onclick="closeBioessaiForm()" class="text-gray-500 hover:text-gray-700">
                             <i class="fas fa-times text-xl"></i>
                         </button>
                     </div>
@@ -425,23 +387,23 @@
                         <div class="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                             <div class="grid md:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="bio_analysis_type" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="admin.analysis_type">
+                                    <label for="bio_analysis_type" class="block text-sm font-medium text-gray-700 mb-2" >
                                         Type d'Analyse *
                                     </label>
                                     <select id="bio_analysis_type" name="analysis_type" required
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent">
-                                        <option value="" data-i18n="common.select">Sélectionner...</option>
+                                        <option value="" >Sélectionner...</option>
                                         <option value="bioessai" >Bioassay</option>
                                     </select>
                                 </div>
                                 
                                 <div>
-                                    <label for="bio_sample_stage" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.sample_stage">
+                                    <label for="bio_sample_stage" class="block text-sm font-medium text-gray-700 mb-2" >
                                         Stade des Échantillons *
                                     </label>
                                     <select id="bio_sample_stage" name="sample_stage" required
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent">
-                                        <option value="" data-i18n="common.select">Sélectionner...</option>
+                                        <option value="" >Sélectionner...</option>
                                         <option value="oeufs">Eggs</option>
                                         <option value="larves">Larvae</option>
                                         <option value="moustiques">Mosquitoes</option>
@@ -451,7 +413,7 @@
 
                             <div class="grid md:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="bio_genus" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="forms.adult_mosquitoes.genus">
+                                    <label for="bio_genus" class="block text-sm font-medium text-gray-700 mb-2" >
                                         Genre des Échantillons Analysés *
                                     </label>
                                     <select id="bio_genus" name="genus" required multiple
@@ -461,43 +423,44 @@
                                         <option value="culex">Culex</option>
                                         <option value="indetermine">Undetermined</option>
                                     </select>
-                                    <p class="text-xs text-gray-500 mt-1" data-i18n="admin.multi_select_hint">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
+                                    <p class="text-xs text-gray-500 mt-1" >Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
                                 </div>
                                 
                                 <div>
-                                    <label for="bio_species" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="forms.adult_mosquitoes.species">
+                                    <label for="bio_species" class="block text-sm font-medium text-gray-700 mb-2" >
                                         Espèces des Échantillons Analysés *
                                     </label>
                                     <select id="bio_species" name="species" required multiple
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent">
-                                        <option value="" data-i18n="common.select">Sélectionner...</option>
+                                        <option value="" >Sélectionner...</option>
                                         <option value="aedes_aegypti" >Aedes aegypti</option>
                                         <option value="autre_aedes">Other Aedes</option>
                                         <option value="culex">Culex</option>
                                         <option value="anopheles">Anopheles</option>
                                         <option value="indetermine">Undetermined</option>
                                     </select>
-                                    <p class="text-xs text-gray-500 mt-1" data-i18n="admin.multi_select_hint">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
+                                    <p class="text-xs text-gray-500 mt-1" >Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
                                 </div>
                             </div>
 
                             <div class="grid md:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="bio_sector" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="forms.household_visits.sector">
+                                    <label for="bio_sector" class="block text-sm font-medium text-gray-700 mb-2" >
                                         Secteur de Collecte *
                                     </label>
                                     <select id="bio_sector" name="sector" required
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent">
-                                        <option value="" data-i18n="common.select">Sélectionner...</option>
+                                        <option value="" >Sélectionner...</option>
                                         <option value="secteur_6" >Sector 6</option>
                                         <option value="secteur_9">Sector 9</option>
+                                        <option value="secteur_22">Sector 22</option>
                                         <option value="secteur_26">Sector 26</option>
                                         <option value="secteur_33">Sector 33</option>
                                     </select>
                                 </div>
                                 
                                 <div>
-                                    <label for="bio_sample_count" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.samples">
+                                    <label for="bio_sample_count" class="block text-sm font-medium text-gray-700 mb-2" >
                                         Nombre d'Échantillons *
                                     </label>
                                     <input type="number" id="bio_sample_count" name="sample_count" min="1" required
@@ -508,7 +471,7 @@
 
                             <div class="grid md:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="bio_collection_date" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.collection_date">
+                                    <label for="bio_collection_date" class="block text-sm font-medium text-gray-700 mb-2" >
                                         Date de Récolte des Échantillons *
                                     </label>
                                     <input type="date" id="bio_collection_date" name="collection_date" required
@@ -516,7 +479,7 @@
                                 </div>
                                 
                                 <div>
-                                    <label for="bio_analysis_date" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.analysis_date">
+                                    <label for="bio_analysis_date" class="block text-sm font-medium text-gray-700 mb-2" >
                                         Date d'Analyse des Échantillons *
                                     </label>
                                     <input type="date" id="bio_analysis_date" name="analysis_date" required
@@ -525,23 +488,23 @@
                             </div>
 
                             <div>
-                                <label for="bio_complementary_info" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.complementary_info">
+                                <label for="bio_complementary_info" class="block text-sm font-medium text-gray-700 mb-2" >
                                     Informations Complémentaires
                                 </label>
                                 <textarea id="bio_complementary_info" name="complementary_info" rows="3"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                                    placeholder="Remarques supplémentaires, conditions particulières, observations importantes..." data-i18n="admin.complementary_info_placeholder"></textarea>
+                                    placeholder="Remarques supplémentaires, conditions particulières, observations importantes..." ></textarea>
                             </div>
                         </div>
 
                         <!-- Champs Spécifiques Bioessai -->
                         <div class="space-y-4 p-4 bg-green-50 rounded-lg border border-green-200">
-                            <h4 class="font-semibold text-green-700 mb-3" data-i18n="admin.bioassay_specific_fields">
+                            <h4 class="font-semibold text-green-700 mb-3" >
                                 <i class="fas fa-bug mr-2"></i>Champs Spécifiques Bioessai
                             </h4>
                             
                             <div>
-                                <label for="bio_insecticide_type" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.insecticide_types">
+                                <label for="bio_insecticide_type" class="block text-sm font-medium text-gray-700 mb-2" >
                                     Type d'Insecticide *
                                 </label>
                                 <select id="bio_insecticide_type" name="insecticide_types" required multiple
@@ -557,12 +520,12 @@
                                     <option value="deltametrin_0_005">Deltametrin 0.005%</option>
                                     <option value="pm_0_025">PM 0.025%</option>
                                 </select>
-                                <p class="text-xs text-gray-500 mt-1" data-i18n="admin.multi_select_hint">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
+                                <p class="text-xs text-gray-500 mt-1" >Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
                             </div>
 
                             <div class="grid md:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="bio_mortality_percentage" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="admin.mortality_percentage">
+                                    <label for="bio_mortality_percentage" class="block text-sm font-medium text-gray-700 mb-2" >
                                         Pourcentage de Mort *
                                     </label>
                                     <input type="number" id="bio_mortality_percentage" name="mortality_percentage" min="0" max="100" step="0.01" required
@@ -571,7 +534,7 @@
                                 </div>
                                 
                                 <div>
-                                    <label for="bio_survival_percentage" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="admin.survival_percentage">
+                                    <label for="bio_survival_percentage" class="block text-sm font-medium text-gray-700 mb-2" >
                                         Pourcentage de Vivant *
                                     </label>
                                     <input type="number" id="bio_survival_percentage" name="survival_percentage" min="0" max="100" step="0.01" required
@@ -581,7 +544,7 @@
                             </div>
                         </div>
 
-                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200" data-i18n="admin.save_bioassay_analysis">
+                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200" >
                             <i class="fas fa-save mr-2"></i>Enregistrer l'Analyse Bioessai
                         </button>
                     </form>
@@ -592,11 +555,11 @@
             <div id="repas-form" class="max-w-4xl mx-auto hidden">
                 <div class="card">
                     <div class="flex items-center justify-between mb-6">
-                        <h3 class="text-xl font-semibold text-purple-600" data-i18n="admin.blood_meal_form_title">
+                        <h3 class="text-xl font-semibold text-purple-600">
                             <i class="fas fa-tint mr-2"></i>
                             Formulaire Origine Repas Sanguin
                         </h3>
-                        <button onclick="closeRepasForm()" class="text-gray-500 hover:text-gray-700" data-i18n="common.close">
+                        <button onclick="closeRepasForm()" class="text-gray-500 hover:text-gray-700">
                             <i class="fas fa-times text-xl"></i>
                         </button>
                     </div>
@@ -605,23 +568,23 @@
                         <div class="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                             <div class="grid md:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="repas_analysis_type" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="admin.analysis_type">
+                                    <label for="repas_analysis_type" class="block text-sm font-medium text-gray-700 mb-2" >
                                         Type d'Analyse *
                                     </label>
                                     <select id="repas_analysis_type" name="analysis_type" required
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent">
-                                        <option value="" data-i18n="common.select">Sélectionner...</option>
+                                        <option value="" >Sélectionner...</option>
                                         <option value="origine_repas_sanguin" >Blood Meal Origin</option>
                                     </select>
                                 </div>
                                 
                                 <div>
-                                    <label for="repas_sample_stage" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.sample_stage">
+                                    <label for="repas_sample_stage" class="block text-sm font-medium text-gray-700 mb-2" >
                                         Stade des Échantillons *
                                     </label>
                                     <select id="repas_sample_stage" name="sample_stage" required
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent">
-                                        <option value="" data-i18n="common.select">Sélectionner...</option>
+                                        <option value="" >Sélectionner...</option>
                                         <option value="oeufs">Eggs</option>
                                         <option value="larves">Larvae</option>
                                         <option value="moustiques">Mosquitoes</option>
@@ -631,7 +594,7 @@
 
                             <div class="grid md:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="repas_genus" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="forms.adult_mosquitoes.genus">
+                                    <label for="repas_genus" class="block text-sm font-medium text-gray-700 mb-2" >
                                         Genre des Échantillons Analysés *
                                     </label>
                                     <select id="repas_genus" name="genus" required multiple
@@ -641,43 +604,44 @@
                                         <option value="culex">Culex</option>
                                         <option value="indetermine">Undetermined</option>
                                     </select>
-                                    <p class="text-xs text-gray-500 mt-1" data-i18n="admin.multi_select_hint">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
+                                    <p class="text-xs text-gray-500 mt-1" >Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
                                 </div>
                                 
                                 <div>
-                                    <label for="repas_species" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="forms.adult_mosquitoes.species">
+                                    <label for="repas_species" class="block text-sm font-medium text-gray-700 mb-2" >
                                         Espèces des Échantillons Analysés *
                                     </label>
                                     <select id="repas_species" name="species" required multiple
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent">
-                                        <option value="" data-i18n="common.select">Sélectionner...</option>
+                                        <option value="" >Sélectionner...</option>
                                         <option value="aedes_aegypti" >Aedes aegypti</option>
                                         <option value="autre_aedes">Other Aedes</option>
                                         <option value="culex">Culex</option>
                                         <option value="anopheles">Anopheles</option>
                                         <option value="indetermine">Undetermined</option>
                                     </select>
-                                    <p class="text-xs text-gray-500 mt-1" data-i18n="admin.multi_select_hint">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
+                                    <p class="text-xs text-gray-500 mt-1" >Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
                                 </div>
                             </div>
 
                             <div class="grid md:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="repas_sector" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="forms.household_visits.sector">
+                                    <label for="repas_sector" class="block text-sm font-medium text-gray-700 mb-2" >
                                         Secteur de Collecte *
                                     </label>
                                     <select id="repas_sector" name="sector" required
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent">
-                                        <option value="" data-i18n="common.select">Sélectionner...</option>
+                                        <option value="" >Sélectionner...</option>
                                         <option value="secteur_6" >Sector 6</option>
                                         <option value="secteur_9">Sector 9</option>
+                                        <option value="secteur_22">Sector 22</option>
                                         <option value="secteur_26">Sector 26</option>
                                         <option value="secteur_33">Sector 33</option>
                                     </select>
                                 </div>
                                 
                                 <div>
-                                    <label for="repas_sample_count" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.samples">
+                                    <label for="repas_sample_count" class="block text-sm font-medium text-gray-700 mb-2" >
                                         Nombre d'Échantillons *
                                     </label>
                                     <input type="number" id="repas_sample_count" name="sample_count" min="1" required
@@ -688,7 +652,7 @@
 
                             <div class="grid md:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="repas_collection_date" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.collection_date">
+                                    <label for="repas_collection_date" class="block text-sm font-medium text-gray-700 mb-2" >
                                         Date de Récolte des Échantillons *
                                     </label>
                                     <input type="date" id="repas_collection_date" name="collection_date" required
@@ -696,7 +660,7 @@
                                 </div>
                                 
                                 <div>
-                                    <label for="repas_analysis_date" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.analysis_date">
+                                    <label for="repas_analysis_date" class="block text-sm font-medium text-gray-700 mb-2" >
                                         Date d'Analyse des Échantillons *
                                     </label>
                                     <input type="date" id="repas_analysis_date" name="analysis_date" required
@@ -705,23 +669,23 @@
                             </div>
 
                             <div>
-                                <label for="repas_complementary_info" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="molecular_biology.complementary_info">
+                                <label for="repas_complementary_info" class="block text-sm font-medium text-gray-700 mb-2" >
                                     Informations Complémentaires
                                 </label>
                                 <textarea id="repas_complementary_info" name="complementary_info" rows="3"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                                    placeholder="Remarques supplémentaires, conditions particulières, observations importantes..." data-i18n="admin.complementary_info_placeholder"></textarea>
+                                    placeholder="Remarques supplémentaires, conditions particulières, observations importantes..." ></textarea>
                             </div>
                         </div>
 
                         <!-- Champs Spécifiques Origine Repas Sanguin -->
                         <div class="space-y-4 p-4 bg-purple-50 rounded-lg border border-purple-200">
-                            <h4 class="font-semibold text-purple-700 mb-3" data-i18n="admin.blood_meal_specific_fields">
+                            <h4 class="font-semibold text-purple-700 mb-3" >
                                 <i class="fas fa-tint mr-2"></i>Champs Spécifiques Origine Repas Sanguin
                             </h4>
                             
                             <div>
-                                <label for="repas_blood_meal_origin" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="admin.blood_meal_origin_choice">
+                                <label for="repas_blood_meal_origin" class="block text-sm font-medium text-gray-700 mb-2" >
                                     Choix de l'Origine du Repas Sanguin *
                                 </label>
                                 <select id="repas_blood_meal_origin" name="blood_meal_origins" required multiple
@@ -735,11 +699,11 @@
                                     <option value="mouton">Sheep</option>
                                     <option value="chevre">Goat</option>
                                 </select>
-                                <p class="text-xs text-gray-500 mt-1" data-i18n="admin.multi_select_hint">Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
+                                <p class="text-xs text-gray-500 mt-1" >Maintenez Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs</p>
                             </div>
                         </div>
 
-                        <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200" data-i18n="admin.save_blood_meal_analysis">
+                        <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200" >
                             <i class="fas fa-save mr-2"></i>Enregistrer l'Analyse Origine Repas Sanguin
                         </button>
                     </form>
@@ -748,10 +712,207 @@
         </div>
     </section>
 
-    <script src="./js/app.js?v=2025-09-02-02"></script>
-    <script src="./js/admin.js?v=2025-09-02-02"></script>
+    <script src="/js/app.js?v=2025-09-02-02"></script>
+    <script src="/js/admin.js?v=2025-09-02-02"></script>
     
     <script>
+        // ===== FONCTIONS POUR LES FORMULAIRES DE BIOLOGIE MOLÉCULAIRE =====
+        function openPCRForm() {
+            // Afficher le formulaire PCR et masquer les autres
+            document.getElementById('pcr-form').classList.remove('hidden');
+            document.getElementById('bioessai-form').classList.add('hidden');
+            document.getElementById('repas-form').classList.add('hidden');
+            
+            // Scroll vers le formulaire
+            document.getElementById('pcr-form').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function openBioessaiForm() {
+            // Afficher le formulaire Bioessai et masquer les autres
+            document.getElementById('bioessai-form').classList.remove('hidden');
+            document.getElementById('pcr-form').classList.add('hidden');
+            document.getElementById('repas-form').classList.add('hidden');
+            
+            // Scroll vers le formulaire
+            document.getElementById('bioessai-form').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function openRepasForm() {
+            // Afficher le formulaire Repas Sanguin et masquer les autres
+            document.getElementById('repas-form').classList.remove('hidden');
+            document.getElementById('pcr-form').classList.add('hidden');
+            document.getElementById('bioessai-form').classList.add('hidden');
+            
+            // Scroll vers le formulaire
+            document.getElementById('repas-form').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function closePCRForm() {
+            document.getElementById('pcr-form').classList.add('hidden');
+        }
+
+        function closeBioessaiForm() {
+            document.getElementById('bioessai-form').classList.add('hidden');
+        }
+
+        function closeRepasForm() {
+            document.getElementById('repas-form').classList.add('hidden');
+        }
+
+        // ===== VARIABLES GLOBALES POUR L'IMPORT CSV =====
+        let currentStep = 1;
+        let csvData = null;
+
+        // ===== GESTION DES FORMULAIRES D'ANALYSES =====
+        document.addEventListener('DOMContentLoaded', function() {
+            // Event listeners pour les formulaires d'analyses
+            setupAnalysisFormListeners();
+        });
+
+        function setupAnalysisFormListeners() {
+            console.log('🔧 Configuration des event listeners pour les formulaires d\'analyses...');
+            
+            // Formulaire PCR
+            const pcrForm = document.getElementById('pcr-form-data');
+            if (pcrForm) {
+                pcrForm.addEventListener('submit', async function(event) {
+                    event.preventDefault();
+                    await handleAnalysisFormSubmit(event, 'pcr');
+                });
+                console.log('✅ Event listener PCR configuré');
+            }
+
+            // Formulaire Bioessai
+            const bioessaiForm = document.getElementById('bioessai-form-data');
+            if (bioessaiForm) {
+                bioessaiForm.addEventListener('submit', async function(event) {
+                    event.preventDefault();
+                    await handleAnalysisFormSubmit(event, 'bioessai');
+                });
+                console.log('✅ Event listener Bioessai configuré');
+            }
+
+            // Formulaire Repas Sanguin
+            const repasForm = document.getElementById('repas-form-data');
+            if (repasForm) {
+                repasForm.addEventListener('submit', async function(event) {
+                    event.preventDefault();
+                    await handleAnalysisFormSubmit(event, 'repas');
+                });
+                console.log('✅ Event listener Repas Sanguin configuré');
+            }
+        }
+
+        async function handleAnalysisFormSubmit(event, formType) {
+            console.log(`📝 Soumission du formulaire ${formType}...`);
+            
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData.entries());
+            
+            // Ajouter le type d'analyse selon le formulaire
+            if (formType === 'pcr') {
+                data.form_type = 'pcr_rt_pcr';
+                data.analysis_type = 'pcr';
+            } else if (formType === 'bioessai') {
+                data.form_type = 'bioessai';
+                data.analysis_type = 'bioessai';
+            } else if (formType === 'repas') {
+                data.form_type = 'origine_repas_sanguin';
+                data.analysis_type = 'origine_repas_sanguin';
+            }
+            
+            console.log('📊 Données du formulaire:', data);
+            
+            try {
+                // Afficher l'indicateur de chargement
+                showFormLoading(event.target, true);
+                
+                // Envoyer les données au serveur
+                const response = await fetch('/api/biologie', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    console.log('✅ Données enregistrées avec succès:', result);
+                    showNotification(`✅ Analyse ${formType.toUpperCase()} enregistrée avec succès!`, 'success');
+                    
+                    // Réinitialiser le formulaire
+                    event.target.reset();
+                    
+                    // Rafraîchir la page biologie moléculaire si elle est ouverte
+                    refreshBiologiePage();
+                    
+                } else {
+                    console.error('❌ Erreur lors de l\'enregistrement:', result);
+                    showNotification(`❌ Erreur: ${result.message}`, 'error');
+                }
+                
+            } catch (error) {
+                console.error('❌ Erreur lors de la soumission:', error);
+                showNotification('❌ Erreur de connexion lors de l\'enregistrement', 'error');
+            } finally {
+                // Masquer l'indicateur de chargement
+                showFormLoading(event.target, false);
+            }
+        }
+
+        function showFormLoading(form, show) {
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                if (show) {
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Enregistrement...';
+                    submitBtn.disabled = true;
+                } else {
+                    const originalText = submitBtn.textContent.includes('PCR') ? 
+                        '<i class="fas fa-save mr-2"></i>Enregistrer l\'Analyse PCR/RT-PCR' :
+                        submitBtn.textContent.includes('Bioessai') ?
+                        '<i class="fas fa-save mr-2"></i>Enregistrer l\'Analyse Bioessai' :
+                        '<i class="fas fa-save mr-2"></i>Enregistrer l\'Analyse Origine Repas Sanguin';
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }
+            }
+        }
+
+        function refreshBiologiePage() {
+            // Vérifier si la page biologie moléculaire est ouverte dans un autre onglet
+            // et la rafraîchir si nécessaire
+            if (window.opener && window.opener.location.pathname.includes('biologie-moleculaire')) {
+                window.opener.location.reload();
+            }
+            
+            // Aussi rafraîchir si on est sur la même page
+            setTimeout(() => {
+                if (window.location.pathname.includes('biologie-moleculaire')) {
+                    window.location.reload();
+                }
+            }, 1000);
+        }
+
+        function showNotification(message, type = 'info') {
+            // Créer une notification temporaire
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg text-white font-medium ${
+                type === 'success' ? 'bg-green-500' : 
+                type === 'error' ? 'bg-red-500' : 
+                'bg-blue-500'
+            }`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Supprimer après 3 secondes
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
         // Gestion du bouton de déconnexion
         document.getElementById('logoutBtn').addEventListener('click', async function() {
             if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
@@ -784,6 +945,437 @@
                 }
             }
         });
+
+        // Fonction pour afficher les statistiques de validation
+        function showValidationStats() {
+            // Rediriger vers la page de validation par lots
+            window.location.href = '/admin-validation';
+        }
+
+        // ===== FONCTIONS POUR L'IMPORT CSV =====
+        function showCSVImportModal() {
+            const modal = document.getElementById('csvImportModal');
+            modal.style.display = 'block';
+            resetModal();
+        }
+
+        function closeCSVImportModal() {
+            const modal = document.getElementById('csvImportModal');
+            modal.style.display = 'none';
+            resetModal();
+        }
+
+        function resetModal() {
+            currentStep = 1;
+            csvData = null;
+            
+            // Reset form
+            const form = document.getElementById('csvImportForm');
+            if (form) {
+                form.reset();
+            }
+            
+            // Reset content
+            const previewDiv = document.getElementById('csvPreview');
+            const resultsDiv = document.getElementById('importResults');
+            
+            if (previewDiv) previewDiv.innerHTML = '';
+            if (resultsDiv) resultsDiv.innerHTML = '';
+            
+            // Show only configuration step
+            showStep(1);
+        }
+
+        function showStep(stepNumber) {
+            // Hide all steps
+            document.getElementById('step1Content').classList.add('hidden');
+            document.getElementById('step2Content').classList.add('hidden');
+            document.getElementById('step3Content').classList.add('hidden');
+            
+            // Show current step
+            document.getElementById(`step${stepNumber}Content`).classList.remove('hidden');
+            
+            // Update import button state
+            const importBtn = document.getElementById('importBtn');
+            if (stepNumber === 3 && csvData) {
+                importBtn.disabled = false;
+            } else {
+                importBtn.disabled = true;
+            }
+        }
+
+        function downloadCSVTemplate(type) {
+            if (!type) {
+                alert('Veuillez d\'abord sélectionner un type de données');
+                return;
+            }
+            
+            const templates = {
+                'eggs': 'eggs_template.csv',
+                'breeding': 'breeding_template.csv', 
+                'mosquitoes': 'mosquitoes_template.csv'
+            };
+            
+            const filename = templates[type];
+            if (filename) {
+                window.open(`/api/csv/template/${type}`, '_blank');
+            }
+        }
+
+        async function previewCSV() {
+            const fileInput = document.getElementById('csvFile');
+            const dataType = document.getElementById('dataType').value;
+            const file = fileInput.files[0];
+            
+            if (!file || !dataType) {
+                alert('Veuillez sélectionner un fichier CSV et un type de données');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('csvFile', file);
+            formData.append('preview', 'true');
+
+            try {
+                showLoading(true);
+                const response = await fetch('/api/csv/preview', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    csvData = result.data;
+                    displayCSVPreview(result.data);
+                    
+                    // Passer à l'étape 2 seulement si les données sont valides ou si l'utilisateur confirme
+                    if (result.data.isValid) {
+                        currentStep = 2;
+                        updateSteps();
+                        showStep(2);
+                    } else {
+                        const proceed = confirm(`Des erreurs de validation ont été détectées. Voulez-vous continuer quand même ?\n\nErreurs:\n${result.data.validationErrors.join('\n')}`);
+                        if (proceed) {
+                            currentStep = 2;
+                            updateSteps();
+                            showStep(2);
+                        }
+                    }
+                } else {
+                    showError('Erreur lors de la prévisualisation: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showError('Erreur lors de la prévisualisation du fichier');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function displayCSVPreview(data) {
+            const previewDiv = document.getElementById('csvPreview');
+            
+            let html = `
+                <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <h4 class="font-semibold text-gray-800">Aperçu des données</h4>
+                        <div class="text-sm text-gray-600">
+                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                                ${data.headers.length} colonnes
+                            </span>
+                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium ml-2">
+                                ${data.totalRows} lignes
+                            </span>
+                            ${data.isValid ? 
+                                '<span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium ml-2">✓ Valide</span>' :
+                                '<span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium ml-2">⚠ Erreurs</span>'
+                            }
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Afficher les erreurs de validation si elles existent
+            if (data.validationErrors && data.validationErrors.length > 0) {
+                html += `
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                        <div class="flex items-center mb-2">
+                            <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>
+                            <h5 class="font-medium text-red-800">Erreurs de validation détectées</h5>
+                        </div>
+                        <div class="text-sm text-red-700 space-y-1">
+                            ${data.validationErrors.map(error => `<div>• ${error}</div>`).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            html += '<div class="overflow-x-auto max-h-96">';
+            html += '<table class="min-w-full bg-white">';
+            
+            // En-têtes
+            html += '<thead class="bg-gray-100 sticky top-0">';
+            html += '<tr>';
+            data.headers.forEach(header => {
+                html += `<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200">${header}</th>`;
+            });
+            html += '</tr>';
+            html += '</thead>';
+            
+            // Données (max 20 lignes)
+            html += '<tbody class="bg-white divide-y divide-gray-200">';
+            data.rows.slice(0, 20).forEach((row, index) => {
+                html += `<tr class="${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}">`;
+                row.forEach(cell => {
+                    html += `<td class="px-4 py-3 text-sm text-gray-900 border-r border-gray-200">${cell || '<span class="text-gray-400 italic">vide</span>'}</td>`;
+                });
+                html += '</tr>';
+            });
+            html += '</tbody>';
+            html += '</table>';
+            
+            if (data.totalRows > 20) {
+                html += `
+                    <div class="bg-yellow-50 border-t border-yellow-200 px-4 py-3">
+                        <div class="flex items-center">
+                            <i class="fas fa-info-circle text-yellow-600 mr-2"></i>
+                            <span class="text-yellow-800 text-sm">
+                                Affichage des 20 premières lignes sur ${data.totalRows} total
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            previewDiv.innerHTML = html;
+        }
+
+        async function importCSV() {
+            const fileInput = document.getElementById('csvFile');
+            const dataType = document.getElementById('dataType').value;
+            const file = fileInput.files[0];
+            
+            if (!file || !dataType) {
+                alert('Veuillez sélectionner un fichier et un type de données');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('csvFile', file);
+            formData.append('dataType', dataType);
+
+            const resultsDiv = document.getElementById('importResults');
+            resultsDiv.innerHTML = `
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                    <div class="flex items-center justify-center">
+                        <i class="fas fa-spinner fa-spin text-blue-600 text-2xl mr-3"></i>
+                        <span class="text-blue-800 font-medium">Import en cours...</span>
+                    </div>
+                </div>
+            `;
+
+            currentStep = 3;
+            updateSteps();
+            showStep(3);
+
+            try {
+                const response = await fetch('/api/csv/import', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultsDiv.innerHTML = `
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-6">
+                            <div class="flex items-center mb-4">
+                                <i class="fas fa-check-circle text-green-600 text-2xl mr-3"></i>
+                                <h4 class="text-green-800 font-bold text-lg">Import réussi!</h4>
+                            </div>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-green-700">Enregistrements importés:</span>
+                                    <span class="font-semibold text-green-800">${result.inserted}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-green-700">Total traité:</span>
+                                    <span class="font-semibold text-green-800">${result.total}</span>
+                                </div>
+                                ${result.skipped > 0 ? `
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-700">Ignorés:</span>
+                                        <span class="font-semibold text-gray-800">${result.skipped}</span>
+                                    </div>
+                                ` : ''}
+                                ${result.errors.length > 0 ? `
+                                    <div class="flex justify-between">
+                                        <span class="text-orange-700">Erreurs détectées:</span>
+                                        <span class="font-semibold text-orange-800">${result.errors.length}</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            ${result.errors.length > 0 ? `
+                                <div class="mt-4 p-3 bg-orange-50 border border-orange-200 rounded">
+                                    <h5 class="font-medium text-orange-800 mb-2">Détails des erreurs:</h5>
+                                    <div class="text-xs text-orange-700 space-y-1">
+                                        ${result.errors.slice(0, 5).map(error => 
+                                            `<div>Ligne ${error.row}: ${error.error}</div>`
+                                        ).join('')}
+                                        ${result.errors.length > 5 ? `<div>... et ${result.errors.length - 5} autres erreurs</div>` : ''}
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-6">
+                            <div class="flex items-center mb-4">
+                                <i class="fas fa-exclamation-triangle text-red-600 text-2xl mr-3"></i>
+                                <h4 class="text-red-800 font-bold text-lg">Erreur d'import</h4>
+                            </div>
+                            <p class="text-red-700">${result.message}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                resultsDiv.innerHTML = `
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-6">
+                        <div class="flex items-center mb-4">
+                            <i class="fas fa-exclamation-triangle text-red-600 text-2xl mr-3"></i>
+                            <h4 class="text-red-800 font-bold text-lg">Erreur</h4>
+                        </div>
+                        <p class="text-red-700">Erreur lors de l'import du fichier</p>
+                    </div>
+                `;
+            }
+        }
+
+        function showLoading(show) {
+            const importBtn = document.getElementById('importBtn');
+            if (show) {
+                importBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Chargement...';
+                importBtn.disabled = true;
+            } else {
+                importBtn.innerHTML = '<i class="fas fa-upload mr-2"></i>Importer les Données';
+                importBtn.disabled = false;
+            }
+        }
+
+        function showError(message) {
+            alert(message); // Simple alert for now, could be improved with a toast notification
+        }
     </script>
+
+    <!-- Modal Import CSV -->
+    <div id="csvImportModal" class="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50" style="display: none;">
+        <div class="relative top-20 mx-auto p-0 border-0 w-11/12 max-w-4xl shadow-2xl rounded-lg bg-white">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 rounded-t-lg">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-file-csv text-xl"></i>
+                        </div>
+                           <div>
+                               <h3 class="text-xl font-bold">Import CSV</h3>
+                           </div>
+                    </div>
+                    <button onclick="closeCSVImportModal()" class="text-white hover:text-blue-200 transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div class="p-4">
+                <!-- Configuration -->
+                <form id="csvImportForm">
+                <div id="step1Content" class="space-y-4">
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <!-- Type de données -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-gray-700">
+                                <i class="fas fa-database mr-2 text-blue-600"></i>Type de données
+                            </label>
+                            <select id="dataType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all">
+                                <option value="">Sélectionner le type de données</option>
+                                <option value="eggs">Œufs</option>
+                                <option value="breeding">Gîtes Larvaires</option>
+                                <option value="mosquitoes">Moustiques Adultes</option>
+                            </select>
+                        </div>
+
+                        <!-- Fichier CSV -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-gray-700">
+                                <i class="fas fa-file-csv mr-2 text-green-600"></i>Fichier CSV
+                            </label>
+                            <div class="relative">
+                                <input type="file" id="csvFile" accept=".csv" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all">
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                    <i class="fas fa-upload text-gray-400"></i>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-500">
+                                <i class="fas fa-info-circle mr-1"></i>Format accepté: CSV (séparateur: virgule), max 10MB
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex space-x-3">
+                        <button type="button" onclick="downloadCSVTemplate(document.getElementById('dataType').value)" 
+                                class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-md transition-all">
+                            <i class="fas fa-download mr-2"></i>Télécharger Template
+                        </button>
+                        <button type="button" onclick="previewCSV()" 
+                                class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition-all">
+                            <i class="fas fa-eye mr-2"></i>Prévisualiser les Données
+                        </button>
+                    </div>
+                </div>
+                </form>
+
+                <!-- Step 2: Prévisualisation -->
+                <div id="step2Content" class="hidden">
+                    <div class="bg-blue-50 border border-blue-200 rounded-md p-3 mb-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+                            <span class="text-blue-800 font-medium text-sm">Aperçu des données à importer</span>
+                        </div>
+                    </div>
+                    <div id="csvPreview" class="bg-white border border-gray-200 rounded-md overflow-hidden"></div>
+                </div>
+
+                <!-- Step 3: Import -->
+                <div id="step3Content" class="hidden">
+                    <div id="importResults" class="space-y-4"></div>
+                </div>
+
+                <!-- Footer -->
+                <div class="flex justify-between items-center mt-6 pt-4 border-t border-gray-200">
+                    <div class="text-xs text-gray-500">
+                        <i class="fas fa-shield-alt mr-1"></i>
+                        Les données importées auront le statut "En attente" et devront être validées
+                    </div>
+                    <div class="flex space-x-3">
+                        <button onclick="closeCSVImportModal()" 
+                                class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors text-sm">
+                            <i class="fas fa-times mr-2"></i>Annuler
+                        </button>
+                        <button id="importBtn" onclick="importCSV()" 
+                                class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm">
+                            <i class="fas fa-upload mr-2"></i>Importer les Données
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

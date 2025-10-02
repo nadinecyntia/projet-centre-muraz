@@ -8,11 +8,22 @@ require('dotenv').config();
 const { pool } = require('./config/database');
 const apiRoutes = require('./routes/api');
 const apiArchiveRoutes = require('./routes/api-archive');
+const apiValidationRoutes = require('./routes/api-validation');
+const apiAnalysesRoutes = require('./routes/api-analyses');
+const apiIndicesRoutes = require('./routes/api-indices');
+const apiUsersRoutes = require('./routes/api-users');
+const apiBiologieRoutes = require('./routes/api-biologie');
+const apiCollectRoutes = require('./routes/api-collect');
+const apiCsvRoutes = require('./routes/api-csv');
 const authController = require('./controllers/authController');
-const { requireAuth, requireSuperAdmin, requireViewer } = require('./middleware/auth');
+const { requireAuth, requireSuperAdmin, requireViewer, requireInvestigator } = require('./middleware/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Configuration UTF-8 pour les caractères français
+app.use(express.json({ charset: 'utf-8' }));
+app.use(express.urlencoded({ extended: true, charset: 'utf-8' }));
 
 // Configuration CORS
 app.use(cors({
@@ -53,9 +64,75 @@ app.post('/api/auth/logout', authController.logout);
 app.get('/api/auth/user', authController.getUserInfo);
 app.get('/api/auth/check', authController.checkAuth);
 
-// Routes API
-app.use('/api', apiRoutes);
-app.use('/api', apiArchiveRoutes);
+// Routes API - Ordre spécifique avant général
+app.use('/api/archive', apiArchiveRoutes); // Routes d'archivage
+app.use('/api/validation', apiValidationRoutes); // Routes de validation activées
+app.use('/api/biologie', apiBiologieRoutes); // Routes de biologie moléculaire activées
+app.use('/api/csv', apiCsvRoutes); // Routes d'import CSV
+app.use('/api', apiAnalysesRoutes); // Routes d'analyses activées
+app.use('/api', apiIndicesRoutes);
+app.use('/api', apiUsersRoutes);
+app.use('/api', apiCollectRoutes); // Routes de collecte de données
+app.use('/api', apiRoutes); // Routes générales en dernier
+
+// Assurer l'existence de la table users (auto-migration légère)
+async function ensureUsersTable() {
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                username TEXT NOT NULL UNIQUE,
+                email TEXT NOT NULL UNIQUE,
+                password_hash TEXT NOT NULL,
+                role VARCHAR(20) NOT NULL CHECK (role IN ('SUPER_ADMIN','VIEWER','INVESTIGATOR')),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+        // Index additionnels au cas où
+        await pool.query(`CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);`);
+        // Harmoniser le type de colonne role et contrainte d'intégrité
+        await pool.query(`ALTER TABLE users ALTER COLUMN role TYPE VARCHAR(20) USING role::text;`);
+        await pool.query(`DO $$
+        BEGIN
+            IF NOT EXISTS (
+                SELECT 1 FROM information_schema.table_constraints 
+                WHERE table_name='users' AND constraint_name='users_role_check'
+            ) THEN
+                ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('SUPER_ADMIN','VIEWER','INVESTIGATOR'));
+            END IF;
+        END $$;`);
+        // Garantir unicité username/email si table pré-existante
+        await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS users_username_key ON users(username);`);
+        await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS users_email_key ON users(email);`);
+        console.log('✅ Table users vérifiée/créée');
+    } catch (e) {
+        console.error('❌ Échec vérification/creation table users:', e.message);
+    }
+}
+
+ensureUsersTable();
+
+// Créer l'admin par défaut si manquant
+async function ensureDefaultAdmin() {
+    try {
+        const { rows } = await pool.query("SELECT id FROM users WHERE username = 'admin' LIMIT 1");
+        if (rows.length === 0) {
+            const hash = await bcrypt.hash('admin123', 10);
+            await pool.query(
+                "INSERT INTO users (username, email, password_hash, role, created_at, updated_at) VALUES ($1,$2,$3,$4,NOW(),NOW())",
+                ['admin', 'admin@example.com', hash, 'SUPER_ADMIN']
+            );
+            console.log('👤 Utilisateur admin créé (admin/admin123)');
+        } else {
+            console.log('👤 Utilisateur admin déjà présent');
+        }
+    } catch (e) {
+        console.error('❌ Vérification/creation admin par défaut:', e.message);
+    }
+}
+
+ensureDefaultAdmin();
 
 // Route de login
 app.get('/login', (req, res) => {
@@ -65,9 +142,14 @@ app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
-// Route principale (Page d'accueil) - Accessible à tous
+// Route principale (Page d'accueil) - redirige vers login si non authentifié, sinon vers admin
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    if (!req.session || !req.session.user) {
+        // Servir la page d'accueil publique quand non authentifié
+        return res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    }
+    // Utilisateur connecté -> admin
+    return res.redirect('/admin');
 });
 
 // Route pour la page Biologie Moléculaire - SUPER_ADMIN uniquement
@@ -80,10 +162,42 @@ app.get('/analyses', requireAuth, requireViewer, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'analyses.html'));
 });
 
+// Route pour la page de test des analyses - Tous les utilisateurs connectés
+app.get('/test-analyses', requireAuth, requireViewer, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'test-analyses-simple.html'));
+});
+
 // Route pour la page Administration - SUPER_ADMIN uniquement
 app.get('/admin', requireAuth, requireSuperAdmin, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
+
+// Route pour la page de collecte de données (INVESTIGATOR ou SUPER_ADMIN)
+app.get('/collect', requireAuth, requireInvestigator, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'collect-v2.html'));
+});
+
+// Page gestion utilisateurs (SUPER_ADMIN)
+app.get('/admin/users', requireAuth, requireSuperAdmin, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin-users.html'));
+});
+
+// Redirection sécurisée au cas où un lien pointe vers /users
+app.get('/users', requireAuth, requireSuperAdmin, (req, res) => {
+    res.redirect('/admin/users');
+});
+
+// Route pour la page de validation des données en attente
+app.get('/admin/pending', requireAuth, requireSuperAdmin, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin-validation.html'));
+});
+
+// Route pour la validation par lots
+app.get('/admin-validation', requireAuth, requireSuperAdmin, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin-validation.html'));
+});
+
+
 
 // Route pour la page Indices - Tous les utilisateurs connectés
 app.get('/indices', requireAuth, requireViewer, (req, res) => {
@@ -94,38 +208,7 @@ app.get('/indices', requireAuth, requireViewer, (req, res) => {
 // Route principale pour tester les indices sans authentification
 
 
-// Route temporaire pour tester les graphiques sans authentification
-
-
-// Route de test pour la navigation
-app.get('/test', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'test.html'));
-});
-
-// Route de test pour la page d'accueil simple
-app.get('/index-simple', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index-simple.html'));
-});
-
-// Route de test pour la navigation (nouveau fichier)
-app.get('/test-nav', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'test-nav.html'));
-});
-
-// Route de test pour la page d'accueil sans CSS/JS
-app.get('/index-no-css', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index-no-css.html'));
-});
-
-// Route de test pour les échelles adaptatives
-app.get('/test-echelle', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'test-echelle.html'));
-});
-
-// Route de test simple pour les échelles adaptatives
-app.get('/test-echelle-simple', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'test-echelle-simple.html'));
-});
+// Routes de test supprimées lors du nettoyage
 
 // Gestion des erreurs 404
 app.use('*', (req, res) => {

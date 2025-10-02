@@ -1663,4 +1663,163 @@ video {
   }
 }
 
+/* Styles pour le bouton Admin dans la navigation */
+#main-nav .nav-admin {
+    background: #1e40af !important;
+    color: white !important;
+    font-weight: 600;
+}
+
+#main-nav .nav-admin:hover {
+    background: #3b82f6 !important;
+    color: white !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(30, 64, 175, 0.3);
+}
+
+#main-nav .nav-admin.active {
+    background: #3b82f6 !important;
+    color: white !important;
+}
+
+
+/* Navigation principale - harmonisation */
+#main-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+#main-nav .nav-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  color: #374151;
+  transition: background-color .2s ease, color .2s ease, box-shadow .2s ease, transform .15s ease;
+  font-size: 14px;
+}
+
+#main-nav .nav-item:hover {
+  background: #f3f4f6;
+  color: #1e40af;
+}
+
+#main-nav .nav-item.active {
+  background: #e0e7ff;
+  color: #1e40af;
+  box-shadow: 0 2px 6px rgba(30,64,175,.15);
+}
+
+#main-nav .nav-item i { opacity: .9; }
+
+/* Compacter la navbar sur petits écrans */
+@media (max-width: 768px) {
+  #main-nav { gap: 6px; }
+  #main-nav .nav-item { padding: 6px 8px; gap: 6px; font-size: 13px; }
+  #main-nav .nav-item span { display: none; }
+}
+
+/* ===== SYSTÈME DE THÈMES POUR ANALYSES ===== */
+
+/* Thème vif (par défaut) */
+.theme-vivid {
+    --chart-primary: #3b82f6;
+    --chart-secondary: #10b981;
+    --chart-tertiary: #f59e0b;
+    --chart-quaternary: #ef4444;
+    --chart-quinary: #8b5cf6;
+    --chart-senary: #f97316;
+    --chart-septenary: #ec4899;
+    --chart-octonary: #06b6d4;
+    --chart-accent: #84cc16;
+    --chart-highlight: #6366f1;
+}
+
+/* Thème sobre (pour documents officiels) */
+.theme-sober {
+    --chart-primary: #4a5568;
+    --chart-secondary: #718096;
+    --chart-tertiary: #a0aec0;
+    --chart-quaternary: #2d3748;
+    --chart-quinary: #5a6c7d;
+    --chart-senary: #6b7280;
+    --chart-septenary: #9ca3af;
+    --chart-octonary: #6b7280;
+    --chart-accent: #4b5563;
+    --chart-highlight: #374151;
+}
+
+/* Bouton de basculement de thème */
+.theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50px;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #4a5568;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.theme-toggle:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.theme-toggle .theme-icon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.theme-toggle .theme-text {
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* Styles pour les éléments qui changent selon le thème */
+.theme-aware {
+    transition: all 0.3s ease;
+}
+
+/* Indicateur de thème actuel */
+.theme-indicator {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 999;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+}
+
+.theme-indicator.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+
+
+
 

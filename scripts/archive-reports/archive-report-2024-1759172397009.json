@@ -1,0 +1,20 @@
+{
+  "timestamp": "2025-09-29T18:59:57.016Z",
+  "year": 2024,
+  "archiveResult": {
+    "success": true,
+    "archiveRunId": 8,
+    "year": 2024,
+    "durationSeconds": 0,
+    "recordsArchived": {
+      "eggs": 1,
+      "breedingSites": 0,
+      "mosquitoes": 0,
+      "pcr": 0,
+      "bioessai": 0,
+      "repasSanguin": 0,
+      "infosCommunes": 0
+    }
+  },
+  "cleanupPerformed": false
+}
