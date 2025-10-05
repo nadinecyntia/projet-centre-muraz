@@ -1,0 +1,34 @@
+{
+  "page_title": "Centre MURAZ - Arbovirus Surveillance Platform",
+  "main_title": "Centre MURAZ",
+  "subtitle": "Arbovirus Surveillance",
+  "presentation_title": "Centre Muraz Arbovirus Data Surveillance Project",
+  "cards": {
+    "entomological_surveillance": {
+      "title": "Entomological Surveillance",
+      "description": "Collection and analysis of data on mosquito populations that are vectors of arboviruses in different sectors.",
+      "status": "Active"
+    },
+    "molecular_biology": {
+      "title": "Molecular Biology",
+      "description": "PCR and RT-PCR tests for the identification and characterization of arbovirus viruses in collected samples.",
+      "status": "Advanced"
+    },
+    "biochemistry": {
+      "title": "Biochemistry",
+      "description": "Biochemical analyses for the study of proteins and enzymes involved in insecticide resistance mechanisms.",
+      "status": "Research"
+    },
+    "bioassays": {
+      "title": "Bioassays",
+      "description": "Insecticide sensitivity tests to evaluate vector resistance.",
+      "status": "Tests"
+    }
+  },
+  "images": {
+    "logo_alt": "Centre MURAZ Logo",
+    "carousel_1_alt": "Centre MURAZ - Entomological Surveillance",
+    "carousel_2_alt": "Centre MURAZ - Research and Analysis",
+    "carousel_3_alt": "Centre MURAZ - Technological Innovation"
+  }
+}

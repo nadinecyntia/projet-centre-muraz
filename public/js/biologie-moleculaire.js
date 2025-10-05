@@ -12,6 +12,14 @@ class BiologieMoleculaire {
         this.init();
     }
 
+    // Helper pour obtenir les traductions
+    getTranslation(key, fallback = '') {
+        if (window.murazI18n && window.murazI18n.translate) {
+            return window.murazI18n.translate(key) || fallback;
+        }
+        return fallback;
+    }
+
     async init() {
         console.log('🧬 Initialisation de la page Biologie Moléculaire...');
         
@@ -297,9 +305,9 @@ class BiologieMoleculaire {
                 ${details || 'Aucun détail'}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <button onclick="window.biologieMoleculaire.showDetails('${item.infos_id}')" 
+                <button onclick="window.biologieMoleculaire.showDetails('${item.id}')" 
                         class="text-blue-600 hover:text-blue-900 bg-blue-100 hover:bg-blue-200 px-3 py-1 rounded-md transition-colors">
-                    <i class="fas fa-eye mr-1"></i>Voir
+                    <i class="fas fa-eye mr-1"></i><span data-i18n="biologie.table.action_view">Voir</span>
                 </button>
             </td>
         `;
@@ -344,23 +352,23 @@ class BiologieMoleculaire {
         try {
             console.log('🔍 Recherche de l\'élément avec ID:', id);
             console.log('📊 Données disponibles:', this.allData.length, 'éléments');
-            console.log('📋 IDs disponibles:', this.allData.map(item => item.infos_id));
+            console.log('📋 IDs disponibles:', this.allData.map(item => item.id));
             
-            // Essayer de trouver l'élément avec conversion de type (utiliser infos_id)
-            let item = this.allData.find(data => data.infos_id == id);
+            // Essayer de trouver l'élément avec conversion de type (utiliser id)
+            let item = this.allData.find(data => data.id == id);
             
             // Si pas trouvé, essayer avec conversion explicite
             if (!item) {
                 const numericId = parseInt(id);
                 if (!isNaN(numericId)) {
-                    item = this.allData.find(data => data.infos_id === numericId);
+                    item = this.allData.find(data => data.id === numericId);
                 }
             }
             console.log('🎯 Élément trouvé:', item);
             
             if (!item) {
                 console.error('❌ Aucun élément trouvé avec l\'ID:', id);
-                console.log('📊 Types d\'IDs dans allData:', this.allData.map(item => typeof item.infos_id));
+                console.log('📊 Types d\'IDs dans allData:', this.allData.map(item => typeof item.id));
                 throw new Error(`Données non trouvées pour l'ID: ${id}`);
             }
             
@@ -413,7 +421,7 @@ class BiologieMoleculaire {
                         <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
                             <i class="fas fa-info-circle text-blue-600 text-sm"></i>
                         </div>
-                        <h4 class="text-lg font-semibold text-gray-800">Informations Générales</h4>
+                        <h4 class="text-lg font-semibold text-gray-800">${this.getTranslation('biologie.modal.general_info', 'Informations Générales')}</h4>
                     </div>
                     
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -428,7 +436,7 @@ class BiologieMoleculaire {
                             </div>
                             <div class="flex justify-between items-center py-2 border-b border-gray-100">
                                 <span class="text-sm font-medium text-gray-600">Stade</span>
-                                <span class="text-sm text-gray-800">${item.sample_stage || 'Non spécifié'}</span>
+                                <span class="text-sm text-gray-800">${item.sample_stage || this.getTranslation('biologie.modal.default_values.not_specified', 'Non spécifié')}</span>
                             </div>
                             <div class="flex justify-between items-center py-2 border-b border-gray-100">
                                 <span class="text-sm font-medium text-gray-600">Genre</span>
@@ -436,7 +444,7 @@ class BiologieMoleculaire {
                             </div>
                             <div class="flex justify-between items-center py-2">
                                 <span class="text-sm font-medium text-gray-600">Espèce</span>
-                                <span class="text-sm text-gray-800">${item.mosquito_species || 'Non spécifié'}</span>
+                                <span class="text-sm text-gray-800">${item.mosquito_species || this.getTranslation('biologie.modal.default_values.not_specified', 'Non spécifié')}</span>
                             </div>
                         </div>
                         
@@ -447,7 +455,7 @@ class BiologieMoleculaire {
                             </div>
                             <div class="flex justify-between items-center py-2 border-b border-gray-100">
                                 <span class="text-sm font-medium text-gray-600">Échantillons</span>
-                                <span class="text-sm text-gray-800">${item.sample_count || 'Non spécifié'}</span>
+                                <span class="text-sm text-gray-800">${item.sample_count || this.getTranslation('biologie.modal.default_values.not_specified', 'Non spécifié')}</span>
                             </div>
                             <div class="flex justify-between items-center py-2 border-b border-gray-100">
                                 <span class="text-sm font-medium text-gray-600">Date de collecte</span>

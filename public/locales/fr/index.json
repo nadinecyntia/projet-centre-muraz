@@ -1,0 +1,34 @@
+{
+  "page_title": "Centre MURAZ - Plateforme de Surveillance Arboviroses",
+  "main_title": "Centre MURAZ",
+  "subtitle": "Surveillance Arboviroses",
+  "presentation_title": "Projet de surveillance des données d'arbovirose du Centre Muraz",
+  "cards": {
+    "entomological_surveillance": {
+      "title": "Surveillance Entomologique",
+      "description": "Collecte et analyse des données sur les populations de moustiques vecteurs d'arboviroses dans différents secteurs.",
+      "status": "Actif"
+    },
+    "molecular_biology": {
+      "title": "Biologie Moléculaire",
+      "description": "Tests PCR et RT-PCR pour l'identification et la caractérisation des virus d'arboviroses dans les échantillons collectés.",
+      "status": "Avancé"
+    },
+    "biochemistry": {
+      "title": "Biochimie",
+      "description": "Analyses biochimiques pour l'étude des protéines et enzymes impliquées dans les mécanismes de résistance aux insecticides.",
+      "status": "Recherche"
+    },
+    "bioassays": {
+      "title": "Bioessais",
+      "description": "Tests de sensibilité aux insecticides pour évaluer la résistance vectorielle.",
+      "status": "Tests"
+    }
+  },
+  "images": {
+    "logo_alt": "Logo Centre MURAZ",
+    "carousel_1_alt": "Centre MURAZ - Surveillance Entomologique",
+    "carousel_2_alt": "Centre MURAZ - Recherche et Analyse",
+    "carousel_3_alt": "Centre MURAZ - Innovation Technologique"
+  }
+}

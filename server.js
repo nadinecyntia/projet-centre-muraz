@@ -1,4 +1,5 @@
 const express = require('express');
+const compression = require('compression');
 const cors = require('cors');
 const path = require('path');
 const session = require('express-session');
@@ -19,6 +20,9 @@ const authController = require('./controllers/authController');
 const { requireAuth, requireSuperAdmin, requireViewer, requireInvestigator } = require('./middleware/auth');
 
 const app = express();
+
+// Enable HTTP compression for API and static responses
+app.use(compression());
 const PORT = process.env.PORT || 3000;
 
 // Configuration UTF-8 pour les caractères français
@@ -152,6 +156,7 @@ app.get('/', (req, res) => {
     return res.redirect('/admin');
 });
 
+
 // Route pour la page Biologie Moléculaire - SUPER_ADMIN uniquement
 app.get('/biologie-moleculaire', requireAuth, requireSuperAdmin, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'biologie-moleculaire.html'));
@@ -160,11 +165,6 @@ app.get('/biologie-moleculaire', requireAuth, requireSuperAdmin, (req, res) => {
 // Route pour la page Analyses - Tous les utilisateurs connectés
 app.get('/analyses', requireAuth, requireViewer, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'analyses.html'));
-});
-
-// Route pour la page de test des analyses - Tous les utilisateurs connectés
-app.get('/test-analyses', requireAuth, requireViewer, (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'test-analyses-simple.html'));
 });
 
 // Route pour la page Administration - SUPER_ADMIN uniquement

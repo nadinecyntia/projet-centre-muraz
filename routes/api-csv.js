@@ -8,8 +8,12 @@ const multer = require('multer');
 const csv = require('csv-parser');
 const fs = require('fs');
 const path = require('path');
+const { requireAuth, requireSuperAdmin } = require('../middleware/auth');
 const { pool } = require('../config/database');
 const router = express.Router();
+
+// Appliquer l'authentification pour toutes les routes CSV
+router.use(requireAuth);
 
 // Configuration multer pour l'upload de fichiers
 const upload = multer({
@@ -80,7 +84,7 @@ const CSV_FIELDS = {
         'prokopack_traps_count',
         'bg_traps_count',
         'prokopack_mosquitoes_count',
-        'bg_trap_mosquitoes_count',
+        'bg_traps_mosquitoes_count',
         'total_mosquitoes_count',
         'male_count',
         'female_count',
@@ -125,10 +129,28 @@ router.post('/preview', upload.single('csvFile'), async (req, res) => {
                 // Valider les en-têtes si un type de données est spécifié
                 if (dataType && CSV_FIELDS[dataType]) {
                     const expectedFields = CSV_FIELDS[dataType];
-                    const actualFields = headerList;
+                    const actualFields = headerList.map(field => field.trim()); // Supprimer les espaces
                     
-                    const missingFields = expectedFields.filter(field => !actualFields.includes(field));
-                    const extraFields = actualFields.filter(field => !expectedFields.includes(field));
+                    // Créer un mapping pour les colonnes avec espaces
+                    const fieldMapping = {};
+                    actualFields.forEach(actualField => {
+                        const trimmedField = actualField.trim();
+                        expectedFields.forEach(expectedField => {
+                            if (trimmedField === expectedField || 
+                                trimmedField.replace(/\s+/g, '') === expectedField.replace(/\s+/g, '')) {
+                                fieldMapping[actualField] = expectedField;
+                            }
+                        });
+                    });
+                    
+                    const missingFields = expectedFields.filter(field => 
+                        !actualFields.includes(field) && 
+                        !Object.values(fieldMapping).includes(field)
+                    );
+                    const extraFields = actualFields.filter(field => 
+                        !expectedFields.includes(field) && 
+                        !fieldMapping[field]
+                    );
                     
                     if (missingFields.length > 0) {
                         validationErrors.push(`Colonnes manquantes: ${missingFields.join(', ')}`);
@@ -202,16 +224,23 @@ router.post('/import', upload.single('csvFile'), async (req, res) => {
         let insertedCount = 0;
 
         // Lire et traiter le fichier CSV
+        console.log('📄 Lecture du fichier CSV:', req.file.path);
+        console.log('📊 Type de données:', dataType);
+        
         fs.createReadStream(req.file.path)
             .pipe(csv())
             .on('data', async (data) => {
+                console.log('📝 Ligne CSV reçue:', data);
                 try {
                     const processedData = processCSVRow(data, dataType);
+                    console.log('🔄 Données traitées:', processedData);
                     const result = await insertData(processedData, dataType);
                     
                     if (result.success) {
                         insertedCount++;
+                        console.log('✅ Insertion réussie');
                     } else {
+                        console.log('❌ Erreur insertion:', result.error);
                         errors.push({
                             row: results.length + 1,
                             error: result.error
@@ -220,6 +249,7 @@ router.post('/import', upload.single('csvFile'), async (req, res) => {
                     
                     results.push(processedData);
                 } catch (error) {
+                    console.log('❌ Erreur traitement:', error.message);
                     errors.push({
                         row: results.length + 1,
                         error: error.message
@@ -292,7 +322,8 @@ function processCSVRow(data, dataType) {
     const fields = CSV_FIELDS[dataType];
     
     fields.forEach(field => {
-        let value = data[field];
+        // Chercher la valeur avec ou sans espaces
+        let value = data[field] || data[field + ' '] || data[' ' + field];
         
         // Traitement spécial selon le type de champ
         if (value !== undefined && value !== null && value !== '') {
@@ -304,9 +335,20 @@ function processCSVRow(data, dataType) {
                 if (!isValidDate(value)) {
                     throw new Error(`Format de date invalide pour ${field}: ${value}`);
                 }
-            } else if (field.includes('_genus') || field.includes('_types') || field.includes('_classes')) {
-                // Conversion des tableaux
-                value = value.split(',').map(item => item.trim()).filter(item => item);
+            } else if (field.includes('_genus') || field.includes('_types') || field.includes('_classes') || 
+                       field === 'collection_methods' || field === 'capture_locations') {
+                // Conversion des tableaux - vérifier si c'est déjà un JSON ou une chaîne simple
+                if (value.startsWith('[') && value.endsWith(']')) {
+                    try {
+                        value = JSON.parse(value);
+                    } catch (e) {
+                        // Si le JSON parsing échoue, traiter comme une chaîne simple
+                        value = [value];
+                    }
+                } else {
+                    // Traiter comme une chaîne simple et la convertir en tableau
+                    value = [value];
+                }
             }
             
             processedData[field] = value;
@@ -395,7 +437,7 @@ async function insertData(data, dataType) {
                             mosquitoes_concession_code, mosquitoes_sector, mosquitoes_environment,
                             mosquitoes_visit_start_date, mosquitoes_gps_code, genus, species,
                             collection_methods, capture_locations, prokopack_traps_count, bg_traps_count,
-                            prokopack_mosquitoes_count, bg_trap_mosquitoes_count, total_mosquitoes_count,
+                            prokopack_mosquitoes_count, bg_traps_mosquitoes_count, total_mosquitoes_count,
                             male_count, female_count, aedes_male_count, culex_male_count,
                             anopheles_male_count, other_male_count, blood_fed_females_count,
                             gravid_females_count, starved_females_count, mosquitoes_aedes_count,
@@ -417,7 +459,7 @@ async function insertData(data, dataType) {
                         data.prokopack_traps_count,
                         data.bg_traps_count,
                         data.prokopack_mosquitoes_count,
-                        data.bg_trap_mosquitoes_count,
+                        data.bg_traps_mosquitoes_count,
                         data.total_mosquitoes_count,
                         data.male_count,
                         data.female_count,

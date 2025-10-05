@@ -1,0 +1,94 @@
+{
+  "page_title": "Analyses Entomologiques - Centre MURAZ",
+  "header": {
+    "title": "Centre MURAZ",
+    "subtitle": "Surveillance Arboviroses"
+  },
+  "images": {
+    "logo_alt": "Logo Centre MURAZ"
+  },
+  "theme": {
+    "indicator": "Thème: Couleurs légères"
+  },
+  "sections": {
+    "eggs": "Section Œufs",
+    "larvae": "Section Larves",
+    "mosquitoes": "Section Moustiques",
+    "research": "Section Recherche"
+  },
+  "controls": {
+    "year_label": "Année des données:",
+    "current_year": "Année en cours",
+    "environment_label": "Milieu:",
+    "all_environments": "Tous les milieux",
+    "urban": "Urbain",
+    "rural": "Rural",
+    "archived_data": "Données archivées",
+    "filter_sector": "Filtrer par secteur:",
+    "all_sectors": "Tous les secteurs",
+    "filter_month": "Filtrer par mois:",
+    "all_months": "Tous les mois"
+  },
+  "charts": {
+    "eggs_sector_month": {
+      "title": "Nombre d'œufs par secteur et par mois",
+      "description": "Répartition des œufs collectés par secteur et période"
+    },
+    "eggs_evolution": {
+      "title": "Évolution du nombre total d'œufs collectés",
+      "description": "Courbe temporelle des œufs collectés dans l'année"
+    },
+    "eggs_month_environment": {
+      "title": "Nombre d'œufs par mois et par milieu",
+      "description": "Répartition des œufs collectés par mois selon le milieu (urbain/rural)"
+    },
+    "larvae_sector": {
+      "title": "Nombre total de larves et nymphes par mois par secteur",
+      "description": "Répartition des larves et nymphes par secteur et par mois"
+    },
+    "sites_sector_month": {
+      "title": "Nombre de gîtes par secteur par mois",
+      "description": "Répartition du nombre total de gîtes inspectés par secteur et par mois"
+    },
+    "adults_density": {
+      "title": "Courbe du nombre total ou densité/an",
+      "description": "Évolution temporelle des moustiques adultes"
+    },
+    "adults_sector": {
+      "title": "Densité par secteur par mois",
+      "description": "Histogramme de la densité par secteur et période"
+    },
+    "adults_genus": {
+      "title": "Densité par genre",
+      "description": "Répartition des moustiques par genre"
+    },
+    "aedes_sector_month": {
+      "title": "Nombre d'Aedes par secteur et par mois",
+      "description": "Répartition des moustiques Aedes par secteur et par mois"
+    },
+    "site_type_environment": {
+      "title": "Quantité par classe de gîtes selon le milieu",
+      "description": "Répartition des éléments par classe de gîtes en fonction du milieu (urbain/rural)"
+    },
+    "aedes_method_location": {
+      "title": "Nombre d'Aedes par méthode de collecte et lieu de capture",
+      "description": "Répartition des Aedes selon la méthode de collecte (prokopack/bg_trap) et le lieu (intérieur/extérieur)"
+    }
+  },
+  "chart_labels": {
+    "total_eggs": "Total œufs collectés",
+    "months": "Mois",
+    "eggs_count": "Nombre d'œufs",
+    "larvae_count": "Nombre de larves + nymphes",
+    "sites_count": "Nombre de gîtes",
+    "aedes_count": "Nombre d'Aedes",
+    "urban": "Urbain",
+    "rural": "Rural"
+  },
+  "tooltips": {
+    "eggs": "œufs",
+    "larvae": "larves + nymphes",
+    "sites": "gîtes",
+    "aedes": "Aedes"
+  }
+}

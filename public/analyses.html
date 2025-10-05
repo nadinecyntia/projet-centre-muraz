@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analyses Entomologiques - Centre MURAZ</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="alternate icon" href="/favicon.ico">
+    <title data-i18n="analyses.page_title">Analyses Entomologiques - Centre MURAZ</title>
+    <link rel="stylesheet" href="/css/style.css?v=2025-01-15-18-00">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="/js/app.js"></script>
     <style>
         :root {
             --primary-color: #1e3a8a;
@@ -280,22 +281,22 @@
         }
     </style>
 </head>
-<body>
+<body class="has-fixed-header">
     <!-- Header avec navigation unifiée -->
-    <header class="bg-white shadow-lg border-b-4 border-muraz-blue sticky top-0 z-40">
-        <nav class="container mx-auto px-6 py-4">
+    <header class="analyses-header bg-white shadow-lg border-b-4 border-muraz-blue sticky-nav">
+        <nav class="w-full px-6 py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-4">
                     <div class="w-12 h-12 flex items-center justify-center">
-                        <img src="/logo-centre-muraz.jpg" alt="Logo Centre MURAZ" class="w-full h-full object-contain rounded-lg">
+                        <img src="/logo-centre-muraz.jpg" data-i18n-alt="analyses.images.logo_alt" alt="Logo Centre MURAZ" class="w-full h-full object-contain rounded-lg">
                     </div>
                     <div>
-                        <h1 class="text-xl font-bold text-muraz-blue">Centre MURAZ</h1>
-                        <p class="text-sm text-gray-600">Surveillance Arboviroses</p>
+                        <h1 class="text-xl font-bold text-muraz-blue" data-i18n="analyses.header.title">Centre MURAZ</h1>
+                        <p class="text-sm text-gray-600" data-i18n="analyses.header.subtitle">Surveillance Arboviroses</p>
                     </div>
                 </div>
                 <div id="main-nav" class="flex items-center space-x-6">
-                    <!-- La navigation sera générée dynamiquement par app.js -->
+                    <!-- La navigation sera générée dynamiquement par app-modular.js -->
                 </div>
                 <div class="flex items-center space-x-4">
                     <div class="md:hidden">
@@ -317,34 +318,34 @@
 
     <!-- Indicateur de thème actuel -->
     <div id="themeIndicator" class="theme-indicator">
-        Thème: <span id="currentTheme">Couleurs légères</span>
+        <span data-i18n="analyses.theme.indicator">Thème: Couleurs légères</span>
     </div>
 
     <div class="analyses-container">
         <!-- Section Œufs -->
         <div class="section">
             <div class="section-header">
-                <h2 class="section-title">Section Œufs</h2>
+                <h2 class="section-title" data-i18n="analyses.sections.eggs">Section Œufs</h2>
                 
                 <!-- Contrôles globaux: année + milieu + bandeau archives -->
                 <div class="flex items-center gap-3" style="margin-top: 0.5rem;">
                     <div class="filter-controls">
-                        <label for="year-selection-analyses">Année des données:</label>
+                        <label for="year-selection-analyses" data-i18n="analyses.controls.year_label">Année des données:</label>
                         <select id="year-selection-analyses" class="filter-select">
-                            <option value="current">Année en cours</option>
+                            <option value="current" data-i18n="analyses.controls.current_year">Année en cours</option>
                         </select>
                     </div>
                     <div class="filter-controls">
-                        <label for="environment-filter-analyses">Milieu:</label>
+                        <label for="environment-filter-analyses" data-i18n="analyses.controls.environment_label">Milieu:</label>
                         <select id="environment-filter-analyses" class="filter-select">
-                            <option value="all">Tous les milieux</option>
-                            <option value="urban">Urbain</option>
-                            <option value="rural">Rural</option>
+                            <option value="all" data-i18n="analyses.controls.all_environments">Tous les milieux</option>
+                            <option value="urban" data-i18n="analyses.controls.urban">Urbain</option>
+                            <option value="rural" data-i18n="analyses.controls.rural">Rural</option>
                         </select>
                     </div>
                     <div id="archive-banner-analyses" class="hidden" style="background:#fef3c7;border:1px solid #fde68a;color:#92400e;padding:6px 10px;border-radius:6px;font-size:12px;">
                         <i class="fas fa-box-archive" style="margin-right:6px;"></i>
-                        Données archivées <strong><span id="archive-year-analyses"></span></strong>
+                        <span data-i18n="analyses.controls.archived_data">Données archivées</span> <strong><span id="archive-year-analyses"></span></strong>
                     </div>
                 </div>
             </div>
@@ -353,8 +354,8 @@
                 <div class="indicator-card">
                     <div class="indicator-header">
                         <div>
-                            <h3 class="indicator-title">Nombre d'œufs par secteur et par mois</h3>
-                            <p class="indicator-description">Répartition des œufs collectés par secteur et période</p>
+                            <h3 class="indicator-title" data-i18n="analyses.charts.eggs_sector_month.title">Nombre d'œufs par secteur et par mois</h3>
+                            <p class="indicator-description" data-i18n="analyses.charts.eggs_sector_month.description">Répartition des œufs collectés par secteur et période</p>
                         </div>
                     </div>
                     <div class="chart-container">
@@ -366,13 +367,13 @@
                 <div class="indicator-card">
                     <div class="indicator-header">
                         <div>
-                            <h3 class="indicator-title">Évolution du nombre total d'œufs collectés</h3>
-                            <p class="indicator-description">Courbe temporelle des œufs collectés dans l'année</p>
+                            <h3 class="indicator-title" data-i18n="analyses.charts.eggs_evolution.title">Évolution du nombre total d'œufs collectés</h3>
+                            <p class="indicator-description" data-i18n="analyses.charts.eggs_evolution.description">Courbe temporelle des œufs collectés dans l'année</p>
                         </div>
                         <div class="filter-controls">
-                            <label for="sectorFilter">Filtrer par secteur:</label>
+                            <label for="sectorFilter" data-i18n="analyses.controls.filter_sector">Filtrer par secteur:</label>
                             <select id="sectorFilter" class="filter-select">
-                                <option value="all">Tous les secteurs</option>
+                                <option value="all" data-i18n="analyses.controls.all_sectors">Tous les secteurs</option>
                             </select>
                         </div>
                     </div>
@@ -385,8 +386,8 @@
                 <div class="indicator-card">
                     <div class="indicator-header">
                         <div>
-                            <h3 class="indicator-title">Nombre d'œufs par mois et par milieu</h3>
-                            <p class="indicator-description">Répartition des œufs collectés par mois selon le milieu (urbain/rural)</p>
+                            <h3 class="indicator-title" data-i18n="analyses.charts.eggs_month_environment.title">Nombre d'œufs par mois et par milieu</h3>
+                            <p class="indicator-description" data-i18n="analyses.charts.eggs_month_environment.description">Répartition des œufs collectés par mois selon le milieu (urbain/rural)</p>
                         </div>
                     </div>
                     <div class="chart-container">
@@ -399,15 +400,15 @@
         <!-- Section Larves -->
         <div class="section">
             <div class="section-header">
-                <h2 class="section-title">Section Larves</h2>
+                <h2 class="section-title" data-i18n="analyses.sections.larvae">Section Larves</h2>
             </div>
             <div class="indicators-grid">
                 <!-- Larves par mois par secteur -->
                 <div class="indicator-card">
                     <div class="indicator-header">
                         <div>
-                            <h3 class="indicator-title">Nombre total de larves et nymphes par mois par secteur</h3>
-                            <p class="indicator-description">Répartition des larves et nymphes par secteur et par mois</p>
+                            <h3 class="indicator-title" data-i18n="analyses.charts.larvae_sector.title">Nombre total de larves et nymphes par mois par secteur</h3>
+                            <p class="indicator-description" data-i18n="analyses.charts.larvae_sector.description">Répartition des larves et nymphes par secteur et par mois</p>
                     </div>
                     </div>
                     <div class="chart-container">
@@ -419,8 +420,8 @@
                 <div class="indicator-card">
                     <div class="indicator-header">
                         <div>
-                            <h3 class="indicator-title">Nombre de gîtes par secteur par mois</h3>
-                            <p class="indicator-description">Répartition du nombre total de gîtes inspectés par secteur et par mois</p>
+                            <h3 class="indicator-title" data-i18n="analyses.charts.sites_sector_month.title">Nombre de gîtes par secteur par mois</h3>
+                            <p class="indicator-description" data-i18n="analyses.charts.sites_sector_month.description">Répartition du nombre total de gîtes inspectés par secteur et par mois</p>
                         </div>
                     </div>
                     <div class="chart-container">
@@ -433,15 +434,15 @@
         <!-- Section Moustiques -->
         <div class="section">
             <div class="section-header">
-                <h2 class="section-title">Section Moustiques</h2>
+                <h2 class="section-title" data-i18n="analyses.sections.mosquitoes">Section Moustiques</h2>
             </div>
             <div class="indicators-grid">
                 <!-- Courbe densité moustiques adultes -->
                 <div class="indicator-card">
                     <div class="indicator-header">
                         <div>
-                            <h3 class="indicator-title">Courbe du nombre total ou densité/an</h3>
-                            <p class="indicator-description">Évolution temporelle des moustiques adultes</p>
+                            <h3 class="indicator-title" data-i18n="analyses.charts.adults_density.title">Courbe du nombre total ou densité/an</h3>
+                            <p class="indicator-description" data-i18n="analyses.charts.adults_density.description">Évolution temporelle des moustiques adultes</p>
                         </div>
                     </div>
                     <div class="chart-container">
@@ -453,8 +454,8 @@
                 <div class="indicator-card">
                     <div class="indicator-header">
                         <div>
-                            <h3 class="indicator-title">Densité par secteur par mois</h3>
-                            <p class="indicator-description">Histogramme de la densité par secteur et période</p>
+                            <h3 class="indicator-title" data-i18n="analyses.charts.adults_sector.title">Densité par secteur par mois</h3>
+                            <p class="indicator-description" data-i18n="analyses.charts.adults_sector.description">Histogramme de la densité par secteur et période</p>
                         </div>
                     </div>
                     <div class="chart-container">
@@ -466,13 +467,13 @@
                 <div class="indicator-card">
                     <div class="indicator-header">
                         <div>
-                            <h3 class="indicator-title">Densité par genre</h3>
-                            <p class="indicator-description">Répartition des moustiques par genre</p>
+                            <h3 class="indicator-title" data-i18n="analyses.charts.adults_genus.title">Densité par genre</h3>
+                            <p class="indicator-description" data-i18n="analyses.charts.adults_genus.description">Répartition des moustiques par genre</p>
                         </div>
                         <div class="filter-controls">
-                            <label for="monthFilter">Filtrer par mois:</label>
+                            <label for="monthFilter" data-i18n="analyses.controls.filter_month">Filtrer par mois:</label>
                             <select id="monthFilter" class="filter-select">
-                                <option value="all">Tous les mois</option>
+                                <option value="all" data-i18n="analyses.controls.all_months">Tous les mois</option>
                         </select>
                         </div>
                     </div>
@@ -486,15 +487,15 @@
         <!-- Section Recherche -->
         <div class="section">
             <div class="section-header">
-                <h2 class="section-title">Section Recherche</h2>
+                <h2 class="section-title" data-i18n="analyses.sections.research">Section Recherche</h2>
             </div>
             <div class="indicators-grid">
                 <!-- Nombre d'Aedes par secteur et par mois -->
                 <div class="indicator-card">
                     <div class="indicator-header">
                         <div>
-                            <h3 class="indicator-title">Nombre d'Aedes par secteur et par mois</h3>
-                            <p class="indicator-description">Répartition des moustiques Aedes par secteur et par mois</p>
+                            <h3 class="indicator-title" data-i18n="analyses.charts.aedes_sector_month.title">Nombre d'Aedes par secteur et par mois</h3>
+                            <p class="indicator-description" data-i18n="analyses.charts.aedes_sector_month.description">Répartition des moustiques Aedes par secteur et par mois</p>
                         </div>
                     </div>
                     <div class="chart-container">
@@ -506,8 +507,8 @@
                 <div class="indicator-card">
                     <div class="indicator-header">
                         <div>
-                            <h3 class="indicator-title">Quantité par classe de gîtes selon le milieu</h3>
-                            <p class="indicator-description">Répartition des éléments par classe de gîtes en fonction du milieu (urbain/rural)</p>
+                            <h3 class="indicator-title" data-i18n="analyses.charts.site_type_environment.title">Quantité par classe de gîtes selon le milieu</h3>
+                            <p class="indicator-description" data-i18n="analyses.charts.site_type_environment.description">Répartition des éléments par classe de gîtes en fonction du milieu (urbain/rural)</p>
                         </div>
                     </div>
                     <div class="chart-container">
@@ -519,8 +520,8 @@
                 <div class="indicator-card">
                     <div class="indicator-header">
                         <div>
-                            <h3 class="indicator-title">Nombre d'Aedes par méthode de collecte et lieu de capture</h3>
-                            <p class="indicator-description">Répartition des Aedes selon la méthode de collecte (prokopack/bg_trap) et le lieu (intérieur/extérieur)</p>
+                            <h3 class="indicator-title" data-i18n="analyses.charts.aedes_method_location.title">Nombre d'Aedes par méthode de collecte et lieu de capture</h3>
+                            <p class="indicator-description" data-i18n="analyses.charts.aedes_method_location.description">Répartition des Aedes selon la méthode de collecte (prokopack/bg_trap) et le lieu (intérieur/extérieur)</p>
                         </div>
                     </div>
                     <div class="chart-container">
@@ -531,8 +532,17 @@
         </div>
         </div>
 
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-6 text-center">
+            <p data-i18n="footer.copyright">&copy; 2025 Centre MURAZ - Plateforme de Surveillance Arboviroses</p>
+        </div>
+    </footer>
+
     <!-- Scripts -->
-    <script src="/js/app.js"></script>
+    <script type="module" src="/js/app-modular.js?v=2025-01-15-17-10"></script>
+    <script src="/js/robust-translation.js?v=2025-01-15-17-10"></script>
+    <script src="/js/debug-modules.js?v=2025-01-15-17-10"></script>
     <script src="/js/analyses.js"></script>
 </body>
 </html>

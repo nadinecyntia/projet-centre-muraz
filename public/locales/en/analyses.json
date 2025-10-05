@@ -1,0 +1,94 @@
+{
+  "page_title": "Entomological Analyses - Centre MURAZ",
+  "header": {
+    "title": "Centre MURAZ",
+    "subtitle": "Arbovirus Surveillance"
+  },
+  "images": {
+    "logo_alt": "Centre MURAZ Logo"
+  },
+  "theme": {
+    "indicator": "Theme: Light Colors"
+  },
+  "sections": {
+    "eggs": "Eggs Section",
+    "larvae": "Larvae Section",
+    "mosquitoes": "Mosquitoes Section",
+    "research": "Research Section"
+  },
+  "controls": {
+    "year_label": "Data Year:",
+    "current_year": "Current Year",
+    "environment_label": "Environment:",
+    "all_environments": "All Environments",
+    "urban": "Urban",
+    "rural": "Rural",
+    "archived_data": "Archived Data",
+    "filter_sector": "Filter by Sector:",
+    "all_sectors": "All Sectors",
+    "filter_month": "Filter by Month:",
+    "all_months": "All Months"
+  },
+  "charts": {
+    "eggs_sector_month": {
+      "title": "Number of Eggs by Sector and Month",
+      "description": "Distribution of collected eggs by sector and period"
+    },
+    "eggs_evolution": {
+      "title": "Evolution of Total Number of Collected Eggs",
+      "description": "Temporal curve of eggs collected during the year"
+    },
+    "eggs_month_environment": {
+      "title": "Number of Eggs by Month and Environment",
+      "description": "Distribution of collected eggs by month according to environment (urban/rural)"
+    },
+    "larvae_sector": {
+      "title": "Total Number of Larvae and Nymphs by Month by Sector",
+      "description": "Distribution of larvae and nymphs by sector and month"
+    },
+    "sites_sector_month": {
+      "title": "Number of Breeding Sites by Sector by Month",
+      "description": "Distribution of total number of inspected breeding sites by sector and month"
+    },
+    "adults_density": {
+      "title": "Total Number or Density/Year Curve",
+      "description": "Temporal evolution of adult mosquitoes"
+    },
+    "adults_sector": {
+      "title": "Density by Sector by Month",
+      "description": "Histogram of density by sector and period"
+    },
+    "adults_genus": {
+      "title": "Density by Genus",
+      "description": "Distribution of mosquitoes by genus"
+    },
+    "aedes_sector_month": {
+      "title": "Number of Aedes by Sector and Month",
+      "description": "Distribution of Aedes mosquitoes by sector and month"
+    },
+    "site_type_environment": {
+      "title": "Quantity by Breeding Site Class According to Environment",
+      "description": "Distribution of elements by breeding site class according to environment (urban/rural)"
+    },
+    "aedes_method_location": {
+      "title": "Number of Aedes by Collection Method and Capture Location",
+      "description": "Distribution of Aedes according to collection method (prokopack/bg_trap) and location (interior/exterior)"
+    }
+  },
+  "chart_labels": {
+    "total_eggs": "Total Collected Eggs",
+    "months": "Months",
+    "eggs_count": "Number of Eggs",
+    "larvae_count": "Number of Larvae + Nymphs",
+    "sites_count": "Number of Sites",
+    "aedes_count": "Number of Aedes",
+    "urban": "Urban",
+    "rural": "Rural"
+  },
+  "tooltips": {
+    "eggs": "eggs",
+    "larvae": "larvae + nymphs",
+    "sites": "sites",
+    "aedes": "Aedes"
+  }
+}

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test CSV Import</title>
+</head>
+<body>
+    <h1>Test CSV Import</h1>
+    <button onclick="testModal()">Test Modal</button>
+    <button onclick="testImport()">Test Import</button>
+    
+    <div id="csvImportModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5);">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 8px;">
+            <h2>Test Modal</h2>
+            <button onclick="closeModal()">Fermer</button>
+        </div>
+    </div>
+
+    <script>
+        function testModal() {
+            console.log('Test modal clicked');
+            const modal = document.getElementById('csvImportModal');
+            modal.style.display = 'block';
+        }
+        
+        function closeModal() {
+            const modal = document.getElementById('csvImportModal');
+            modal.style.display = 'none';
+        }
+        
+        function testImport() {
+            console.log('Test import clicked');
+            // Simuler un appel d'import
+            fetch('/api/csv/import', {
+                method: 'POST',
+                body: new FormData()
+            })
+            .then(response => response.text())
+            .then(data => {
+                console.log('Import response:', data);
+                alert('Import test: ' + data);
+            })
+            .catch(error => {
+                console.error('Import error:', error);
+                alert('Import error: ' + error.message);
+            });
+        }
+    </script>
+</body>
+</html>

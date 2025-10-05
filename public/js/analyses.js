@@ -1,3 +1,11 @@
+// Fonction de traduction pour les analyses
+function getTranslation(key, fallback) {
+    if (window.murazI18n && window.murazI18n.isInitialized()) {
+        return window.murazI18n.t(key, fallback);
+    }
+    return fallback;
+}
+
 // Gestionnaire de thème pour les graphiques
 class ThemeManager {
     constructor() {
@@ -14,7 +22,7 @@ class ThemeManager {
     updateThemeIndicator() {
         const indicator = document.getElementById('currentTheme');
         if (indicator) {
-            indicator.textContent = 'Couleurs légères';
+            indicator.textContent = getTranslation('analyses.theme.indicator', 'Couleurs légères');
         }
     }
 
@@ -144,33 +152,100 @@ class AnalysesManager {
         console.log('📊 Chargement des données...');
         
         try {
-            // Charger toutes les données en parallèle
+            // Charger les années
             await this.populateYearSelector();
+
+            // Préparer paramètre year
+            const query = this.currentYear && this.currentYear !== 'current' ? `?year=${encodeURIComponent(this.currentYear)}` : '';
+
+            // Essayer les endpoints agrégés (perf)
+            try {
+                const [eggsAgg, breedingAgg, mosquitoesAgg] = await Promise.all([
+                    fetch(`/api/analyses/eggs-aggregates${query}`).then(r => r.json()),
+                    fetch(`/api/analyses/breeding-aggregates${query}`).then(r => r.json()),
+                    fetch(`/api/analyses/mosquitoes-aggregates${query}`).then(r => r.json())
+                ]);
+
+                if (eggsAgg.success && breedingAgg.success && mosquitoesAgg.success) {
+                    // Mettre à jour bannière archive d'après un des résultats
+                    this.updateArchiveBanner(eggsAgg.year || breedingAgg.year || mosquitoesAgg.year, eggsAgg.mode || breedingAgg.mode || mosquitoesAgg.mode);
+
+                    const eggsData = (eggsAgg.data || []).map(row => ({
+                        // Convertir period YYYY-MM en date (1er du mois)
+                        visit_date: this.periodToDate(row.period),
+                        sector: row.sector,
+                        environment: row.environment,
+                        eggs_count: Number(row.total_eggs) || 0,
+                        observations: null,
+                        submitted_at: null
+                    }));
+
+                    const larvaeData = (breedingAgg.data || []).map(row => ({
+                        visit_date: this.periodToDate(row.period),
+                        sector: row.sector,
+                        environment: row.environment,
+                        total_sites_count: Number(row.total_sites) || 0,
+                        larvae_count: Number(row.total_larvae) || 0,
+                        nymphs_count: Number(row.total_nymphs) || 0,
+                        observations: null,
+                        submitted_at: null
+                    }));
+
+                    const adultsData = (mosquitoesAgg.data || []).map(row => ({
+                        visit_date: this.periodToDate(row.period),
+                        sector: row.sector,
+                        environment: row.environment,
+                        collection_methods: row.collection_methods,
+                        capture_locations: row.capture_locations,
+                        total_mosquitoes_count: Number(row.total_mosquitoes) || 0,
+                        mosquitoes_aedes_count: Number(row.total_aedes) || 0,
+                        mosquitoes_culex_count: Number(row.total_culex) || 0,
+                        mosquitoes_anopheles_count: Number(row.total_anopheles) || 0,
+                        mosquitoes_other_count: Number(row.total_other) || 0,
+                        observations: null,
+                        submitted_at: null
+                    }));
+
+                    this.data = { eggs: eggsData, larvae: larvaeData, adults: adultsData };
+
+                    console.log('✅ Données agrégées chargées:', {
+                        eggs: eggsData.length,
+                        larvae: larvaeData.length,
+                        adults: adultsData.length
+                    });
+
+                    // Initialiser les filtres
+                    this.initializeFilters();
+                    return;
+                }
+            } catch (e) {
+                console.warn('⚠️ Échec chargement agrégés, bascule sur endpoints détaillés:', e.message);
+            }
+
+            // Fallback: endpoints détaillés existants
             const [eggsData, larvaeData, adultsData] = await Promise.all([
                 this.fetchEggsData(),
                 this.fetchLarvaeData(),
                 this.fetchAdultsData()
             ]);
-
-            this.data = {
-                eggs: eggsData,
-                larvae: larvaeData,
-                adults: adultsData
-            };
-
-            console.log('✅ Données chargées:', {
+            this.data = { eggs: eggsData, larvae: larvaeData, adults: adultsData };
+            console.log('✅ Données (fallback) chargées:', {
                 eggs: eggsData?.length || 0,
                 larvae: larvaeData?.length || 0,
                 adults: adultsData?.length || 0
             });
-
-            // Initialiser les filtres après le chargement des données
             this.initializeFilters();
 
         } catch (error) {
             console.error('❌ Erreur lors du chargement des données:', error);
             throw error;
         }
+    }
+
+    periodToDate(period) {
+        // period: 'YYYY-MM' -> ISO date string 'YYYY-MM-01'
+        if (!period || typeof period !== 'string' || !/^[0-9]{4}-[0-9]{2}$/.test(period)) return null;
+        return `${period}-01`;
     }
 
     async fetchEggsData() {
@@ -291,7 +366,7 @@ class AnalysesManager {
         console.log('🎯 Secteurs trouvés:', sectorsArray);
         
         // Vider le select et ajouter les options
-        sectorFilter.innerHTML = '<option value="all">Tous les secteurs</option>';
+        sectorFilter.innerHTML = `<option value="all">${getTranslation('analyses.controls.all_sectors', 'Tous les secteurs')}</option>`;
         sectorsArray.forEach(sector => {
             const option = document.createElement('option');
             option.value = sector;
@@ -318,7 +393,7 @@ class AnalysesManager {
         }).filter(Boolean))];
         
         // Vider le select et ajouter les options
-        monthFilter.innerHTML = '<option value="all">Tous les mois</option>';
+        monthFilter.innerHTML = `<option value="all">${getTranslation('analyses.controls.all_months', 'Tous les mois')}</option>`;
         months.forEach(month => {
             const option = document.createElement('option');
             option.value = month;
@@ -354,7 +429,7 @@ class AnalysesManager {
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Nombre d\'œufs par secteur et par mois',
+                        text: getTranslation('analyses.charts.eggs_sector_month.title', 'Nombre d\'œufs par secteur et par mois'),
                         font: { size: 16, weight: 'bold' }
                     },
                     legend: {
@@ -365,17 +440,17 @@ class AnalysesManager {
                         callbacks: {
                             label: (context) => {
                                 const value = context.parsed.y;
-                                return `${context.dataset.label}: ${this.formatLargeValue(value)} œufs`;
+                                return `${context.dataset.label}: ${this.formatLargeValue(value)} ${getTranslation('analyses.tooltips.eggs', 'œufs')}`;
                             }
                         }
                     }
                 },
                 scales: {
-                    y: this.getAdaptiveScaleConfig('Nombre d\'œufs', maxValue),
+                    y: this.getAdaptiveScaleConfig(getTranslation('analyses.chart_labels.eggs_count', 'Nombre d\'œufs'), maxValue),
                     x: {
                         title: {
                             display: true,
-                            text: 'Mois'
+                            text: getTranslation('analyses.chart_labels.months', 'Mois')
                         }
                     }
                 }
@@ -398,7 +473,7 @@ class AnalysesManager {
             data: {
                 labels: data.labels,
             datasets: [{
-                    label: 'Total œufs collectés',
+                    label: getTranslation('analyses.chart_labels.total_eggs', 'Total œufs collectés'),
                     data: data.values,
                     borderColor: this.themeManager.getThemeColors().primary,
                     backgroundColor: this.themeManager.getColorWithAlpha('primary', 0.1),
@@ -413,7 +488,7 @@ class AnalysesManager {
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Évolution du nombre total d\'œufs collectés dans l\'année',
+                        text: getTranslation('analyses.charts.eggs_evolution.title', 'Évolution du nombre total d\'œufs collectés dans l\'année'),
                         font: { size: 16, weight: 'bold' }
                     },
                     tooltip: {
@@ -426,11 +501,11 @@ class AnalysesManager {
                     }
                 },
                 scales: {
-                    y: this.getAdaptiveScaleConfig('Nombre d\'œufs', maxValue),
+                    y: this.getAdaptiveScaleConfig(getTranslation('analyses.chart_labels.eggs_count', 'Nombre d\'œufs'), maxValue),
                     x: {
                         title: {
                             display: true,
-                            text: 'Mois'
+                            text: getTranslation('analyses.chart_labels.months', 'Mois')
                         }
                     }
                 }
@@ -460,7 +535,7 @@ class AnalysesManager {
             plugins: {
                 title: {
                     display: true,
-                        text: 'Nombre d\'œufs par mois et par milieu',
+                        text: getTranslation('analyses.charts.eggs_month_environment.title', 'Nombre d\'œufs par mois et par milieu'),
                     font: { size: 16, weight: 'bold' }
                 },
                 legend: {
@@ -471,17 +546,17 @@ class AnalysesManager {
                         callbacks: {
                             label: (context) => {
                                 const value = context.parsed.y;
-                                return `${context.dataset.label}: ${this.formatLargeValue(value)} œufs`;
+                                return `${context.dataset.label}: ${this.formatLargeValue(value)} ${getTranslation('analyses.tooltips.eggs', 'œufs')}`;
                             }
                         }
                 }
             },
             scales: {
-                    y: this.getAdaptiveScaleConfig('Nombre d\'œufs', maxValue),
+                    y: this.getAdaptiveScaleConfig(getTranslation('analyses.chart_labels.eggs_count', 'Nombre d\'œufs'), maxValue),
                     x: {
                         title: {
                             display: true,
-                            text: 'Mois'
+                            text: getTranslation('analyses.chart_labels.months', 'Mois')
                         }
                     }
                 }
@@ -511,7 +586,7 @@ class AnalysesManager {
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Nombre total de larves et nymphes par mois par secteur',
+                        text: getTranslation('analyses.charts.larvae_sector.title', 'Nombre total de larves et nymphes par mois par secteur'),
                         font: { size: 16, weight: 'bold' }
                     },
                     legend: {
@@ -522,17 +597,17 @@ class AnalysesManager {
                         callbacks: {
                             label: (context) => {
                                 const value = context.parsed.y;
-                                return `${context.dataset.label}: ${this.formatLargeValue(value)} larves + nymphes`;
+                                return `${context.dataset.label}: ${this.formatLargeValue(value)} ${getTranslation('analyses.tooltips.larvae', 'larves + nymphes')}`;
                             }
                         }
                     }
                 },
                 scales: {
-                    y: this.getAdaptiveScaleConfig('Nombre de larves + nymphes', maxValue),
+                    y: this.getAdaptiveScaleConfig(getTranslation('analyses.chart_labels.larvae_count', 'Nombre de larves + nymphes'), maxValue),
                     x: {
                         title: {
                             display: true,
-                            text: 'Mois'
+                            text: getTranslation('analyses.chart_labels.months', 'Mois')
                         }
                     }
                 }
@@ -561,7 +636,7 @@ class AnalysesManager {
             plugins: {
                 title: {
                     display: true,
-                        text: 'Nombre de gîtes par secteur par mois',
+                        text: getTranslation('analyses.charts.sites_sector_month.title', 'Nombre de gîtes par secteur par mois'),
                     font: { size: 16, weight: 'bold' }
                 },
                 legend: {
@@ -572,17 +647,17 @@ class AnalysesManager {
                         callbacks: {
                             label: (context) => {
                                 const value = context.parsed.y;
-                                return `${context.dataset.label}: ${this.formatLargeValue(value)} gîtes`;
+                                return `${context.dataset.label}: ${this.formatLargeValue(value)} ${getTranslation('analyses.tooltips.sites', 'gîtes')}`;
                             }
                         }
                 }
             },
             scales: {
-                    y: this.getAdaptiveScaleConfig('Nombre de gîtes', maxValue),
+                    y: this.getAdaptiveScaleConfig(getTranslation('analyses.chart_labels.sites_count', 'Nombre de gîtes'), maxValue),
                     x: {
                         title: {
                             display: true,
-                            text: 'Mois'
+                            text: getTranslation('analyses.chart_labels.months', 'Mois')
                         }
                     }
                 }
@@ -611,7 +686,7 @@ class AnalysesManager {
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Nombre d\'Aedes par secteur et par mois',
+                        text: getTranslation('analyses.charts.aedes_sector_month.title', 'Nombre d\'Aedes par secteur et par mois'),
                         font: { size: 16, weight: 'bold' }
                     },
                     legend: {
@@ -622,17 +697,17 @@ class AnalysesManager {
                         callbacks: {
                             label: (context) => {
                                 const value = context.parsed.y;
-                                return `${context.dataset.label}: ${this.formatLargeValue(value)} Aedes`;
+                                return `${context.dataset.label}: ${this.formatLargeValue(value)} ${getTranslation('analyses.tooltips.aedes', 'Aedes')}`;
                             }
                         }
                     }
                 },
                 scales: {
-                    y: this.getAdaptiveScaleConfig('Nombre d\'Aedes', maxValue),
+                    y: this.getAdaptiveScaleConfig(getTranslation('analyses.chart_labels.aedes_count', 'Nombre d\'Aedes'), maxValue),
                     x: {
                         title: {
                             display: true,
-                            text: 'Mois'
+                            text: getTranslation('analyses.chart_labels.months', 'Mois')
                         }
                     }
                 }
@@ -661,7 +736,7 @@ class AnalysesManager {
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Quantité par classe de gîtes selon le milieu',
+                        text: getTranslation('analyses.charts.site_type_environment.title', 'Quantité par classe de gîtes selon le milieu'),
                         font: { size: 16, weight: 'bold' }
                     },
                     legend: {
@@ -672,17 +747,17 @@ class AnalysesManager {
                         callbacks: {
                             label: (context) => {
                                 const value = context.parsed.y;
-                                return `${context.dataset.label}: ${this.formatLargeValue(value)} gîtes`;
+                                return `${context.dataset.label}: ${this.formatLargeValue(value)} ${getTranslation('analyses.tooltips.sites', 'gîtes')}`;
                             }
                         }
                     }
                 },
                 scales: {
-                    y: this.getAdaptiveScaleConfig('Nombre de gîtes', maxValue),
+                    y: this.getAdaptiveScaleConfig(getTranslation('analyses.chart_labels.sites_count', 'Nombre de gîtes'), maxValue),
                     x: {
                         title: {
                             display: true,
-                            text: 'Milieu'
+                            text: getTranslation('analyses.chart_labels.milieu', 'Milieu')
                         }
                     }
                 }
@@ -711,7 +786,7 @@ class AnalysesManager {
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Nombre d\'Aedes par méthode de collecte et lieu de capture',
+                        text: getTranslation('analyses.charts.aedes_method_location.title', 'Nombre d\'Aedes par méthode de collecte et lieu de capture'),
                         font: { size: 16, weight: 'bold' }
                     },
                     legend: {
@@ -722,17 +797,17 @@ class AnalysesManager {
                         callbacks: {
                             label: (context) => {
                                 const value = context.parsed.y;
-                                return `${context.dataset.label}: ${this.formatLargeValue(value)} Aedes`;
+                                return `${context.dataset.label}: ${this.formatLargeValue(value)} ${getTranslation('analyses.tooltips.aedes', 'Aedes')}`;
                             }
                         }
                     }
                 },
                 scales: {
-                    y: this.getAdaptiveScaleConfig('Nombre d\'Aedes', maxValue),
+                    y: this.getAdaptiveScaleConfig(getTranslation('analyses.chart_labels.aedes_count', 'Nombre d\'Aedes'), maxValue),
                     x: {
                         title: {
                             display: true,
-                            text: 'Lieu de capture'
+                            text: getTranslation('analyses.chart_labels.capture_location', 'Lieu de capture')
                         }
                     }
                 }
@@ -770,7 +845,7 @@ class AnalysesManager {
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Courbe du nombre total ou densité/an des moustiques adultes',
+                        text: getTranslation('analyses.charts.adults_density.title', 'Courbe du nombre total ou densité/an des moustiques adultes'),
                         font: { size: 16, weight: 'bold' }
                     },
                     tooltip: {
@@ -787,7 +862,7 @@ class AnalysesManager {
                     x: {
                         title: {
                             display: true,
-                            text: 'Mois'
+                            text: getTranslation('analyses.chart_labels.months', 'Mois')
                         }
                     }
                 }
@@ -817,7 +892,7 @@ class AnalysesManager {
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Densité par secteur par mois',
+                        text: getTranslation('analyses.charts.adults_sector.title', 'Densité par secteur par mois'),
                         font: { size: 16, weight: 'bold' }
                     },
                     legend: {
@@ -838,7 +913,7 @@ class AnalysesManager {
                     x: {
                         title: {
                             display: true,
-                            text: 'Mois'
+                            text: getTranslation('analyses.chart_labels.months', 'Mois')
                         }
                     }
                 }
@@ -870,7 +945,7 @@ class AnalysesManager {
             plugins: {
                 title: {
                     display: true,
-                        text: 'Densité par genre',
+                        text: getTranslation('analyses.charts.adults_genus.title', 'Densité par genre'),
                     font: { size: 16, weight: 'bold' }
                 },
                 legend: {

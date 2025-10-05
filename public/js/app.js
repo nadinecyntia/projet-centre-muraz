@@ -1,20 +1,42 @@
 // Application principale Centre MURAZ
+// Import du gestionnaire de navigation modulaire
+import { navigationManager } from './navigation/navigation-manager.js';
+
 class MurazApp {
     constructor() {
         this.user = null;
         this.currentPage = window.location.pathname;
         console.log('🔧 MurazApp initialisée sur la page:', this.currentPage);
-        this.init();
+        console.log('🔧 DOM prêt:', document.readyState);
+        
+        // Attendre que le DOM soit complètement chargé
+        if (document.readyState === 'loading') {
+            console.log('⏳ Attente du chargement du DOM...');
+            document.addEventListener('DOMContentLoaded', () => {
+                console.log('✅ DOM chargé, initialisation...');
+                this.init();
+            });
+        } else {
+            console.log('✅ DOM déjà chargé, initialisation immédiate...');
+            this.init();
+        }
     }
 
     async init() {
         console.log('🚀 Initialisation de l\'application Centre MURAZ...');
         
         // Vérifier l'authentification
+        console.log('🔍 Début de la vérification d\'authentification...');
         await this.checkAuthentication();
+        console.log('✅ Vérification d\'authentification terminée. User:', this.user);
+        
+        // Attendre que le système de traduction soit prêt
+        await this.waitForI18nSystem();
         
         // Initialiser la navigation
+        console.log('🧭 Début de l\'initialisation de la navigation...');
         this.initNavigation();
+        console.log('✅ Initialisation de la navigation terminée');
         
         // Initialiser les fonctionnalités spécifiques à la page
         this.initPageFeatures();
@@ -28,7 +50,31 @@ class MurazApp {
                // Fonctionnalités de langue supprimées
     }
 
-               async checkAuthentication() {
+    /**
+     * Attend que le système de traduction soit initialisé
+     */
+    async waitForI18nSystem() {
+        console.log('🌍 Attente du système de traduction...');
+        
+        // Attendre que le système soit disponible
+        let attempts = 0;
+        const maxAttempts = 50; // 5 secondes max
+        
+        while (attempts < maxAttempts) {
+            if (window.murazI18n && window.murazI18n.isInitialized()) {
+                console.log('✅ Système de traduction prêt');
+                return;
+            }
+            
+            // Attendre 100ms avant de réessayer
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+        
+        console.warn('⚠️ Système de traduction non disponible après 5 secondes, continuation sans traduction');
+    }
+
+    async checkAuthentication() {
                try {
                    console.log('🔍 Vérification de l\'authentification...');
                    const response = await fetch('/api/auth/check');
@@ -39,6 +85,11 @@ class MurazApp {
                    
                    const result = await response.json();
                    console.log('📡 Réponse auth:', result);
+                   
+                   // Vérifier que la réponse est valide
+                   if (!result || typeof result !== 'object') {
+                       throw new Error('Réponse invalide du serveur');
+                   }
 
                    if (result.success && result.authenticated) {
                        this.user = result.user;
@@ -48,6 +99,7 @@ class MurazApp {
                        this.checkPagePermissions();
                    } else {
                        console.log('ℹ️ Utilisateur non connecté');
+                       this.user = null; // S'assurer que user est null
                        // Ne pas rediriger si on est sur la page d'accueil ou login
                        if (this.currentPage !== '/login' && this.currentPage !== '/') {
                            console.log('🚫 Accès refusé, redirection vers login');
@@ -57,6 +109,8 @@ class MurazApp {
                    }
                } catch (error) {
                    console.error('❌ Erreur vérification authentification:', error);
+                   // En cas d'erreur, traiter comme non connecté
+                   this.user = null;
                    if (this.currentPage !== '/login' && this.currentPage !== '/') {
                        console.log('🚫 Erreur de connexion, redirection vers login');
                        window.location.href = '/login';
@@ -84,11 +138,22 @@ class MurazApp {
                    window.location.href = '/login';
                    return;
                }
+               
+               if (this.currentPage === '/collect' && 
+                   !['SUPER_ADMIN', 'INVESTIGATOR'].includes(this.user.role)) {
+                   console.log('🚫 Accès refusé à /collect - rôle insuffisant');
+                   window.location.href = '/login';
+                   return;
+               }
            }
 
     initNavigation() {
         console.log('🧭 Initialisation de la navigation...');
+        console.log('👤 Utilisateur actuel:', this.user);
+        console.log('📍 Page actuelle:', this.currentPage);
+        
         const nav = document.getElementById('main-nav');
+        const rightTools = document.getElementById('nav-right-tools');
         if (!nav) {
             console.error('❌ Élément main-nav non trouvé!');
             return;
@@ -99,12 +164,33 @@ class MurazApp {
         console.log('🎯 Éléments de navigation générés:', navItems);
         console.log('🎯 Longueur des éléments:', navItems.length);
         
+        // Sauvegarder le sélecteur de langue s'il existe
+        const languageSelector = document.getElementById('muraz-language-selector');
+        
+        // Si utilisateur non connecté, on pousse la nav à droite et on cache les outils de droite
+        if (!this.user) {
+            nav.classList.add('ml-auto');
+            if (rightTools) rightTools.style.display = 'none';
+        } else {
+            nav.classList.remove('ml-auto');
+            if (rightTools) rightTools.style.display = '';
+        }
+        
         nav.innerHTML = navItems;
+        
+        // Restaurer le sélecteur de langue s'il existait
+        if (languageSelector) {
+            nav.appendChild(languageSelector);
+            console.log('✅ Sélecteur de langue restauré');
+        }
+        
+        console.log('✅ Navigation mise à jour dans le DOM');
         
         // Ajouter les gestionnaires d'événements de navigation
         this.setupNavigationEventListeners();
         
         // Initialiser le sélecteur de langue après la navigation
+        this.ensureLanguageSelector();
         setTimeout(() => {
         }, 100);
         
@@ -112,15 +198,47 @@ class MurazApp {
         console.log('🔍 Contenu final de main-nav:', nav.innerHTML);
     }
 
+    /**
+     * S'assure que le sélecteur de langue est présent
+     */
+    ensureLanguageSelector() {
+        // Attendre un peu pour que le système de traduction soit prêt
+        setTimeout(() => {
+            if (window.murazI18n && !document.getElementById('muraz-language-selector')) {
+                console.log('🔧 Sélecteur de langue manquant, tentative de création...');
+                window.murazI18n.setupLanguageSelector();
+            }
+        }, 100);
+    }
+
+    /**
+     * Obtient une traduction de manière sécurisée
+     */
+    getTranslation(key, fallback) {
+        if (window.murazI18n && window.murazI18n.isInitialized()) {
+            return window.murazI18n.t(key, fallback);
+        }
+        return fallback;
+    }
+
     generateNavigationItems() {
         console.log('👤 Génération navigation pour utilisateur:', this.user);
         
         if (!this.user) {
-            console.log('❌ Aucun utilisateur connecté');
-            // Retourner une navbar statique pour les utilisateurs non connectés
+            console.log('❌ Aucun utilisateur connecté - navigation limitée');
+            // Retourner une navbar statique pour les utilisateurs non connectés (alignée à l'extrême droite)
+            const homeText = this.getTranslation('navigation.home', 'Accueil');
+            const loginText = this.getTranslation('navigation.login', 'Connexion');
+            
             return `
-                <a href="/" class="nav-item ${this.currentPage === '/' ? 'active' : ''}" >Accueil</a>
-                <a href="/login" class="nav-item ${this.currentPage === '/login' ? 'active' : ''}" >Connexion</a>
+                <div class="ml-auto flex items-center space-x-6">
+                    <a href="/" class="nav-item ${this.currentPage === '/' ? 'active' : ''}">
+                        <i class="fas fa-home mr-2"></i><span>${homeText}</span>
+                    </a>
+                    <a href="/login" class="nav-item ${this.currentPage === '/login' ? 'active' : ''}">
+                        <i class="fas fa-sign-in-alt mr-2"></i><span>${loginText}</span>
+                    </a>
+                </div>
             `;
         }
 
@@ -379,6 +497,15 @@ class MurazApp {
         // Gestionnaire global pour les notifications
         window.showNotification = this.showNotification.bind(this);
         
+        // Écouteur pour les changements de langue
+        window.addEventListener('murazI18nLanguageChanged', () => {
+            console.log('🌍 Changement de langue détecté, mise à jour de la navigation');
+            // Attendre un peu pour que les traductions soient chargées
+            setTimeout(() => {
+                this.initNavigation();
+            }, 100);
+        });
+        
         // Gestionnaire global pour les erreurs
         window.addEventListener('error', (event) => {
             console.error('Erreur globale:', event.error);
@@ -451,7 +578,9 @@ class MurazApp {
 }
 
 // Initialiser l'application quand le DOM est chargé
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('📄 DOM chargé, initialisation de MurazApp...');
-    window.murazApp = new MurazApp();
-});
+console.log('📝 Script app.js chargé');
+console.log('📝 État du DOM:', document.readyState);
+
+// Initialiser l'application immédiatement
+console.log('📄 Initialisation de MurazApp...');
+window.murazApp = new MurazApp();

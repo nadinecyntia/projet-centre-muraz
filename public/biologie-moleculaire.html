@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Biologie Moléculaire - Centre Muraz</title>
-    <link href="./css/style.css" rel="stylesheet">
+    <title data-i18n="biologie.page_title">Biologie Moléculaire - Centre Muraz</title>
+    <link href="./css/style.css?v=2025-01-15-18-00" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -15,22 +15,22 @@
         .card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-gray-50 min-h-screen has-fixed-header">
     <!-- Header avec navigation adaptative -->
-    <header class="bg-white shadow-lg border-b-4 border-muraz-blue">
+    <header class="bg-white shadow-lg border-b-4 border-muraz-blue sticky-nav">
         <nav class="container mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-4">
                     <div class="w-12 h-12 flex items-center justify-center">
-                        <img src="/logo-centre-muraz.jpg" alt="Logo Centre MURAZ" class="w-full h-full object-contain rounded-lg">
+                        <img src="/logo-centre-muraz.jpg" data-i18n-alt="biologie.images.logo_alt" alt="Logo Centre MURAZ" class="w-full h-full object-contain rounded-lg">
                     </div>
                     <div>
-                        <h1 class="text-xl font-bold text-muraz-blue">Centre MURAZ</h1>
-                        <p class="text-sm text-gray-600">Surveillance Arboviroses</p>
+                        <h1 class="text-xl font-bold text-muraz-blue" data-i18n="biologie.header.title">Centre MURAZ</h1>
+                        <p class="text-sm text-gray-600" data-i18n="biologie.header.subtitle">Surveillance Arboviroses</p>
                     </div>
                 </div>
                 <div id="main-nav" class="flex items-center space-x-6">
-                    <!-- La navigation sera générée dynamiquement par app.js -->
+                    <!-- La navigation sera générée dynamiquement par app-modular.js -->
                 </div>
                 <div class="flex items-center space-x-4">
                     <div class="md:hidden">
@@ -53,7 +53,7 @@
                         <i class="fas fa-dna text-xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Total Analyses</p>
+                        <p class="text-sm font-medium text-gray-600" data-i18n="biologie.dashboard.total_analyses">Total Analyses</p>
                         <p class="text-2xl font-bold text-gray-900" id="total-analyses">-</p>
                     </div>
                 </div>
@@ -65,7 +65,7 @@
                         <i class="fas fa-virus text-xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Analyses PCR/RT-PCR</p>
+                        <p class="text-sm font-medium text-gray-600" data-i18n="biologie.dashboard.pcr_analyses">Analyses PCR/RT-PCR</p>
                         <p class="text-2xl font-bold text-gray-900" id="pcr-count">-</p>
                     </div>
                 </div>
@@ -77,7 +77,7 @@
                         <i class="fas fa-bug text-xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Analyses Bioessai</p>
+                        <p class="text-sm font-medium text-gray-600" data-i18n="biologie.dashboard.bioessai_analyses">Analyses Bioessai</p>
                         <p class="text-2xl font-bold text-gray-900" id="bioessai-count">-</p>
                     </div>
                 </div>
@@ -89,7 +89,7 @@
                         <i class="fas fa-tint text-xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Analyses Repas Sanguin</p>
+                        <p class="text-sm font-medium text-gray-600" data-i18n="biologie.dashboard.blood_meal_analyses">Analyses Repas Sanguin</p>
                         <p class="text-2xl font-bold text-gray-900" id="repas-count">-</p>
                     </div>
                 </div>
@@ -99,32 +99,32 @@
         <!-- Filters Section -->
         <div class="card bg-white rounded-lg shadow-md p-6 mb-8">
             <h2 class="text-xl font-semibold text-gray-800 mb-4">
-                <i class="fas fa-filter mr-2 text-blue-600"></i><span>Filtres de Recherche</span>
+                <i class="fas fa-filter mr-2 text-blue-600"></i><span data-i18n="biologie.filters.title">Filtres de Recherche</span>
             </h2>
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Type d'Analyse</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="biologie.filters.analysis_type">Type d'Analyse</label>
                     <select id="filter-type" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="">Tous les types</option>
-                        <option value="pcr">PCR</option>
-                        <option value="rt_pcr">RT-PCR</option>
-                        <option value="bioessai">Bioessai</option>
-                        <option value="origine_repas_sanguin">Origine Repas Sanguin</option>
+                        <option value="" data-i18n="biologie.filters.all_types">Tous les types</option>
+                        <option value="pcr" data-i18n="biologie.filters.pcr">PCR</option>
+                        <option value="rt_pcr" data-i18n="biologie.filters.rt_pcr">RT-PCR</option>
+                        <option value="bioessai" data-i18n="biologie.filters.bioessai">Bioessai</option>
+                        <option value="origine_repas_sanguin" data-i18n="biologie.filters.blood_meal">Origine Repas Sanguin</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Année</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="biologie.filters.year">Année</label>
                     <select id="year-selection-bio" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="current">Année en cours</option>
+                        <option value="current" data-i18n="biologie.filters.current_year">Année en cours</option>
                     </select>
                     <div id="archive-banner-bio" class="hidden mt-2 text-xs bg-yellow-50 border border-yellow-200 text-yellow-800 px-2 py-1 rounded">
-                        <i class="fas fa-box-archive mr-1"></i> Données archivées <strong><span id="archive-year-bio"></span></strong>
+                        <i class="fas fa-box-archive mr-1"></i> <span data-i18n="biologie.filters.archived_data">Données archivées</span> <strong><span id="archive-year-bio"></span></strong>
                     </div>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Secteur</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="biologie.filters.sector">Secteur</label>
                     <select id="filter-sector" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="">Tous les secteurs</option>
+                        <option value="" data-i18n="biologie.filters.all_sectors">Tous les secteurs</option>
                         <option value="secteur_6">Secteur 6</option>
                         <option value="secteur_9">Secteur 9</option>
                         <option value="secteur_26">Secteur 26</option>
@@ -132,20 +132,20 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Date de début</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="biologie.filters.start_date">Date de début</label>
                     <input type="date" id="filter-start-date" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Date de fin</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="biologie.filters.end_date">Date de fin</label>
                     <input type="date" id="filter-end-date" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
             </div>
             <div class="mt-4 flex space-x-3">
                 <button id="apply-filters" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors">
-                    <i class="fas fa-search mr-2"></i><span>Appliquer les filtres</span>
+                    <i class="fas fa-search mr-2"></i><span data-i18n="biologie.filters.apply">Appliquer les filtres</span>
                 </button>
                 <button id="reset-filters" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-colors">
-                    <i class="fas fa-undo mr-2"></i><span>Réinitialiser</span>
+                    <i class="fas fa-undo mr-2"></i><span data-i18n="biologie.filters.reset">Réinitialiser</span>
                 </button>
             </div>
         </div>
@@ -154,14 +154,14 @@
         <div class="card bg-white rounded-lg shadow-md p-6">
             <div class="flex items-center justify-between mb-6">
                 <h2 class="text-xl font-semibold text-gray-800">
-                    <i class="fas fa-table mr-2 text-purple-600"></i><span>Données des Analyses</span>
+                    <i class="fas fa-table mr-2 text-purple-600"></i><span data-i18n="biologie.table.title">Données des Analyses</span>
                 </h2>
                 <div class="flex space-x-2">
                     <button id="export-csv" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors text-sm">
-                        <i class="fas fa-download mr-2"></i><span>Exporter CSV</span>
+                        <i class="fas fa-download mr-2"></i><span data-i18n="biologie.table.export_csv">Exporter CSV</span>
                     </button>
                     <button id="refresh-data" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors text-sm">
-                        <i class="fas fa-sync-alt mr-2"></i><span>Actualiser</span>
+                        <i class="fas fa-sync-alt mr-2"></i><span data-i18n="biologie.table.refresh">Actualiser</span>
                     </button>
                 </div>
             </div>
@@ -170,16 +170,16 @@
             <div class="border-b border-gray-200 mb-6">
                 <nav class="-mb-px flex space-x-8">
                     <button class="tab-button active py-2 px-1 border-b-2 border-blue-500 text-blue-600 font-medium" data-tab="all">
-                        <span>Toutes les Analyses</span>
+                        <span data-i18n="biologie.tabs.all_analyses">Toutes les Analyses</span>
                     </button>
                     <button class="tab-button py-2 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium" data-tab="pcr">
-                        <span>PCR/RT-PCR</span>
+                        <span data-i18n="biologie.tabs.pcr">PCR/RT-PCR</span>
                     </button>
                     <button class="tab-button py-2 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium" data-tab="bioessai">
-                        <span>Bioessai</span>
+                        <span data-i18n="biologie.tabs.bioessai">Bioessai</span>
                     </button>
                     <button class="tab-button py-2 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium" data-tab="repas">
-                        <span>Repas Sanguin</span>
+                        <span data-i18n="biologie.tabs.blood_meal">Repas Sanguin</span>
                     </button>
                 </nav>
             </div>
@@ -189,12 +189,12 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Secteur</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Échantillons</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Analyse</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Détails</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-i18n="biologie.table.headers.type">Type</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-i18n="biologie.table.headers.sector">Secteur</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-i18n="biologie.table.headers.samples">Échantillons</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-i18n="biologie.table.headers.analysis_date">Date Analyse</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-i18n="biologie.table.headers.details">Détails</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-i18n="biologie.table.headers.actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="data-table-body" class="bg-white divide-y divide-gray-200">
@@ -206,15 +206,15 @@
             <!-- Pagination -->
             <div class="flex items-center justify-between mt-6">
                 <div class="text-sm text-gray-700">
-                    <span>Affichage de</span> <span id="showing-start">1</span> <span>à</span> <span id="showing-end">10</span> <span>sur</span> <span id="total-entries">0</span> <span>résultats</span>
+                    <span data-i18n="biologie.pagination.displaying">Affichage de</span> <span id="showing-start">1</span> <span data-i18n="biologie.pagination.to">à</span> <span id="showing-end">10</span> <span data-i18n="biologie.pagination.of">sur</span> <span id="total-entries">0</span> <span data-i18n="biologie.pagination.results">résultats</span>
                 </div>
                 <div class="flex space-x-2">
                     <button id="prev-page" class="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
-                        <span>Précédent</span>
+                        <span data-i18n="common.previous">Précédent</span>
                     </button>
                     <span id="current-page" class="px-3 py-2 text-sm font-medium text-gray-700">1</span>
                     <button id="next-page" class="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
-                        <span>Suivant</span>
+                        <span data-i18n="common.next">Suivant</span>
                     </button>
                 </div>
             </div>
@@ -225,7 +225,7 @@
     <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-lg p-8 text-center">
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p class="text-gray-700">Chargement des données...</p>
+            <p class="text-gray-700" data-i18n="biologie.loading.message">Chargement des données...</p>
         </div>
     </div>
 
@@ -235,7 +235,7 @@
             <!-- Header -->
             <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
                 <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-semibold text-gray-800" id="modal-title">Détails de l'Analyse</h3>
+                    <h3 class="text-lg font-semibold text-gray-800" id="modal-title" data-i18n="biologie.modal.title">Détails de l'Analyse</h3>
                     <button id="close-modal" class="text-gray-400 hover:text-gray-600 transition-colors p-1">
                         <i class="fas fa-times text-lg"></i>
                     </button>
@@ -251,8 +251,9 @@
 
 
     <!-- Scripts -->
-    <script src="./js/app.js?v=2025-09-02-02"></script>
-    <script src="js/biologie-moleculaire.js"></script>
+    <script type="module" src="/js/app-modular.js?v=2025-01-15-17-35"></script>
+    <script src="/js/robust-translation.js?v=2025-01-15-17-35"></script>
+    <script src="js/biologie-moleculaire.js?v=2025-01-15-17-40"></script>
     
     <script>
         // Utiliser l'instance globale créée par biologie-moleculaire.js
@@ -261,5 +262,12 @@
             console.log('Instance biologieMoleculaire disponible:', window.biologieMoleculaire);
         });
     </script>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-6 text-center">
+            <p data-i18n="footer.copyright">&copy; 2025 Centre MURAZ - Plateforme de Surveillance Arboviroses</p>
+        </div>
+    </footer>
 </body>
 </html>

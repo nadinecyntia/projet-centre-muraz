@@ -4,10 +4,13 @@
 // =====================================================
 
 const express = require('express');
-const { Pool } = require('pg');
 const router = express.Router();
 
 const { pool } = require('../config/database');
+const { requireViewer } = require('../middleware/auth');
+
+// Appliquer l'authentification pour toutes les routes d'indices
+router.use(requireViewer);
 
 // ===== ENDPOINT PRINCIPAL DES INDICES =====
 router.get('/indices', async (req, res) => {
@@ -278,7 +281,7 @@ router.get('/indices/secteurs', async (req, res) => {
             const query = `
                 WITH sector_data AS (
                     SELECT
-                        unnest(site_sector) as sector,
+                        site_sector as sector,
                         site_environment,
                         site_concession_code,
                         site_house_code,

@@ -1,0 +1,53 @@
+{
+  "navigation": {
+    "home": "Home",
+    "login": "Login",
+    "admin": "Administration",
+    "analyses": "Analyses",
+    "indices": "Indices",
+    "biologie": "Molecular Biology"
+  },
+  "common": {
+    "centre_muraz": "Centre MURAZ",
+    "surveillance_arboviroses": "Arbovirus Surveillance",
+    "platform_title": "Arbovirus Surveillance Platform"
+  },
+  "buttons": {
+    "login": "Login",
+    "learn_more": "Learn More",
+    "save": "Save",
+    "cancel": "Cancel",
+    "import": "Import",
+    "export": "Export",
+    "download": "Download",
+    "preview": "Preview",
+    "confirm": "Confirm",
+    "validate": "Validate",
+    "reject": "Reject"
+  },
+  "status": {
+    "active": "Active",
+    "advanced": "Advanced",
+    "research": "Research",
+    "tests": "Tests"
+  },
+  "messages": {
+    "success": "Operation successful",
+    "error": "An error occurred",
+    "loading": "Loading...",
+    "no_data": "No data available",
+    "connection_error": "Server connection error"
+  },
+  "forms": {
+    "required": "Required field",
+    "invalid_date": "Invalid date format",
+    "file_required": "File required",
+    "username": "Username",
+    "password": "Password",
+    "enter_username": "Enter your username",
+    "enter_password": "Enter your password"
+  },
+  "footer": {
+    "copyright": "© 2025 Centre MURAZ - Arbovirus Surveillance Platform"
+  }
+}

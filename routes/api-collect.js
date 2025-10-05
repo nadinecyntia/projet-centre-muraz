@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../config/database');
+const { requireInvestigator } = require('../middleware/auth');
+
+// Appliquer le middleware d'authentification pour toutes les routes de collecte
+router.use(requireInvestigator);
 
 // Route pour collecter les données d'œufs
 router.post('/collect/eggs', async (req, res) => {

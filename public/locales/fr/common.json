@@ -1,0 +1,53 @@
+{
+  "navigation": {
+    "home": "Accueil",
+    "login": "Connexion",
+    "admin": "Administration",
+    "analyses": "Analyses",
+    "indices": "Indices",
+    "biologie": "Biologie Moléculaire"
+  },
+  "common": {
+    "centre_muraz": "Centre MURAZ",
+    "surveillance_arboviroses": "Surveillance Arboviroses",
+    "platform_title": "Plateforme de Surveillance Arboviroses"
+  },
+  "buttons": {
+    "login": "Se Connecter",
+    "learn_more": "En Savoir Plus",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "import": "Importer",
+    "export": "Exporter",
+    "download": "Télécharger",
+    "preview": "Prévisualiser",
+    "confirm": "Confirmer",
+    "validate": "Valider",
+    "reject": "Rejeter"
+  },
+  "status": {
+    "active": "Actif",
+    "advanced": "Avancé",
+    "research": "Recherche",
+    "tests": "Tests"
+  },
+  "messages": {
+    "success": "Opération réussie",
+    "error": "Une erreur est survenue",
+    "loading": "Chargement...",
+    "no_data": "Aucune donnée disponible",
+    "connection_error": "Erreur de connexion au serveur"
+  },
+  "forms": {
+    "required": "Champ requis",
+    "invalid_date": "Format de date invalide",
+    "file_required": "Fichier requis",
+    "username": "Nom d'utilisateur",
+    "password": "Mot de passe",
+    "enter_username": "Entrez votre nom d'utilisateur",
+    "enter_password": "Entrez votre mot de passe"
+  },
+  "footer": {
+    "copyright": "© 2025 Centre MURAZ - Plateforme de Surveillance Arboviroses"
+  }
+}

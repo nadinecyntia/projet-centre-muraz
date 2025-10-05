@@ -44,6 +44,14 @@ const requireSuperAdmin = (req, res, next) => {
 // Middleware pour vérifier le rôle VIEWER
 const requireViewer = (req, res, next) => {
     if (!req.session || !req.session.user) {
+        // Si c'est une requête API, retourner JSON
+        if (req.path.startsWith('/api/')) {
+            return res.status(401).json({
+                success: false,
+                error: 'Non authentifié',
+                message: 'Veuillez vous connecter'
+            });
+        }
         return res.redirect('/login');
     }
     
@@ -60,6 +68,14 @@ const requireViewer = (req, res, next) => {
 // Middleware pour vérifier le rôle INVESTIGATOR (accès collecte uniquement)
 const requireInvestigator = (req, res, next) => {
     if (!req.session || !req.session.user) {
+        // Si c'est une requête API, retourner JSON
+        if (req.path.startsWith('/api/')) {
+            return res.status(401).json({
+                success: false,
+                error: 'Non authentifié',
+                message: 'Veuillez vous connecter'
+            });
+        }
         return res.redirect('/login');
     }
     if (!['SUPER_ADMIN', 'INVESTIGATOR'].includes(req.session.user.role)) {
@@ -89,18 +105,6 @@ const getUserInfo = (req) => {
     return req.session ? req.session.user : null;
 };
 
-// Fonction pour vérifier les permissions
-const hasPermission = (user, permission) => {
-    if (!user) return false;
-    
-    const permissions = {
-        'SUPER_ADMIN': ['dashboard', 'admin', 'analyses', 'indices', 'biologie', 'sync', 'manage_users', 'collect'],
-        'VIEWER': ['analyses', 'indices'],
-        'INVESTIGATOR': ['collect']
-    };
-    
-    return permissions[user.role]?.includes(permission) || false;
-};
 
 module.exports = {
     requireAuth,
@@ -108,6 +112,5 @@ module.exports = {
     requireViewer,
     requireInvestigator,
     checkAuthAPI,
-    getUserInfo,
-    hasPermission
+    getUserInfo
 };
