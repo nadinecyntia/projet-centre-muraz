@@ -10,7 +10,7 @@
   "theme": {
     "indicator": "Theme: Light Colors"
   },
-  "sections": {
+    "sections": {
     "eggs": "Eggs Section",
     "larvae": "Larvae Section",
     "mosquitoes": "Mosquitoes Section",
@@ -28,8 +28,8 @@
     "all_sectors": "All Sectors",
     "filter_month": "Filter by Month:",
     "all_months": "All Months"
-  },
-  "charts": {
+      },
+      "charts": {
     "eggs_sector_month": {
       "title": "Number of Eggs by Sector and Month",
       "description": "Distribution of collected eggs by sector and period"

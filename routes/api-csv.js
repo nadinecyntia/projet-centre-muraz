@@ -76,6 +76,8 @@ const CSV_FIELDS = {
         'mosquitoes_sector',
         'mosquitoes_environment',
         'mosquitoes_visit_start_date',
+        'mosquitoes_visit_start_time',
+        'mosquitoes_visit_end_time',
         'mosquitoes_gps_code',
         'genus',
         'species',
@@ -84,7 +86,7 @@ const CSV_FIELDS = {
         'prokopack_traps_count',
         'bg_traps_count',
         'prokopack_mosquitoes_count',
-        'bg_traps_mosquitoes_count',
+        'bg_trap_mosquitoes_count',
         'total_mosquitoes_count',
         'male_count',
         'female_count',
@@ -222,59 +224,147 @@ router.post('/import', upload.single('csvFile'), async (req, res) => {
         const results = [];
         const errors = [];
         let insertedCount = 0;
+        let streamHeaders = [];
+        const tasks = [];
 
         // Lire et traiter le fichier CSV
         console.log('📄 Lecture du fichier CSV:', req.file.path);
         console.log('📊 Type de données:', dataType);
+        console.log('📁 Taille du fichier:', req.file.size, 'bytes');
         
-        fs.createReadStream(req.file.path)
+        let lineCount = 0;
+        
+        // Vérifier que le fichier existe et n'est pas vide
+        if (!fs.existsSync(req.file.path)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Fichier CSV introuvable'
+            });
+        }
+        
+        const fileStats = fs.statSync(req.file.path);
+        console.log('📁 Fichier trouvé, taille:', fileStats.size, 'bytes');
+        
+        if (fileStats.size === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Fichier CSV vide'
+            });
+        }
+        
+        // Lire le contenu brut pour debug
+        const rawContent = fs.readFileSync(req.file.path, 'utf8');
+        console.log('📄 Contenu brut (premiers 200 chars):', rawContent.substring(0, 200));
+        console.log('📄 Nombre de lignes brutes:', rawContent.split('\n').length);
+        
+        const readStream = fs.createReadStream(req.file.path);
+        readStream
             .pipe(csv())
-            .on('data', async (data) => {
-                console.log('📝 Ligne CSV reçue:', data);
-                try {
-                    const processedData = processCSVRow(data, dataType);
-                    console.log('🔄 Données traitées:', processedData);
-                    const result = await insertData(processedData, dataType);
-                    
-                    if (result.success) {
-                        insertedCount++;
-                        console.log('✅ Insertion réussie');
-                    } else {
-                        console.log('❌ Erreur insertion:', result.error);
-                        errors.push({
-                            row: results.length + 1,
-                            error: result.error
-                        });
-                    }
-                    
-                    results.push(processedData);
-                } catch (error) {
-                    console.log('❌ Erreur traitement:', error.message);
-                    errors.push({
-                        row: results.length + 1,
-                        error: error.message
-                    });
-                }
+            .on('headers', (hdrs) => {
+                streamHeaders = (hdrs || []).map(h => (h || '').trim());
+                console.log('🧭 En-têtes détectés (parser):', streamHeaders);
             })
-            .on('end', () => {
+            .on('data', (data) => {
+                lineCount++;
+                console.log(`📝 Ligne CSV ${lineCount} reçue:`, Object.keys(data).length, 'colonnes');
+                console.log('📝 Premières colonnes:', Object.keys(data).slice(0, 5));
+                const task = (async () => {
+                    try {
+                        const processedData = processCSVRow(data, dataType);
+                        console.log('🔄 Données traitées:', processedData);
+                        const result = await insertData(processedData, dataType);
+                        if (result.success) {
+                            console.log('✅ Insertion réussie');
+                            return { success: true, data: processedData };
+                        } else {
+                            console.log('❌ Erreur insertion:', result.error);
+                            return { success: false, error: result.error, data: processedData };
+                        }
+                    } catch (error) {
+                        console.log('❌ Erreur traitement:', error.message);
+                        return { success: false, error: error.message, data };
+                    }
+                })();
+                tasks.push(task);
+            })
+            .on('end', async () => {
+                console.log(`📊 Total lignes traitées (parser): ${lineCount}`);
+                let manualRowCount = 0;
+
+                // Fallback manuel si le parser n'a rien lu
+                if (lineCount === 0) {
+                    console.warn('⚠️ Parser CSV n\'a retourné aucune ligne. Activation du fallback manuel.');
+                    const lines = rawContent.split(/\r?\n/).filter(l => l && l.trim().length > 0);
+                    if (lines.length > 1) {
+                        const headerLine = lines[0];
+                        const manualHeaders = headerLine.split(',').map(h => h.trim());
+                        console.log('🧭 En-têtes détectés (manuel):', manualHeaders);
+                        for (let i = 1; i < lines.length; i++) {
+                            const row = lines[i];
+                            // Simple split, ne gère pas les quotes imbriquées mais suffisant pour debug
+                            const cols = row.split(',');
+                            const obj = {};
+                            manualHeaders.forEach((h, idx) => {
+                                obj[h] = cols[idx] !== undefined ? cols[idx] : '';
+                            });
+                            try {
+                                const processedData = processCSVRow(obj, dataType);
+                                const result = await insertData(processedData, dataType);
+                                if (result.success) {
+                                    results.push(processedData);
+                                    insertedCount++;
+                                } else {
+                                    errors.push({ row: i, error: result.error, data: processedData });
+                                }
+                                manualRowCount++;
+                            } catch (e) {
+                                errors.push({ row: i, error: e.message, data: obj });
+                            }
+                        }
+                    }
+                }
+
+                // Attendre toutes les insertions lancées par le parser
+                if (tasks.length > 0) {
+                    const taskResults = await Promise.all(tasks);
+                    for (const tr of taskResults) {
+                        if (tr.success) {
+                            results.push(tr.data);
+                            insertedCount++;
+                        } else {
+                            errors.push({ row: results.length + 1, error: tr.error, data: tr.data });
+                        }
+                    }
+                }
+
                 // Nettoyer le fichier temporaire
-                fs.unlinkSync(req.file.path);
-                
+                try { fs.unlinkSync(req.file.path); } catch (_) {}
+
                 res.json({
                     success: true,
                     inserted: insertedCount,
                     total: results.length,
-                    skipped: results.length - insertedCount,
+                    skipped: Math.max(0, (results.length - insertedCount)),
                     errors: errors,
-                    message: `Import terminé: ${insertedCount} enregistrements importés sur ${results.length} total`
+                    message: `Import terminé: ${insertedCount} enregistrements importés sur ${results.length} total`,
+                    debug: {
+                        filePath: req.file.path,
+                        fileSize: req.file.size,
+                        parserRowCount: lineCount,
+                        manualRowCount,
+                        parserHeaders: streamHeaders,
+                        contentPreview: rawContent.substring(0, 200)
+                    }
                 });
             })
             .on('error', (error) => {
                 console.error('❌ Erreur import CSV:', error);
+                console.error('❌ Détails erreur:', error.stack);
                 fs.unlinkSync(req.file.path);
                 res.status(500).json({
                     success: false,
-                    message: 'Erreur lors de l\'import du fichier'
+                    message: 'Erreur lors de l\'import CSV',
+                    error: error.message
                 });
             });
 
@@ -320,41 +410,137 @@ router.get('/template/:type', (req, res) => {
 function processCSVRow(data, dataType) {
     const processedData = {};
     const fields = CSV_FIELDS[dataType];
-    
-    fields.forEach(field => {
-        // Chercher la valeur avec ou sans espaces
-        let value = data[field] || data[field + ' '] || data[' ' + field];
-        
+
+    // Normaliser les clés source: trim des espaces et suppression des espaces superflus
+    const normalizedSource = {};
+    Object.keys(data || {}).forEach((rawKey) => {
+        const trimmedKey = (rawKey || '').trim();
+        if (trimmedKey) normalizedSource[trimmedKey] = data[rawKey];
+    });
+
+    // Alias pour gérer les variantes d'en-têtes rencontrées dans les fichiers
+    const aliasesByExpected = {
+        // moustiques
+        bg_trap_mosquitoes_count: ['bg_traps_mosquitoes_count', 'bg_trap_mosquitos_count'],
+        mosquitoes_visit_start_time: ['visit_start_time', 'mosquitoes_start_time'],
+        mosquitoes_visit_end_time: ['visit_end_time', 'mosquitoes_end_time'],
+        female_count: ['female_count '],
+        total_mosquitoes_count: ['total_mosquitoes_count '],
+    };
+
+    fields.forEach((field) => {
+        // Chercher la valeur normalisée
+        let value = normalizedSource[field];
+        if (value === undefined) {
+            const aliases = aliasesByExpected[field] || [];
+            for (const alias of aliases) {
+                if (normalizedSource[alias] !== undefined) {
+                    value = normalizedSource[alias];
+                    break;
+                }
+            }
+        }
+
         // Traitement spécial selon le type de champ
         if (value !== undefined && value !== null && value !== '') {
-            // Conversion des types
+            // Conversion des types numériques (garder les décimales)
             if (field.includes('_count') || field.includes('_size') || field.includes('_number')) {
-                value = parseInt(value) || 0;
+                const parsed = parseFloat(String(value).toString().replace(',', '.'));
+                value = isNaN(parsed) ? 0 : parsed;
             } else if (field.includes('_date')) {
                 // Validation du format de date
                 if (!isValidDate(value)) {
                     throw new Error(`Format de date invalide pour ${field}: ${value}`);
                 }
-            } else if (field.includes('_genus') || field.includes('_types') || field.includes('_classes') || 
-                       field === 'collection_methods' || field === 'capture_locations') {
-                // Conversion des tableaux - vérifier si c'est déjà un JSON ou une chaîne simple
-                if (value.startsWith('[') && value.endsWith(']')) {
+            } else if (
+                field.includes('_genus') || field === 'genus' || field === 'species' ||
+                field.includes('_types') ||
+                field.includes('_classes') ||
+                field === 'collection_methods' ||
+                field === 'capture_locations'
+            ) {
+                // Conversion des tableaux - CSV peut contenir "a,b,c" ou un JSON d'array
+                const stringValue = String(value).trim();
+                if (stringValue.startsWith('[') && stringValue.endsWith(']')) {
                     try {
-                        value = JSON.parse(value);
-                    } catch (e) {
-                        // Si le JSON parsing échoue, traiter comme une chaîne simple
-                        value = [value];
+                        value = JSON.parse(stringValue);
+                    } catch (_) {
+                        value = [stringValue];
                     }
+                } else if (stringValue.includes(',')) {
+                    value = stringValue
+                        .split(',')
+                        .map((v) => v.trim())
+                        .filter(Boolean);
                 } else {
-                    // Traiter comme une chaîne simple et la convertir en tableau
-                    value = [value];
+                    value = [stringValue];
+                }
+
+                // Normalisation des valeurs autorisées
+                if (field === 'collection_methods') {
+                    const allowedMethods = ['prokopack', 'bg', 'cdc', 'human_landing'];
+                    value = value
+                        .map(v => v.toLowerCase())
+                        .map(v => (v === 'bg_trap' ? 'bg' : v))
+                        .filter(v => allowedMethods.includes(v));
+                    if (value.length === 0) value = ['prokopack'];
+                }
+                if (field === 'capture_locations') {
+                    // Aligner sur la contrainte DB: 'interior' | 'exterior'
+                    const allowedLocations = ['interior', 'exterior'];
+                    value = value
+                        .map(v => v.toLowerCase())
+                        .map(v => {
+                            if (v === 'indoor' || v === 'inside') return 'interior';
+                            if (v === 'outdoor' || v === 'outside') return 'exterior';
+                            return v;
+                        })
+                        .filter(v => allowedLocations.includes(v));
+                    if (value.length === 0) value = ['interior'];
                 }
             }
-            
+
             processedData[field] = value;
         }
     });
-    
+
+    // Post-traitements et valeurs par défaut pour moustiques
+    if (dataType === 'mosquitoes') {
+        // Nettoyage de strings
+        if (processedData.mosquitoes_sector) {
+            processedData.mosquitoes_sector = String(processedData.mosquitoes_sector).trim();
+        }
+
+        // Valeurs numériques obligatoires par défaut à 0 si absentes
+        const numericMustHave = [
+            'prokopack_traps_count', 'bg_traps_count', 'prokopack_mosquitoes_count',
+            'bg_trap_mosquitoes_count', 'male_count', 'female_count',
+            'aedes_male_count', 'culex_male_count', 'anopheles_male_count', 'other_male_count',
+            'blood_fed_females_count', 'gravid_females_count', 'starved_females_count',
+            'mosquitoes_aedes_count', 'mosquitoes_culex_count', 'mosquitoes_anopheles_count', 'mosquitoes_other_count'
+        ];
+        numericMustHave.forEach((k) => {
+            if (processedData[k] === undefined || processedData[k] === null || processedData[k] === '') {
+                processedData[k] = 0;
+            }
+        });
+
+        // total_mosquitoes_count: calculer si manquant
+        if (processedData.total_mosquitoes_count === undefined || processedData.total_mosquitoes_count === null || processedData.total_mosquitoes_count === '') {
+            const a = Number(processedData.prokopack_mosquitoes_count || 0);
+            const b = Number(processedData.bg_trap_mosquitoes_count || 0);
+            processedData.total_mosquitoes_count = a + b;
+        }
+
+        // Défaut pour listes contraintes
+        if (!processedData.collection_methods || (Array.isArray(processedData.collection_methods) && processedData.collection_methods.length === 0)) {
+            processedData.collection_methods = 'prokopack';
+        }
+        if (!processedData.capture_locations || (Array.isArray(processedData.capture_locations) && processedData.capture_locations.length === 0)) {
+            processedData.capture_locations = 'interior';
+        }
+    }
+
     return processedData;
 }
 
@@ -435,15 +621,16 @@ async function insertData(data, dataType) {
                     query = `
                         INSERT INTO adult_mosquitoes_new (
                             mosquitoes_concession_code, mosquitoes_sector, mosquitoes_environment,
-                            mosquitoes_visit_start_date, mosquitoes_gps_code, genus, species,
+                            mosquitoes_visit_start_date, mosquitoes_visit_start_time, mosquitoes_visit_end_time,
+                            mosquitoes_gps_code, genus, species,
                             collection_methods, capture_locations, prokopack_traps_count, bg_traps_count,
-                            prokopack_mosquitoes_count, bg_traps_mosquitoes_count, total_mosquitoes_count,
+                            prokopack_mosquitoes_count, bg_trap_mosquitoes_count, total_mosquitoes_count,
                             male_count, female_count, aedes_male_count, culex_male_count,
                             anopheles_male_count, other_male_count, blood_fed_females_count,
                             gravid_females_count, starved_females_count, mosquitoes_aedes_count,
                             mosquitoes_culex_count, mosquitoes_anopheles_count, mosquitoes_other_count,
                             observations, status, created_at
-                        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, 'pending', NOW())
+                        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, 'pending', NOW())
                         RETURNING id
                     `;
                     values = [
@@ -451,15 +638,21 @@ async function insertData(data, dataType) {
                         data.mosquitoes_sector,
                         data.mosquitoes_environment,
                         data.mosquitoes_visit_start_date,
+                        data.mosquitoes_visit_start_time || null,
+                        data.mosquitoes_visit_end_time || null,
                         data.mosquitoes_gps_code,
-                        data.genus,
-                        data.species,
-                        data.collection_methods,
-                        data.capture_locations,
+                        (Array.isArray(data.genus) ? data.genus : (data.genus ? [String(data.genus)] : [])),
+                        (Array.isArray(data.species) ? data.species : (data.species ? [String(data.species)] : [])),
+                        // collection_methods: certaines bases imposent un scalaire via une contrainte CHECK
+                        // on insère la première valeur normalisée (prokopack/bg/cdc/human_landing)
+                        (Array.isArray(data.collection_methods) ? (data.collection_methods[0] || null) : (data.collection_methods ? String(data.collection_methods) : null)),
+                        // capture_locations: certaines bases imposent un scalaire via une contrainte CHECK
+                        // on insère la première valeur normalisée (inside/outside)
+                        (Array.isArray(data.capture_locations) ? (data.capture_locations[0] || null) : (data.capture_locations ? String(data.capture_locations) : null)),
                         data.prokopack_traps_count,
                         data.bg_traps_count,
                         data.prokopack_mosquitoes_count,
-                        data.bg_traps_mosquitoes_count,
+                        data.bg_trap_mosquitoes_count,
                         data.total_mosquitoes_count,
                         data.male_count,
                         data.female_count,

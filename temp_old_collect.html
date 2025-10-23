@@ -1,0 +1,371 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Collecte de donn├®es</title>
+	<link href="/css/style.css" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+	<style>
+		:root { --muraz: #0ea5e9; --muraz-dark:#0369a1; }
+		body { font-family: Inter, system-ui, -apple-system, Arial, sans-serif; }
+		.container { max-width: 1200px; margin: 0 auto; padding: 1.25rem; }
+		.header { display:flex; align-items:center; justify-content:space-between; margin: 1rem 0 1.25rem; }
+		.h-title { font-size:1.5rem; font-weight:700; color:#111827; }
+		.card { background:#fff; border:1px solid #e5e7eb; border-radius: 14px; box-shadow:0 6px 18px rgba(0,0,0,.05); }
+		.nav { position: sticky; top:0; z-index: 10; background:#fff; border-bottom:1px solid #e5e7eb; }
+		.tabs { display:flex; gap:.5rem; padding:.75rem; }
+		.tab { padding:.6rem 1rem; border-radius:.6rem; border:1px solid #e5e7eb; background:#fff; cursor:pointer; display:flex; align-items:center; gap:.5rem; }
+		.tab.active { background: var(--muraz); border-color: var(--muraz); color:#fff; }
+		.form-wrap { padding: 1.25rem; }
+		.grid { display:grid; grid-template-columns: repeat(12, 1fr); gap: .9rem; }
+		.col-12{ grid-column: span 12; }
+		.col-6{ grid-column: span 6; }
+		.col-4{ grid-column: span 4; }
+		.col-3{ grid-column: span 3; }
+		@media (max-width: 900px){ .col-6,.col-4,.col-3{ grid-column: span 12; } }
+		.label { display:block; font-weight:600; color:#111827; margin-bottom:.35rem; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco; }
+		.help { color:#6b7280; font-size:.85rem; margin-top:.25rem; }
+		.input, .select, .textarea { width:100%; padding:.65rem .8rem; border:1px solid #e5e7eb; border-radius:.6rem; background:#fff; }
+		.textarea { min-height: 90px; }
+		.actions { display:flex; gap:.75rem; flex-wrap:wrap; }
+		.btn { display:inline-flex; align-items:center; gap:.5rem; padding:.65rem 1rem; border-radius:.6rem; border:1px solid #e5e7eb; background:#fff; cursor:pointer; }
+		.btn-primary { background: var(--muraz); border-color: var(--muraz); color:#fff; }
+		.btn-primary:hover { background: var(--muraz-dark); border-color: var(--muraz-dark); }
+		hr.sep{ border:none; border-top:1px solid #e5e7eb; margin:1.2rem 0; }
+	</style>
+</head>
+<body class="bg-gray-50">
+	<div class="container">
+		<div class="header">
+			<div class="h-title"><i class="fas fa-database text-muraz-blue"></i> Collecte</div>
+			<div class="actions">
+				<a href="/admin" class="btn"><i class="fas fa-arrow-left"></i> Retour ├á la page admin</a>
+			</div>
+		</div>
+
+		<div class="card nav">
+			<div class="tabs" id="tabs">
+				<button class="tab active" data-target="#eggs"><i class="fas fa-egg"></i> ┼Æufs</button>
+				<button class="tab" data-target="#breeding"><i class="fas fa-water"></i> G├«tes</button>
+				<button class="tab" data-target="#mosquitoes"><i class="fas fa-bug"></i> Moustiques</button>
+			</div>
+		</div>
+
+		<div class="card form-wrap">
+			<section id="eggs" class="section">
+				<div class="grid">
+					<div class="col-4"><label class="label">eggs_visit_start_date</label><input type="date" class="input" name="eggs_visit_start_date"></div>
+					<div class="col-4"><label class="label">eggs_concession_code</label><input class="input" name="eggs_concession_code"></div>
+					<div class="col-4"><label class="label">eggs_sector</label>
+						<select class="select" name="eggs_sector">
+							<option value="">--</option>
+							<option value="Sector 6">Sector 6</option>
+							<option value="Sector 9">Sector 9</option>
+							<option value="Sector 22">Sector 22</option>
+							<option value="Sector 26">Sector 26</option>
+							<option value="Sector 33">Sector 33</option>
+						</select>
+					</div>
+					<div class="col-4"><label class="label">eggs_environment</label>
+						<select class="select" name="eggs_environment">
+							<option value="">--</option>
+							<option value="urban">urban</option>
+							<option value="rural">rural</option>
+						</select>
+					</div>
+					<div class="col-6"><label class="label">eggs_gps_code</label>
+						<div class="actions">
+							<input class="input" name="eggs_gps_code" placeholder="lat,lng">
+							<button class="btn" type="button" data-gps="eggs_gps_code"><i class="fas fa-location-crosshairs"></i> Localiser</button>
+						</div>
+					</div>
+					<div class="col-3"><label class="label">nest_number</label><input class="input" name="nest_number"></div>
+					<div class="col-3"><label class="label">nest_code</label><input class="input" name="nest_code"></div>
+					<div class="col-3"><label class="label">pass_order</label><input class="input" name="pass_order"></div>
+					<div class="col-3"><label class="label">eggs_count</label><input type="number" class="input" name="eggs_count" min="0" step="1"></div>
+					<div class="col-12"><label class="label">observations</label><textarea class="textarea" name="observations"></textarea></div>
+				</div>
+				<hr class="sep">
+				<div class="actions"><button class="btn btn-primary" id="submit-eggs"><i class="fas fa-paper-plane"></i> Envoyer (┼Æufs)</button><span id="status-eggs" class="help"></span></div>
+			</section>
+
+			<section id="breeding" class="section" style="display:none">
+				<div class="grid">
+				<div class="col-6"><label class="label">site_investigator_name</label><input class="input" name="site_investigator_name"></div>
+				<div class="col-3"><label class="label">site_concession_code</label><input class="input" name="site_concession_code"></div>
+				<div class="col-3"><label class="label">site_house_code</label><input class="input" name="site_house_code"></div>
+				<div class="col-3"><label class="label">site_visit_start_date</label><input type="date" class="input" name="site_visit_start_date"></div>
+					<div class="col-4"><label class="label">site_sector</label>
+						<select class="select" name="site_sector">
+							<option value="">--</option>
+							<option value="Sector 6">Sector 6</option>
+							<option value="Sector 9">Sector 9</option>
+							<option value="Sector 22">Sector 22</option>
+							<option value="Sector 26">Sector 26</option>
+							<option value="Sector 33">Sector 33</option>
+						</select>
+					</div>
+					<div class="col-4"><label class="label">site_environment</label>
+						<select class="select" name="site_environment">
+							<option value="">--</option>
+							<option value="urban">urban</option>
+							<option value="rural">rural</option>
+						</select>
+					</div>
+					<div class="col-4"><label class="label">site_gps_code</label>
+						<div class="actions">
+							<input class="input" name="site_gps_code" placeholder="lat,lng">
+							<button class="btn" type="button" data-gps="site_gps_code"><i class="fas fa-location-crosshairs"></i> Localiser</button>
+						</div>
+					</div>
+					<div class="col-3"><label class="label">total_sites_count</label><input type="number" class="input" name="total_sites_count" min="0" step="1"></div>
+					<div class="col-3"><label class="label">positive_sites_count</label><input type="number" class="input" name="positive_sites_count" min="0" step="1"></div>
+					<div class="col-3"><label class="label">negative_sites_count</label><input type="number" class="input" name="negative_sites_count" min="0" step="1"></div>
+					<div class="col-6"><label class="label">larvae_genus</label>
+						<select multiple class="select" name="larvae_genus">
+							<option value="aedes">aedes</option>
+							<option value="culex">culex</option>
+							<option value="anopheles">anopheles</option>
+							<option value="other">other</option>
+						</select>
+					</div>
+					<div class="col-6"><label class="label">nymphs_genus</label>
+						<select multiple class="select" name="nymphs_genus">
+							<option value="aedes">aedes</option>
+							<option value="culex">culex</option>
+							<option value="anopheles">anopheles</option>
+							<option value="other">other</option>
+						</select>
+					</div>
+					<div class="col-3"><label class="label">larvae_count</label><input type="number" class="input" name="larvae_count" min="0" step="1"></div>
+					<div class="col-3"><label class="label">aedes_larvae_count</label><input type="number" class="input" name="aedes_larvae_count" min="0" step="1"></div>
+					<div class="col-3"><label class="label">culex_larvae_count</label><input type="number" class="input" name="culex_larvae_count" min="0" step="1"></div>
+					<div class="col-3"><label class="label">anopheles_larvae_count</label><input type="number" class="input" name="anopheles_larvae_count" min="0" step="1"></div>
+					<div class="col-3"><label class="label">other_larvae_count</label><input type="number" class="input" name="other_larvae_count" min="0" step="1"></div>
+					<div class="col-3"><label class="label">nymphs_count</label><input type="number" class="input" name="nymphs_count" min="0" step="1"></div>
+					<div class="col-3"><label class="label">aedes_nymphs_count</label><input type="number" class="input" name="aedes_nymphs_count" min="0" step="1"></div>
+					<div class="col-3"><label class="label">culex_nymphs_count</label><input type="number" class="input" name="culex_nymphs_count" min="0" step="1"></div>
+					<div class="col-3"><label class="label">anopheles_nymphs_count</label><input type="number" class="input" name="anopheles_nymphs_count" min="0" step="1"></div>
+					<div class="col-3"><label class="label">other_nymphs_count</label><input type="number" class="input" name="other_nymphs_count" min="0" step="1"></div>
+					<div class="col-6"><label class="label">sites_types</label>
+						<select multiple class="select" name="sites_types">
+							<option value="pneu">pneu</option>
+							<option value="bidon">bidon</option>
+							<option value="bassin">bassin</option>
+							<option value="plate">plate</option>
+							<option value="box">box</option>
+							<option value="table">table</option>
+							<option value="canari">canari</option>
+							<option value="kettle">kettle</option>
+							<option value="tomato_box">tomato box</option>
+							<option value="bucket">bucket</option>
+							<option value="water_trough">water trough</option>
+							<option value="gutter">gutter</option>
+							<option value="chair">chair</option>
+							<option value="pot">pot</option>
+							<option value="other">other</option>
+						</select>
+					</div>
+					<div class="col-6"><label class="label">site_classes</label>
+						<select multiple class="select" name="site_classes">
+							<option value="household waste">household waste</option>
+							<option value="abandoned utensils">abandoned utensils</option>
+							<option value="car wrecks">car wrecks</option>
+							<option value="construction equipment">construction equipment</option>
+							<option value="breeding utensils">breeding utensils</option>
+							<option value="other">other</option>
+						</select>
+					</div>
+					<div class="col-12"><label class="label">observations</label><textarea class="textarea" name="observations"></textarea></div>
+				</div>
+				<hr class="sep">
+				<div class="actions"><button class="btn btn-primary" id="submit-breeding"><i class="fas fa-paper-plane"></i> Envoyer (G├«tes)</button><span id="status-breeding" class="help"></span></div>
+			</section>
+
+			<section id="mosquitoes" class="section" style="display:none">
+				<div class="grid">
+					<div class="col-3"><label class="label">mosquitoes_visit_start_date</label><input type="date" class="input" name="mosquitoes_visit_start_date"></div>
+					<div class="col-3"><label class="label">mosquitoes_concession_code</label><input class="input" name="mosquitoes_concession_code"></div>
+					<div class="col-4"><label class="label">mosquitoes_sector</label>
+						<select class="select" name="mosquitoes_sector">
+							<option value="">--</option>
+							<option value="Sector 6">Sector 6</option>
+							<option value="Sector 9">Sector 9</option>
+							<option value="Sector 22">Sector 22</option>
+							<option value="Sector 26">Sector 26</option>
+							<option value="Sector 33">Sector 33</option>
+						</select>
+					</div>
+					<div class="col-4"><label class="label">mosquitoes_environment</label>
+						<select class="select" name="mosquitoes_environment">
+							<option value="">--</option>
+							<option value="urban">urban</option>
+							<option value="rural">rural</option>
+						</select>
+					</div>
+					<div class="col-6"><label class="label">mosquitoes_gps_code</label>
+						<div class="actions">
+							<input class="input" name="mosquitoes_gps_code" placeholder="lat,lng">
+							<button class="btn" type="button" data-gps="mosquitoes_gps_code"><i class="fas fa-location-crosshairs"></i> Localiser</button>
+						</div>
+					</div>
+					<div class="col-6"><label class="label">genus</label>
+						<select multiple class="select" name="genus">
+							<option value="aedes">aedes</option>
+							<option value="culex">culex</option>
+							<option value="anopheles">anopheles</option>
+							<option value="other">other</option>
+						</select>
+					</div>
+					<div class="col-6"><label class="label">species</label>
+						<select multiple class="select" name="species">
+							<option value="aedes_aegypti">aedes_aegypti</option>
+							<option value="other_aedes">other_aedes</option>
+							<option value="culex">culex</option>
+							<option value="anopheles">anopheles</option>
+							<option value="other">other</option>
+						</select>
+					</div>
+					<div class="col-6"><label class="label">collection_methods</label>
+						<select class="select" name="collection_methods">
+							<option value="">--</option>
+							<option value="prokopack">prokopack</option>
+							<option value="bg_trap">bg_trap</option>
+							<option value="other">other</option>
+						</select>
+					</div>
+					<div class="col-6"><label class="label">capture_locations</label>
+						<select class="select" name="capture_locations">
+							<option value="">--</option>
+							<option value="interior">interior</option>
+							<option value="exterior">exterior</option>
+						</select>
+					</div>
+					<div class="col-3"><label class="label">prokopack_traps_count</label><input type="number" class="input" name="prokopack_traps_count" min="0" step="1"></div>
+					<div class="col-3"><label class="label">bg_traps_count</label><input type="number" class="input" name="bg_traps_count" min="0" step="1"></div>
+					<div class="col-3"><label class="label">prokopack_mosquitoes_count</label><input type="number" class="input" name="prokopack_mosquitoes_count" min="0" step="1"></div>
+					<div class="col-3"><label class="label">bg_trap_mosquitoes_count</label><input type="number" class="input" name="bg_trap_mosquitoes_count" min="0" step="1"></div>
+					<div class="col-3"><label class="label">total_mosquitoes_count</label><input type="number" class="input" name="total_mosquitoes_count" min="0" step="1"></div>
+					<div class="col-3"><label class="label">male_count</label><input type="number" class="input" name="male_count" min="0" step="1"></div>
+					<div class="col-3"><label class="label">aedes_male_count</label><input type="number" class="input" name="aedes_male_count" min="0" step="1"></div>
+					<div class="col-3"><label class="label">culex_male_count</label><input type="number" class="input" name="culex_male_count" min="0" step="1"></div>
+					<div class="col-3"><label class="label">anopheles_male_count</label><input type="number" class="input" name="anopheles_male_count" min="0" step="1"></div>
+					<div class="col-3"><label class="label">other_male_count</label><input type="number" class="input" name="other_male_count" min="0" step="1"></div>
+					<div class="col-3"><label class="label">female_count</label><input type="number" class="input" name="female_count" min="0" step="1"></div>
+					<div class="col-3"><label class="label">blood_fed_females_count</label><input type="number" class="input" name="blood_fed_females_count" min="0" step="1"></div>
+					<div class="col-3"><label class="label">gravid_females_count</label><input type="number" class="input" name="gravid_females_count" min="0" step="1"></div>
+					<div class="col-3"><label class="label">starved_females_count</label><input type="number" class="input" name="starved_females_count" min="0" step="1"></div>
+					<div class="col-3"><label class="label">mosquitoes_aedes_count</label><input type="number" class="input" name="mosquitoes_aedes_count" min="0" step="1"></div>
+					<div class="col-3"><label class="label">mosquitoes_culex_count</label><input type="number" class="input" name="mosquitoes_culex_count" min="0" step="1"></div>
+					<div class="col-3"><label class="label">mosquitoes_anopheles_count</label><input type="number" class="input" name="mosquitoes_anopheles_count" min="0" step="1"></div>
+					<div class="col-3"><label class="label">mosquitoes_other_count</label><input type="number" class="input" name="mosquitoes_other_count" min="0" step="1"></div>
+					<div class="col-12"><label class="label">observations</label><textarea class="textarea" name="observations"></textarea></div>
+				</div>
+				<hr class="sep">
+				<div class="actions"><button class="btn btn-primary" id="submit-mosquitoes"><i class="fas fa-paper-plane"></i> Envoyer (Moustiques)</button><span id="status-mosquitoes" class="help"></span></div>
+			</section>
+		</div>
+	</div>
+
+	<script>
+	(function(){
+		const tabs = document.querySelectorAll('.tab');
+		tabs.forEach(t => t.addEventListener('click', () => {
+			tabs.forEach(x=>x.classList.remove('active'));
+			document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+			t.classList.add('active');
+			document.querySelector(t.getAttribute('data-target')).style.display = '';
+		}));
+
+		document.querySelectorAll('[data-gps]').forEach(btn => {
+			btn.addEventListener('click', async () => {
+				const field = document.querySelector(`input[name="${btn.dataset.gps}"]`);
+				if (!navigator.geolocation) { alert('G├®olocalisation non support├®e'); return; }
+				navigator.geolocation.getCurrentPosition(pos => {
+					field.value = `${pos.coords.latitude.toFixed(6)},${pos.coords.longitude.toFixed(6)}`;
+				}, err => alert('Localisation refus├®e'));
+			});
+		});
+
+		// Rendre tous les champs obligatoires
+		document.querySelectorAll('input, select, textarea').forEach(el => { el.required = true; });
+		// Ajouter une ├®toile rouge aux labels correspondants
+		document.querySelectorAll('input[required], select[required], textarea[required]').forEach(el => {
+			let label = el.previousElementSibling;
+			if (label && label.classList.contains('label') && !label.querySelector('.req-star')) {
+				const star = document.createElement('span');
+				star.className = 'req-star';
+				star.textContent = ' *';
+				star.style.color = '#ef4444';
+				label.appendChild(star);
+			}
+		});
+		// Clamp automatique des champs number avec min=0
+		document.querySelectorAll('input[type="number"][min="0"]').forEach(el => {
+			el.addEventListener('input', () => {
+				if (el.value === '') return;
+				const n = Number(el.value);
+				if (Number.isNaN(n) || n < 0) el.value = 0;
+			});
+		});
+		// Forcer min=0 et step=1 sur tous les champs num├®riques
+		document.querySelectorAll('input[type="number"]').forEach(el => {
+			if (!el.hasAttribute('min')) el.setAttribute('min','0');
+			if (!el.hasAttribute('step')) el.setAttribute('step','1');
+		});
+
+		function formToObject(section) {
+			const obj = {};
+			section.querySelectorAll('input, select, textarea').forEach(el => {
+				const name = el.name; if (!name) return;
+				if (el.tagName === 'SELECT' && el.multiple) obj[name] = Array.from(el.selectedOptions).map(o => o.value);
+				else if (name.endsWith('_sector')) obj[name] = el.value ? [el.value] : [];
+				else obj[name] = el.value;
+			});
+			return obj;
+		}
+
+		async function postJSON(url, data) {
+			const res = await fetch(url, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(data) });
+			if (!res.ok) throw new Error(await res.text());
+			return res.json();
+		}
+
+		function resetSection(section) {
+			section.querySelectorAll('input, select, textarea').forEach(el => {
+				if (el.tagName === 'SELECT') {
+					if (el.multiple) Array.from(el.options).forEach(o => o.selected = false);
+					else el.selectedIndex = 0;
+				} else if (el.type === 'number' || el.type === 'text' || el.type === 'time' || el.type === 'date') {
+					el.value = '';
+				} else if (el.tagName === 'TEXTAREA') {
+					el.value = '';
+				}
+			});
+		}
+
+		document.getElementById('submit-eggs').addEventListener('click', async () => {
+			const section = document.getElementById('eggs'); const status = document.getElementById('status-eggs');
+			status.textContent = 'Envoi...';
+			try { const payload = formToObject(section); await postJSON('/api/collect/eggs', payload); status.textContent = 'Ô£à Enregistr├®'; resetSection(section); }
+			catch (e) { status.textContent = 'ÔØî ' + e.message; }
+		});
+
+		document.getElementById('submit-breeding').addEventListener('click', async () => {
+			const section = document.getElementById('breeding'); const status = document.getElementById('status-breeding');
+			status.textContent = 'Envoi...';
+			try { const payload = formToObject(section); await postJSON('/api/collect/breeding', payload); status.textContent = 'Ô£à Enregistr├®'; resetSection(section); }
+			catch (e) { status.textContent = 'ÔØî ' + e.message; }
+		});
+
+		document.getElementById('submit-mosquitoes').addEventListener('click', async () => {
+			const section = document.getElementById('mosquitoes'); const status = document.getElementById('status-mosquitoes');
+			status.textContent = 'Envoi...';
+			try { const payload = formToObject(section); await postJSON('/api/collect/mosquitoes', payload); status.textContent = 'Ô£à Enregistr├®'; resetSection(section); }
+			catch (e) { status.textContent = 'ÔØî ' + e.message; }
+		});
+	})();
+	</script>
+</body>
+</html>

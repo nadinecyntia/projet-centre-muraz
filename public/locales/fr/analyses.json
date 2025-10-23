@@ -10,7 +10,7 @@
   "theme": {
     "indicator": "Thème: Couleurs légères"
   },
-  "sections": {
+    "sections": {
     "eggs": "Section Œufs",
     "larvae": "Section Larves",
     "mosquitoes": "Section Moustiques",
@@ -28,8 +28,8 @@
     "all_sectors": "Tous les secteurs",
     "filter_month": "Filtrer par mois:",
     "all_months": "Tous les mois"
-  },
-  "charts": {
+      },
+      "charts": {
     "eggs_sector_month": {
       "title": "Nombre d'œufs par secteur et par mois",
       "description": "Répartition des œufs collectés par secteur et période"

@@ -307,7 +307,7 @@ class IndicesManager {
                 return `${formattedValue}%`;
             case 'iap_bg':
             case 'iap_prokopack':
-                return `${formattedValue} moustiques`;
+                return `${formattedValue} mosquitoes`;
             default:
                 return formattedValue;
         }

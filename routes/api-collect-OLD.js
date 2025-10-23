@@ -222,6 +222,8 @@ router.post('/collect/mosquitoes', async (req, res) => {
             mosquitoes_sector,
             mosquitoes_environment,
             mosquitoes_visit_start_date,
+            mosquitoes_visit_start_time,
+            mosquitoes_visit_end_time,
             mosquitoes_gps_code,
             genus,
             species,
@@ -248,17 +250,46 @@ router.post('/collect/mosquitoes', async (req, res) => {
             observations
         } = req.body;
 
-        // Validation des données requises
-        if (!mosquitoes_sector || !mosquitoes_visit_start_date || 
-            !mosquitoes_gps_code || !genus || !species || !collection_methods || 
-            !prokopack_traps_count || !bg_traps_count || !capture_locations || 
-            !prokopack_mosquitoes_count || !bg_trap_mosquitoes_count || !total_mosquitoes_count || 
-            !male_count || !female_count || !blood_fed_females_count || !gravid_females_count || 
-            !starved_females_count || !mosquitoes_aedes_count || !mosquitoes_culex_count || 
-            !mosquitoes_anopheles_count || !mosquitoes_other_count) {
+        // Validation des données requises (attention: 0 est une valeur valide)
+        const isMissingString = (v) => typeof v === 'string' ? v.trim().length === 0 : v === null || v === undefined;
+        const isMissingNumber = (v) => v === null || v === undefined || (typeof v === 'number' && Number.isNaN(v));
+
+        const missingFields = [];
+
+        if (isMissingString(mosquitoes_sector)) missingFields.push('mosquitoes_sector');
+        if (isMissingString(mosquitoes_visit_start_date)) missingFields.push('mosquitoes_visit_start_date');
+        if (isMissingString(mosquitoes_visit_start_time)) missingFields.push('mosquitoes_visit_start_time');
+        if (isMissingString(mosquitoes_visit_end_time)) missingFields.push('mosquitoes_visit_end_time');
+        if (isMissingString(mosquitoes_gps_code)) missingFields.push('mosquitoes_gps_code');
+        if (isMissingString(genus)) missingFields.push('genus');
+        if (isMissingString(species)) missingFields.push('species');
+        if (isMissingString(collection_methods)) missingFields.push('collection_methods');
+        if (isMissingString(capture_locations)) missingFields.push('capture_locations');
+
+        if (isMissingNumber(prokopack_traps_count)) missingFields.push('prokopack_traps_count');
+        if (isMissingNumber(bg_traps_count)) missingFields.push('bg_traps_count');
+        if (isMissingNumber(prokopack_mosquitoes_count)) missingFields.push('prokopack_mosquitoes_count');
+        if (isMissingNumber(bg_trap_mosquitoes_count)) missingFields.push('bg_trap_mosquitoes_count');
+        if (isMissingNumber(total_mosquitoes_count)) missingFields.push('total_mosquitoes_count');
+        if (isMissingNumber(male_count)) missingFields.push('male_count');
+        if (isMissingNumber(female_count)) missingFields.push('female_count');
+        if (isMissingNumber(aedes_male_count)) missingFields.push('aedes_male_count');
+        if (isMissingNumber(culex_male_count)) missingFields.push('culex_male_count');
+        if (isMissingNumber(anopheles_male_count)) missingFields.push('anopheles_male_count');
+        if (isMissingNumber(other_male_count)) missingFields.push('other_male_count');
+        if (isMissingNumber(blood_fed_females_count)) missingFields.push('blood_fed_females_count');
+        if (isMissingNumber(gravid_females_count)) missingFields.push('gravid_females_count');
+        if (isMissingNumber(starved_females_count)) missingFields.push('starved_females_count');
+        if (isMissingNumber(mosquitoes_aedes_count)) missingFields.push('mosquitoes_aedes_count');
+        if (isMissingNumber(mosquitoes_culex_count)) missingFields.push('mosquitoes_culex_count');
+        if (isMissingNumber(mosquitoes_anopheles_count)) missingFields.push('mosquitoes_anopheles_count');
+        if (isMissingNumber(mosquitoes_other_count)) missingFields.push('mosquitoes_other_count');
+
+        if (missingFields.length > 0) {
             return res.status(400).json({
                 success: false,
-                message: 'Données requises manquantes pour les moustiques adultes (incluant les comptes par genre)'
+                message: "Données requises manquantes pour les moustiques adultes (incluant l'heure de début/fin et les comptes par genre)",
+                missingFields
             });
         }
 
@@ -268,6 +299,8 @@ router.post('/collect/mosquitoes', async (req, res) => {
                 mosquitoes_sector,
                 mosquitoes_environment,
                 mosquitoes_visit_start_date,
+                mosquitoes_visit_start_time,
+                mosquitoes_visit_end_time,
                 mosquitoes_gps_code,
                 genus,
                 species,
@@ -294,7 +327,7 @@ router.post('/collect/mosquitoes', async (req, res) => {
                 observations,
                 status,
                 created_at
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29)
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, 'pending', NOW())
             RETURNING id
         `;
 
@@ -303,6 +336,8 @@ router.post('/collect/mosquitoes', async (req, res) => {
             mosquitoes_sector,
             mosquitoes_environment,
             mosquitoes_visit_start_date,
+            mosquitoes_visit_start_time,
+            mosquitoes_visit_end_time,
             mosquitoes_gps_code,
             genus,
             species,
@@ -326,9 +361,7 @@ router.post('/collect/mosquitoes', async (req, res) => {
             mosquitoes_culex_count,
             mosquitoes_anopheles_count,
             mosquitoes_other_count,
-            observations,
-            'pending',
-            new Date()
+            observations
         ];
 
         const result = await pool.query(query, values);

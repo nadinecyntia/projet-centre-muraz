@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test GPS</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            background: #0ea5e9;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0369a1;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f3f4f6;
+            border-radius: 8px;
+            min-height: 100px;
+        }
+        .success { color: #10b981; font-weight: bold; }
+        .error { color: #ef4444; font-weight: bold; }
+        input {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            margin-top: 10px;
+            border: 2px solid #d1d5db;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🛰️ Test de Géolocalisation GPS</h1>
+    
+    <button onclick="testGPS()">📍 Obtenir ma position GPS</button>
+    
+    <input type="text" id="coords" placeholder="Les coordonnées apparaîtront ici..." readonly>
+    
+    <div id="result">
+        <p>Cliquez sur le bouton pour tester le GPS...</p>
+    </div>
+
+    <script>
+        function testGPS() {
+            const resultDiv = document.getElementById('result');
+            const coordsInput = document.getElementById('coords');
+            
+            resultDiv.innerHTML = '<p>⏳ Recherche de votre position...</p>';
+            
+            // Vérifier si la géolocalisation est supportée
+            if (!navigator.geolocation) {
+                resultDiv.innerHTML = '<p class="error">❌ Géolocalisation non supportée par ce navigateur</p>';
+                return;
+            }
+            
+            console.log('🌍 Demande de géolocalisation...');
+            
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    const coords = lat.toFixed(6) + ',' + lng.toFixed(6);
+                    
+                    coordsInput.value = coords;
+                    
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ Position obtenue avec succès !</p>
+                        <p><strong>Latitude:</strong> ${lat}</p>
+                        <p><strong>Longitude:</strong> ${lng}</p>
+                        <p><strong>Précision:</strong> ${position.coords.accuracy.toFixed(2)} mètres</p>
+                        <p><strong>Format:</strong> ${coords}</p>
+                    `;
+                    
+                    console.log('✅ Position:', lat, lng);
+                },
+                function(error) {
+                    let errorMsg = '';
+                    let solution = '';
+                    
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMsg = 'Permission refusée';
+                            solution = 'Autorisez la géolocalisation dans les paramètres du navigateur (cliquez sur 🔒 à gauche de l\'URL)';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMsg = 'Position indisponible';
+                            solution = 'Vérifiez que le GPS de votre appareil est activé';
+                            break;
+                        case error.TIMEOUT:
+                            errorMsg = 'Délai d\'attente dépassé';
+                            solution = 'Réessayez, le GPS est trop lent';
+                            break;
+                        default:
+                            errorMsg = 'Erreur inconnue';
+                            solution = error.message;
+                    }
+                    
+                    resultDiv.innerHTML = `
+                        <p class="error">❌ Erreur: ${errorMsg}</p>
+                        <p><strong>Code d'erreur:</strong> ${error.code}</p>
+                        <p><strong>Message:</strong> ${error.message}</p>
+                        <p><strong>Solution:</strong> ${solution}</p>
+                    `;
+                    
+                    console.error('❌ Erreur GPS:', error.code, error.message);
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        }
+        
+        // Afficher l'état de la géolocalisation au chargement
+        window.addEventListener('load', function() {
+            if (!navigator.geolocation) {
+                document.getElementById('result').innerHTML = '<p class="error">❌ Ce navigateur ne supporte pas la géolocalisation</p>';
+            }
+        });
+    </script>
+</body>
+</html>
+

@@ -414,6 +414,8 @@ router.get('/analyses/moustiques', async (req, res) => {
                     mosquitoes_concession_code as concession_code,
                     NULL as house_code, -- Champ supprimé
                     mosquitoes_visit_start_date as visit_date,
+                    mosquitoes_visit_start_time as visit_start_time,
+                    mosquitoes_visit_end_time as visit_end_time,
                     mosquitoes_sector as sector,
                     mosquitoes_environment as environment,
                     mosquitoes_gps_code as gps_code,
@@ -615,6 +617,8 @@ router.get('/analyses/adults', async (req, res) => {
                     mosquitoes_concession_code as concession_code,
                     NULL as house_code, -- Champ supprimé
                     mosquitoes_visit_start_date as visit_date,
+                    mosquitoes_visit_start_time as visit_start_time,
+                    mosquitoes_visit_end_time as visit_end_time,
                     mosquitoes_sector as sector,
                     mosquitoes_environment as environment,
                     mosquitoes_gps_code as gps_code,
@@ -689,6 +693,8 @@ router.get('/analyses/mosquitoes', async (req, res) => {
                 SELECT
                     mosquitoes_concession_code as concession_code,
                     mosquitoes_visit_start_date as visit_date,
+                    mosquitoes_visit_start_time as visit_start_time,
+                    mosquitoes_visit_end_time as visit_end_time,
                     mosquitoes_sector as sector,
                     mosquitoes_environment as environment,
                     collection_methods,

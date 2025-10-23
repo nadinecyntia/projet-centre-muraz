@@ -87,17 +87,17 @@
                     </div>
                 </div>
 
-                <!-- Section Import CSV -->
+                <!-- Section Import CSV/Excel -->
                 <div class="card hover:shadow-lg transition-shadow duration-300">
                     <div class="text-center p-6">
                         <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <i class="fas fa-file-csv text-green-600 text-2xl"></i>
+                            <i class="fas fa-file-excel text-green-600 text-2xl"></i>
                         </div>
-                        <h4 class="text-xl font-semibold text-green-700 mb-3" data-i18n="admin.import.title">Import CSV</h4>
+                        <h4 class="text-xl font-semibold text-green-700 mb-3" data-i18n="admin.import.title">Import CSV/Excel</h4>
                         <p class="text-gray-600 mb-4 text-sm" data-i18n="admin.import.description">
-                            Importez des données en masse via des fichiers CSV
+                            Importez des données en masse via des fichiers CSV ou Excel
                         </p>
-                        <button id="importCSVBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200">
+                        <button id="importDataBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200">
                             <i class="fas fa-upload mr-2"></i><span data-i18n="admin.buttons.import_data">Importer des Données</span>
                         </button>
                     </div>
@@ -1335,388 +1335,207 @@
         }
     </script>
 
-    <!-- Modal Import CSV -->
-    <div id="csvImportModal" class="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50" style="display: none;">
-        <div class="relative top-20 mx-auto p-0 border-0 w-11/12 max-w-4xl shadow-2xl rounded-lg bg-white">
+    <!-- Modal Import CSV/Excel Professionnel -->
+    <div id="importModal" class="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50" style="display: none;">
+        <div class="relative mx-auto p-0 border-0 w-11/12 max-w-4xl shadow-2xl rounded-xl bg-white" style="margin-top: 100px; margin-bottom: 50px;">
+            
             <!-- Header -->
-            <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 rounded-t-lg">
+            <div class="import-modal-header text-white p-5 rounded-t-xl">
                 <div class="flex justify-between items-center">
                     <div class="flex items-center">
-                        <div class="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-3">
-                            <i class="fas fa-file-csv text-xl"></i>
+                        <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-3 backdrop-blur-sm">
+                            <i class="fas fa-file-excel text-2xl"></i>
                         </div>
-                           <div>
-                               <h3 class="text-xl font-bold">Import CSV</h3>
-                           </div>
+                        <div>
+                            <h3 class="text-xl font-bold">Import de Données</h3>
+                            <p class="text-green-100 text-xs mt-1">CSV • Excel • Gestion automatisée</p>
+                        </div>
                     </div>
-                    <button id="closeModalBtn" class="text-white hover:text-blue-200 transition-colors">
+                    <button id="closeImportModal" class="text-white hover:text-green-200 transition-all p-2 hover:bg-white hover:bg-opacity-10 rounded-lg">
                         <i class="fas fa-times text-xl"></i>
                     </button>
                 </div>
             </div>
 
+            <!-- Stepper (Indicateur de progression) -->
+            <div class="import-stepper">
+                <div class="import-step active" data-step="1">
+                    <div class="import-step-circle">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <span class="import-step-label">Configuration</span>
+                </div>
+                <div class="import-step-divider"></div>
+                <div class="import-step" data-step="2">
+                    <div class="import-step-circle">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <span class="import-step-label">Prévisualisation</span>
+                </div>
+                <div class="import-step-divider"></div>
+                <div class="import-step" data-step="3">
+                    <div class="import-step-circle">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <span class="import-step-label">Résultats</span>
+                </div>
+            </div>
+
             <!-- Body -->
-            <div class="p-4">
-                <!-- Configuration -->
-                <form id="csvImportForm">
-                <div id="step1Content" class="space-y-4">
-                    <div class="grid md:grid-cols-2 gap-4">
+            <div class="p-6">
+                <!-- Step 1: Configuration -->
+                <div id="step1">
+                    <div class="space-y-4">
                         <!-- Type de données -->
-                        <div class="space-y-2">
-                            <label class="block text-sm font-semibold text-gray-700">
-                                <i class="fas fa-database mr-2 text-blue-600"></i>Type de données
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-3">
+                                <i class="fas fa-database mr-2 text-blue-600"></i>Sélectionnez le type de données
                             </label>
-                            <select id="dataType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all">
-                                <option value="">Sélectionner le type de données</option>
-                                <option value="eggs">Œufs</option>
-                                <option value="breeding">Gîtes Larvaires</option>
-                                <option value="mosquitoes">Moustiques Adultes</option>
+                            <select id="importDataType" class="import-select w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all text-base">
+                                <option value="">Choisir un type de données...</option>
+                                <option value="eggs">🥚 Collection d'Œufs</option>
+                                <option value="breeding">🦟 Gîtes Larvaires</option>
+                                <option value="mosquitoes">🦟 Moustiques Adultes</option>
                             </select>
                         </div>
 
-                        <!-- Fichier CSV -->
-                        <div class="space-y-2">
-                            <label class="block text-sm font-semibold text-gray-700">
-                                <i class="fas fa-file-csv mr-2 text-green-600"></i>Fichier CSV
+                        <!-- Fichier - Drag & Drop Zone -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-3">
+                                <i class="fas fa-file-upload mr-2 text-green-600"></i>Choisissez ou glissez votre fichier
                             </label>
-                            <div class="relative">
-                                <input type="file" id="csvFile" accept=".csv" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all">
-                                <div class="absolute inset-y-0 right-0 flex items-center pr-3">
-                                    <i class="fas fa-upload text-gray-400"></i>
+                            <div class="file-drop-zone" id="fileDropZone">
+                                <input type="file" id="importFile" accept=".csv,.xls,.xlsx" style="display: none;">
+                                <div id="dropZoneContent">
+                                    <div class="file-drop-zone-icon">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                    </div>
+                                    <div class="file-drop-zone-text">
+                                        Glissez-déposez votre fichier ici
+                                    </div>
+                                    <div class="file-drop-zone-hint">
+                                        ou cliquez pour parcourir • Formats: CSV, XLS, XLSX • Max 10MB
+                                    </div>
                                 </div>
                             </div>
-                            <p class="text-xs text-gray-500">
-                                <i class="fas fa-info-circle mr-1"></i>Format accepté: CSV (séparateur: virgule), max 10MB
-                            </p>
+                            <div id="fileSelectedInfo" style="display: none;"></div>
                         </div>
-                    </div>
 
-                    <!-- Actions -->
-                    <div class="flex space-x-3">
-                        <button type="button" id="downloadTemplateBtn" 
-                                class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-md transition-all">
-                            <i class="fas fa-download mr-2"></i>Télécharger Template
-                        </button>
-                        <button type="button" id="previewBtn" 
-                                class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition-all">
-                            <i class="fas fa-eye mr-2"></i>Prévisualiser les Données
-                        </button>
+                        <!-- Actions -->
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <button type="button" id="downloadTemplateBtn" 
+                                    class="import-btn import-btn-outline">
+                                <i class="fas fa-download"></i>
+                                <span>Télécharger un Template</span>
+                            </button>
+                            <button type="button" id="previewFileBtn" 
+                                    class="import-btn import-btn-secondary">
+                                <i class="fas fa-eye"></i>
+                                <span>Prévisualiser les Données</span>
+                            </button>
+                        </div>
+
+                        <!-- Zone de prévisualisation -->
+                        <div id="previewResults" class="mt-6"></div>
                     </div>
                 </div>
-                </form>
 
-                <!-- Step 2: Prévisualisation -->
-                <div id="step2Content" class="hidden">
-                    <div class="bg-blue-50 border border-blue-200 rounded-md p-3 mb-4">
-                        <div class="flex items-center">
-                            <i class="fas fa-info-circle text-blue-600 mr-2"></i>
-                            <span class="text-blue-800 font-medium text-sm">Aperçu des données à importer</span>
-                        </div>
-                    </div>
-                    <div id="csvPreview" class="bg-white border border-gray-200 rounded-md overflow-hidden"></div>
-                </div>
-
-                <!-- Step 3: Import -->
-                <div id="step3Content" class="hidden">
-                    <div id="importResults" class="space-y-4"></div>
+                <!-- Step 3: Résultats (caché par défaut) -->
+                <div id="step3" class="hidden">
+                    <div id="importResults"></div>
                 </div>
 
                 <!-- Footer -->
-                <div class="flex justify-between items-center mt-6 pt-4 border-t border-gray-200">
-                    <div class="text-xs text-gray-500">
-                        <i class="fas fa-shield-alt mr-1"></i>
-                        Les données importées auront le statut "En attente" et devront être validées
+                <div class="flex justify-between items-center mt-6 pt-5 border-t border-gray-200">
+                    <div class="text-sm text-gray-600 flex items-center gap-2">
+                        <i class="fas fa-shield-alt text-gray-400"></i>
+                        <span>Les données importées nécessitent une validation manuelle</span>
                     </div>
                     <div class="flex space-x-3">
-                        <button id="cancelBtn" 
-                                class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors text-sm">
-                            <i class="fas fa-times mr-2"></i>Annuler
+                        <button id="cancelImportBtn" 
+                                class="import-btn import-btn-gray">
+                            <i class="fas fa-times"></i>
+                            <span>Fermer</span>
                         </button>
-                        <button id="importBtn" 
-                                class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm">
-                            <i class="fas fa-upload mr-2"></i>Importer les Données
+                        <button id="executeImportBtn" 
+                                class="import-btn import-btn-primary" disabled>
+                            <i class="fas fa-upload"></i>
+                            <span>Importer les Données</span>
                         </button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
-    <script>
-        // ===== SCRIPT CSV SIMPLIFIÉ =====
-        
-        // Fonction pour ouvrir la modal
-        function openCSVModal() {
-            console.log('🔍 Ouverture modal CSV...');
-            const modal = document.getElementById('csvImportModal');
-            if (modal) {
-                modal.style.display = 'block';
-                console.log('✅ Modal CSV ouverte');
-            } else {
-                console.error('❌ Modal CSV non trouvée');
-            }
-        }
-        
-        // Fonction pour fermer la modal
-        function closeCSVModal() {
-            console.log('🔍 Fermeture modal CSV...');
-            const modal = document.getElementById('csvImportModal');
-            if (modal) {
-                modal.style.display = 'none';
-                console.log('✅ Modal CSV fermée');
-            }
-        }
-        
-        // Fonction pour télécharger le template
-        function downloadTemplate() {
-            const dataType = document.getElementById('dataType').value;
-            if (dataType) {
-                console.log('📥 Téléchargement template:', dataType);
-                window.open(`/api/csv/template/${dataType}`, '_blank');
-            } else {
-                alert('Veuillez d\'abord sélectionner un type de données');
-            }
-        }
-        
-        // Fonction pour prévisualiser le CSV
-        async function previewCSV() {
-            console.log('🔍 Prévisualisation CSV...');
-            
-            const fileInput = document.getElementById('csvFile');
-            const dataType = document.getElementById('dataType').value;
-            const file = fileInput.files[0];
-            
-            if (!file) {
-                alert('Veuillez sélectionner un fichier CSV');
-                return;
-            }
-            
-            if (!dataType) {
-                alert('Veuillez sélectionner un type de données');
-                return;
-            }
-            
-            console.log('📁 Fichier:', file.name, 'Taille:', file.size);
-            console.log('📊 Type:', dataType);
-            
-            const formData = new FormData();
-            formData.append('csvFile', file);
-            formData.append('dataType', dataType);
-            
-            try {
-                console.log('📤 Envoi vers le serveur...');
-                const response = await fetch('/api/csv/preview', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                console.log('📡 Status:', response.status);
-                
-                if (!response.ok) {
-                    throw new Error(`Erreur serveur: ${response.status}`);
-                }
-                
-                const result = await response.json();
-                console.log('📥 Réponse:', result);
-                
-                if (result.success) {
-                    showPreviewResults(result.data);
-                } else {
-                    alert('Erreur: ' + result.message);
-                }
-                
-            } catch (error) {
-                console.error('❌ Erreur:', error);
-                alert('Erreur lors de la prévisualisation: ' + error.message);
-            }
-        }
-        
-        // Fonction pour afficher les résultats
-        function showPreviewResults(data) {
-            console.log('📊 Affichage des résultats:', data);
-            
-            // Créer ou mettre à jour la zone de résultats
-            let resultsDiv = document.getElementById('previewResults');
-            if (!resultsDiv) {
-                resultsDiv = document.createElement('div');
-                resultsDiv.id = 'previewResults';
-                resultsDiv.style.cssText = 'margin-top: 20px; padding: 20px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 8px;';
-                
-                // Insérer après le formulaire
-                const form = document.getElementById('csvImportForm');
-                if (form && form.parentNode) {
-                    form.parentNode.insertBefore(resultsDiv, form.nextSibling);
-                }
-            }
-            
-            let html = '<h4 style="margin-top: 0; color: #333;">📊 Prévisualisation des données</h4>';
-            
-            // Statistiques
-            html += '<div style="margin-bottom: 15px;">';
-            html += `<span style="background: #e3f2fd; padding: 4px 8px; border-radius: 4px; margin-right: 10px;">${data.headers.length} colonnes</span>`;
-            html += `<span style="background: #e8f5e8; padding: 4px 8px; border-radius: 4px; margin-right: 10px;">${data.totalRows} lignes</span>`;
-            if (data.isValid) {
-                html += '<span style="background: #e8f5e8; padding: 4px 8px; border-radius: 4px;">✓ Valide</span>';
-            } else {
-                html += '<span style="background: #ffebee; padding: 4px 8px; border-radius: 4px;">⚠ Erreurs</span>';
-            }
-            html += '</div>';
-            
-            // Erreurs de validation
-            if (!data.isValid && data.validationErrors && data.validationErrors.length > 0) {
-                html += '<div style="background: #ffebee; padding: 10px; border-radius: 4px; margin-bottom: 15px;">';
-                html += '<strong style="color: #c62828;">⚠ Erreurs de validation:</strong><ul style="margin: 5px 0 0 20px;">';
-                data.validationErrors.forEach(error => {
-                    html += `<li style="color: #c62828;">${error}</li>`;
-                });
-                html += '</ul></div>';
-            }
-            
-            // Tableau des données
-            if (data.previewData && data.previewData.length > 0) {
-                html += '<div style="overflow-x: auto;">';
-                html += '<table style="width: 100%; border-collapse: collapse; background: white; border: 1px solid #ddd;">';
-                
-                // En-têtes
-                html += '<thead style="background: #f5f5f5;">';
-                html += '<tr>';
-                data.headers.forEach(header => {
-                    html += `<th style="padding: 8px; border: 1px solid #ddd; text-align: left;">${header}</th>`;
-                });
-                html += '</tr>';
-                html += '</thead>';
-                
-                // Données (max 5 lignes)
-                html += '<tbody>';
-                data.previewData.slice(0, 5).forEach(row => {
-                    html += '<tr>';
-                    data.headers.forEach(header => {
-                        html += `<td style="padding: 8px; border: 1px solid #ddd;">${row[header] || ''}</td>`;
-                    });
-                    html += '</tr>';
-                });
-                html += '</tbody>';
-                html += '</table>';
-                
-                if (data.previewData.length > 5) {
-                    html += `<p style="font-size: 12px; color: #666; margin-top: 10px;">Affichage des 5 premières lignes sur ${data.previewData.length} total</p>`;
-                }
-                html += '</div>';
-            }
-            
-            resultsDiv.innerHTML = html;
-        }
-        
-        // Fonction pour importer le CSV
-        async function importCSV() {
-            console.log('🔍 Import CSV...');
-            
-            const fileInput = document.getElementById('csvFile');
-            const dataType = document.getElementById('dataType').value;
-            const file = fileInput.files[0];
-            
-            if (!file) {
-                alert('Veuillez sélectionner un fichier CSV');
-                return;
-            }
-            
-            if (!dataType) {
-                alert('Veuillez sélectionner un type de données');
-                return;
-            }
-            
-            const formData = new FormData();
-            formData.append('csvFile', file);
-            formData.append('dataType', dataType);
-            
-            try {
-                console.log('📤 Import vers le serveur...');
-                const response = await fetch('/api/csv/import', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const result = await response.json();
-                console.log('📥 Résultat import:', result);
-                
-                if (result.success) {
-                    alert(`Import réussi !\n- ${result.inserted} enregistrements importés\n- ${result.skipped} enregistrements ignorés\n- ${result.errors.length} erreurs`);
-                    closeCSVModal();
-                } else {
-                    alert('Erreur lors de l\'import: ' + result.message);
-                }
-                
-            } catch (error) {
-                console.error('❌ Erreur import:', error);
-                alert('Erreur lors de l\'import: ' + error.message);
-            }
-        }
-        
-        // Attacher les événements quand la page est chargée
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🔍 Initialisation script CSV...');
-            
-            // Vérifier que tous les éléments existent
-            console.log('🔍 Vérification des éléments:');
-            console.log('- importCSVBtn:', document.getElementById('importCSVBtn'));
-            console.log('- csvImportModal:', document.getElementById('csvImportModal'));
-            console.log('- csvFile:', document.getElementById('csvFile'));
-            console.log('- dataType:', document.getElementById('dataType'));
-            console.log('- previewBtn:', document.getElementById('previewBtn'));
-            console.log('- importBtn:', document.getElementById('importBtn'));
-            
-            // Bouton principal Import CSV
-            const mainBtn = document.getElementById('importCSVBtn');
-            if (mainBtn) {
-                mainBtn.onclick = function() {
-                    console.log('🔍 CLIC SUR BOUTON PRINCIPAL DÉTECTÉ !');
-                    openCSVModal();
-                };
-                console.log('✅ Bouton principal attaché');
-            } else {
-                console.error('❌ Bouton principal NON TROUVÉ !');
-            }
-            
-            // Boutons dans la modal
-            const closeBtn = document.getElementById('closeModalBtn');
-            if (closeBtn) {
-                closeBtn.onclick = closeCSVModal;
-            }
-            
-            const cancelBtn = document.getElementById('cancelBtn');
-            if (cancelBtn) {
-                cancelBtn.onclick = closeCSVModal;
-            }
-            
-            const downloadBtn = document.getElementById('downloadTemplateBtn');
-            if (downloadBtn) {
-                downloadBtn.onclick = downloadTemplate;
-            }
-            
-            const previewBtn = document.getElementById('previewBtn');
-            if (previewBtn) {
-                previewBtn.onclick = function() {
-                    console.log('🔍 CLIC SUR PRÉVISUALISATION DÉTECTÉ !');
-                    previewCSV();
-                };
-                console.log('✅ Bouton prévisualisation attaché');
-            } else {
-                console.error('❌ Bouton prévisualisation NON TROUVÉ !');
-            }
-            
-            const importBtn = document.getElementById('importBtn');
-            if (importBtn) {
-                importBtn.onclick = importCSV;
-            }
-            
-            console.log('✅ Tous les événements attachés');
-        });
-    </script>
+
+    <!-- Import des styles et scripts -->
+    <link rel="stylesheet" href="/css/import-modal.css">
+    <script src="/js/import-manager.js"></script>
 
     <!-- Footer -->
-    <footer class="bg-gray-800 text-white py-8">
-        <div class="container mx-auto px-6 text-center">
-            <p data-i18n="footer.copyright">&copy; 2025 Centre MURAZ - Plateforme de Surveillance Arboviroses</p>
+    <!-- Footer Professionnel -->
+    <footer style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); color: white;" class="py-12">
+        <div class="container mx-auto px-6">
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Colonne 1: Informations Contact -->
+                <div>
+                    <h3 class="text-xl font-bold mb-4 text-white">
+                        <i class="fas fa-building mr-2"></i>Centre MURAZ
+                    </h3>
+                    <p class="text-blue-100 mb-4">
+                        Plateforme de Surveillance des Arboviroses
+                    </p>
+                    <div class="space-y-2 text-blue-100">
+                        <p>
+                            <i class="fas fa-map-marker-alt mr-2 text-blue-300"></i>
+                            01 BP 390 Bobo-Dioulasso 01, Burkina Faso
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Colonne 2: Contacts -->
+                <div>
+                    <h3 class="text-xl font-bold mb-4 text-white">
+                        <i class="fas fa-phone mr-2"></i>Contacts
+                    </h3>
+                    <div class="space-y-3 text-blue-100">
+                        <p class="flex items-center">
+                            <i class="fas fa-phone-alt mr-3 text-blue-300"></i>
+                            <span>+226 20 97 00 75</span>
+                        </p>
+                        <p class="flex items-center">
+                            <i class="fas fa-phone-alt mr-3 text-blue-300"></i>
+                            <span>+226 20 97 01 27</span>
+                        </p>
+                        <p class="flex items-center">
+                            <i class="fas fa-mobile-alt mr-3 text-blue-300"></i>
+                            <span>+226 76 60 81 09</span>
+                        </p>
+                        <p class="flex items-center">
+                            <i class="fas fa-envelope mr-3 text-blue-300"></i>
+                            <a href="mailto:contact@centremuraz.bf" class="hover:text-white transition">contact@centremuraz.bf</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ligne de séparation -->
+            <div class="mt-8 pt-6" style="border-top: 2px solid rgba(255, 255, 255, 0.3);">
+                <div class="flex flex-col md:flex-row justify-between items-center text-blue-100">
+                    <p>&copy; 2025 Centre MURAZ - Tous droits réservés</p>
+                    <div class="flex space-x-4 mt-4 md:mt-0">
+                        <a href="#" class="hover:text-white transition">
+                            <i class="fab fa-facebook-f text-xl"></i>
+                        </a>
+                        <a href="#" class="hover:text-white transition">
+                            <i class="fab fa-twitter text-xl"></i>
+                        </a>
+                        <a href="#" class="hover:text-white transition">
+                            <i class="fab fa-linkedin-in text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
     </footer>
 </body>

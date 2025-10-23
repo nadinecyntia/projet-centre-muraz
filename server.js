@@ -9,13 +9,14 @@ require('dotenv').config();
 const { pool } = require('./config/database');
 const apiRoutes = require('./routes/api');
 const apiArchiveRoutes = require('./routes/api-archive');
-const apiValidationRoutes = require('./routes/api-validation');
-const apiAnalysesRoutes = require('./routes/api-analyses');
-const apiIndicesRoutes = require('./routes/api-indices');
+const apiValidationRoutes = require('./routes/api-validation-normalized');
+const apiAnalysesRoutes = require('./routes/api-analyses-normalized');
+const apiIndicesRoutes = require('./routes/api-indices-normalized');
 const apiUsersRoutes = require('./routes/api-users');
 const apiBiologieRoutes = require('./routes/api-biologie');
-const apiCollectRoutes = require('./routes/api-collect');
+const apiCollectRoutes = require('./routes/api-collect-complete');
 const apiCsvRoutes = require('./routes/api-csv');
+const apiImportRoutes = require('./routes/api-import-normalized'); // Import CSV/Excel normalisé
 const authController = require('./controllers/authController');
 const { requireAuth, requireSuperAdmin, requireViewer, requireInvestigator } = require('./middleware/auth');
 
@@ -72,7 +73,8 @@ app.get('/api/auth/check', authController.checkAuth);
 app.use('/api/archive', apiArchiveRoutes); // Routes d'archivage
 app.use('/api/validation', apiValidationRoutes); // Routes de validation activées
 app.use('/api/biologie', apiBiologieRoutes); // Routes de biologie moléculaire activées
-app.use('/api/csv', apiCsvRoutes); // Routes d'import CSV
+app.use('/api/csv', apiCsvRoutes); // Routes d'import CSV (ancien système)
+app.use('/api/import', apiImportRoutes); // Routes d'import CSV/Excel normalisé (nouveau)
 app.use('/api', apiAnalysesRoutes); // Routes d'analyses activées
 app.use('/api', apiIndicesRoutes);
 app.use('/api', apiUsersRoutes);

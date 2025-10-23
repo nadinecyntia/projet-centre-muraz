@@ -42,7 +42,8 @@
     "moment": "^2.29.4",
     "multer": "^2.0.2",
     "node-fetch": "^3.3.2",
-    "pg": "^8.11.3"
+    "pg": "^8.11.3",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/jest": "^29.5.8",

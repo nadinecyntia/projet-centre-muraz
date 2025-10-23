@@ -135,7 +135,7 @@ class AnalysesManager {
         this.currentEnvironment = 'all'; // Filtre milieu par défaut
         this.init();
     }
-
+    
     async init() {
         try {
             console.log('🚀 Initialisation des analyses entomologiques...');
@@ -160,13 +160,14 @@ class AnalysesManager {
 
             // Essayer les endpoints agrégés (perf)
             try {
-                const [eggsAgg, breedingAgg, mosquitoesAgg] = await Promise.all([
+                const [eggsAgg, breedingAgg, mosquitoesAgg, breedingByClass] = await Promise.all([
                     fetch(`/api/analyses/eggs-aggregates${query}`).then(r => r.json()),
                     fetch(`/api/analyses/breeding-aggregates${query}`).then(r => r.json()),
-                    fetch(`/api/analyses/mosquitoes-aggregates${query}`).then(r => r.json())
+                    fetch(`/api/analyses/mosquitoes-aggregates${query}`).then(r => r.json()),
+                    fetch(`/api/analyses/breeding-by-class-environment${query}`).then(r => r.json())
                 ]);
 
-                if (eggsAgg.success && breedingAgg.success && mosquitoesAgg.success) {
+                if (eggsAgg.success && breedingAgg.success && mosquitoesAgg.success && breedingByClass.success) {
                     // Mettre à jour bannière archive d'après un des résultats
                     this.updateArchiveBanner(eggsAgg.year || breedingAgg.year || mosquitoesAgg.year, eggsAgg.mode || breedingAgg.mode || mosquitoesAgg.mode);
 
@@ -206,12 +207,21 @@ class AnalysesManager {
                         submitted_at: null
                     }));
 
-                    this.data = { eggs: eggsData, larvae: larvaeData, adults: adultsData };
+                    // Stocker les données breedingByClass
+                    const breedingByClassData = breedingByClass.data || [];
+
+                    this.data = { 
+                        eggs: eggsData, 
+                        larvae: larvaeData, 
+                        adults: adultsData,
+                        breedingByClass: breedingByClassData
+                    };
 
                     console.log('✅ Données agrégées chargées:', {
                         eggs: eggsData.length,
                         larvae: larvaeData.length,
-                        adults: adultsData.length
+                        adults: adultsData.length,
+                        breedingByClass: breedingByClassData.length
                     });
 
                     // Initialiser les filtres
@@ -1220,20 +1230,20 @@ class AnalysesManager {
         };
     }
 
-    // Méthode utilitaire pour obtenir le label du mois
+    // Méthode utilitaire pour obtenir le label du mois (toujours en anglais pour les graphiques)
     getMonthLabel(date) {
         const months = [
-            'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-            'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
         ];
         return months[date.getMonth()];
     }
 
-    // Fonction pour trier les mois français chronologiquement
+    // Fonction pour trier les mois anglais chronologiquement
     sortMonthsChronologically(monthLabels) {
         const monthOrder = [
-            'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-            'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
         ];
         
         return monthLabels.sort((a, b) => {
@@ -1490,85 +1500,74 @@ class AnalysesManager {
 
     // Traitement des données de types de gîtes par milieu
     processSiteTypeEnvironmentData() {
-        if (!this.data.larvae || this.data.larvae.length === 0) {
+        console.log('🔍 Debug processSiteTypeEnvironmentData - Données disponibles:', this.data.breedingByClass?.length || 0);
+        
+        if (!this.data.breedingByClass || this.data.breedingByClass.length === 0) {
+            console.log('⚠️ Aucune donnée breedingByClass disponible');
             return { labels: [], datasets: [] };
         }
 
-        // Grouper par type de gîte et milieu
-        const groupedData = {};
-        const siteTypes = new Set();
+        // Debug: afficher la structure des premières données
+        console.log('📊 Première donnée breedingByClass:', this.data.breedingByClass[0]);
+
+        // Collecter les classes de gîtes et environnements uniques
+        const siteClasses = new Set();
         const environments = new Set();
-
-        this.data.larvae.forEach(item => {
-            if (!item.site_classes || !item.environment || !item.total_sites_count) return;
-            
-            const environment = item.environment;
-            if (!environment) return;
-            
-            // Traiter les classes de gîtes (array)
-            let siteClasses = item.site_classes;
-            if (typeof siteClasses === 'string') {
-                try {
-                    siteClasses = JSON.parse(siteClasses);
-                } catch (e) {
-                    siteClasses = [siteClasses];
-                }
-            }
-            
-            if (!Array.isArray(siteClasses)) return;
-            
-            environments.add(environment);
-            
-            siteClasses.forEach(siteClass => {
-                if (!siteClass) return;
-                
-                siteTypes.add(siteClass);
-                
-                const key = `${siteClass}_${environment}`;
-                if (!groupedData[key]) {
-                    groupedData[key] = { siteType: siteClass, environment: environment, count: 0 };
-                }
-                groupedData[key].count += parseInt(item.total_sites_count) || 0;
-            });
+        
+        this.data.breedingByClass.forEach(item => {
+            if (item.site_class) siteClasses.add(item.site_class);
+            if (item.environment) environments.add(item.environment);
         });
 
-        // Créer les datasets par type de gîte
-        const datasets = [];
-        const colors = this.themeManager.getColorArray(siteTypes.size);
-        let colorIndex = 0;
+        // Convertir en arrays et trier
+        const siteClassesArray = Array.from(siteClasses).sort();
+        const environmentsArray = Array.from(environments).sort();
 
-        // Créer un ordre des environnements
-        const sortedEnvironments = Array.from(environments).sort();
+        console.log('📋 Classes de gîtes:', siteClassesArray);
+        console.log('📋 Environnements:', environmentsArray);
 
-        siteTypes.forEach(siteType => {
-            const data = [];
-
-            sortedEnvironments.forEach(environment => {
-                const key = `${siteType}_${environment}`;
-                data.push(groupedData[key] ? groupedData[key].count : 0);
+        // Créer les datasets par classe de gîte
+        const colors = this.themeManager.getColorArray(siteClassesArray.length);
+        const datasets = siteClassesArray.map((siteClass, index) => {
+            const data = environmentsArray.map(environment => {
+                const item = this.data.breedingByClass.find(
+                    d => d.site_class === siteClass && d.environment === environment
+                );
+                return item ? (Number(item.total_sites) || 0) : 0;
             });
 
-            datasets.push({
-                label: siteType,
+            return {
+                label: siteClass,
                 data: data,
-                backgroundColor: colors[colorIndex],
-                borderColor: colors[colorIndex],
+                backgroundColor: colors[index],
+                borderColor: colors[index],
                 borderWidth: 1
-            });
-            colorIndex++;
+            };
         });
+
+        // Labels = environnements (urban, rural)
+        const labels = environmentsArray;
+
+        console.log('📊 Datasets créés:', datasets.length);
+        console.log('🏷️ Labels:', labels);
 
         return {
-            labels: sortedEnvironments,
+            labels: labels,
             datasets: datasets
         };
     }
 
     // Traitement des données d'Aedes par méthode de collecte et lieu de capture
     processAedesMethodLocationData() {
+        console.log('🔍 Debug processAedesMethodLocationData - Données adultes:', this.data.adults?.length || 0);
+        
         if (!this.data.adults || this.data.adults.length === 0) {
+            console.log('⚠️ Aucune donnée adultes disponible');
             return { labels: [], datasets: [] };
         }
+
+        // Debug: afficher la première donnée
+        console.log('📊 Première donnée adultes:', this.data.adults[0]);
 
         // Grouper par méthode de collecte et lieu de capture
         const groupedData = {};
@@ -1578,9 +1577,9 @@ class AnalysesManager {
         this.data.adults.forEach(item => {
             if (!item.collection_methods || !item.capture_locations || !item.mosquitoes_aedes_count) return;
             
+            // ✅ Maintenant chaque ligne a UNE SEULE méthode et UN SEUL lieu
             const method = item.collection_methods;
             const location = item.capture_locations;
-            if (!method || !location) return;
             
             methods.add(method);
             locations.add(location);
@@ -1591,6 +1590,10 @@ class AnalysesManager {
             }
             groupedData[key].count += parseInt(item.mosquitoes_aedes_count) || 0;
         });
+
+        console.log('📋 Méthodes trouvées:', Array.from(methods));
+        console.log('📋 Locations trouvées:', Array.from(locations));
+        console.log('📊 Données groupées:', Object.keys(groupedData).length, 'combinaisons');
 
         // Créer les datasets par méthode de collecte
         const datasets = [];
@@ -1617,6 +1620,9 @@ class AnalysesManager {
             });
             colorIndex++;
         });
+
+        console.log('✅ Datasets créés:', datasets.length);
+        console.log('🏷️ Labels:', sortedLocations);
 
         return {
             labels: sortedLocations,
@@ -1810,4 +1816,31 @@ class AnalysesManager {
 document.addEventListener('DOMContentLoaded', () => {
     console.log('📊 Initialisation de la page analyses...');
     window.analysesManager = new AnalysesManager();
+
+    // Toggle menu mobile
+    const btn = document.getElementById('mobile-menu-btn');
+    const menu = document.getElementById('mobile-menu');
+    const mainNav = document.getElementById('main-nav');
+    const mobileItems = document.getElementById('mobile-menu-items');
+    if (btn && menu) {
+        btn.addEventListener('click', () => {
+            const isHidden = menu.classList.contains('hidden');
+            if (isHidden) {
+                // Cloner les éléments de nav dans le menu mobile
+                if (mainNav && mobileItems) {
+                    mobileItems.innerHTML = '';
+                    const links = mainNav.querySelectorAll('a, button');
+                    links.forEach(node => {
+                        const clone = node.cloneNode(true);
+                        clone.classList.remove('mx-2');
+                        clone.classList.add('block');
+                        mobileItems.appendChild(clone);
+                    });
+                }
+                menu.classList.remove('hidden');
+            } else {
+                menu.classList.add('hidden');
+            }
+        });
+    }
 });
