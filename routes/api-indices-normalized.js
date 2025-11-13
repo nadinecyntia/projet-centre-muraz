@@ -17,18 +17,9 @@ router.get('/indices', async (req, res) => {
     console.log('🔍 API Indices (NORMALIZED) appelée');
     
     try {
-        // Support d'archivage par année
+        // Filtre année (sur les tables actuelles)
         const { year } = req.query;
-        const isArchiveQuery = year && year !== 'current';
-        
-        // Note : Pour l'instant, pas de tables d'archive pour la nouvelle structure
-        // À implémenter plus tard si nécessaire
-        if (isArchiveQuery) {
-            return res.json({
-                success: false,
-                message: 'Les archives ne sont pas encore disponibles pour la nouvelle structure'
-            });
-        }
+        const yearInt = year && year !== 'current' ? parseInt(year, 10) : null;
 
         const client = await pool.connect();
 
@@ -48,7 +39,7 @@ router.get('/indices', async (req, res) => {
                         b.larvae_count,
                         b.nymphs_count
                     FROM breeding_sites b
-                    WHERE b.status = 'approved'
+                    WHERE b.status = 'approved' ${yearInt ? `AND EXTRACT(YEAR FROM b.visit_date) = ${yearInt}` : ''}
                 ),
                 
                 -- =====================================================
@@ -88,7 +79,7 @@ router.get('/indices', async (req, res) => {
                         e.house_id,
                         e.eggs_count
                     FROM eggs_collections e
-                    WHERE e.status = 'approved'
+                    WHERE e.status = 'approved' ${yearInt ? `AND EXTRACT(YEAR FROM e.visit_date) = ${yearInt}` : ''}
                 ),
                 
                 -- =====================================================
@@ -127,7 +118,7 @@ router.get('/indices', async (req, res) => {
                         COALESCE(m.bg_traps_count, 0) AS bg_traps_count,
                         COALESCE(m.prokopack_traps_count, 0) AS prokopack_traps_count
                     FROM adult_mosquitoes_collections m
-                    WHERE m.status = 'approved'
+                    WHERE m.status = 'approved' ${yearInt ? `AND EXTRACT(YEAR FROM m.visit_date) = ${yearInt}` : ''}
                 ),
                 
                 -- =====================================================

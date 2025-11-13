@@ -1,12 +1,12 @@
 const express = require('express');
 const { pool } = require('../config/database');
-const { requireAuth, requireSuperAdmin } = require('../middleware/auth');
+// const { requireAuth, requireSuperAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Middleware d'authentification
-router.use(requireAuth);
-router.use(requireSuperAdmin);
+// Middleware d'authentification - désactivé pour rendre la validation publique
+// router.use(requireAuth);
+// router.use(requireSuperAdmin);
 
 /**
  * Récupérer tous les enregistrements en attente de validation
@@ -52,9 +52,8 @@ router.get('/pending', async (req, res) => {
                 SELECT 
                     e.id,
                     'eggs' as type,
-                    e.investigator_name,
+                    NULL::VARCHAR as investigator_name,
                     h.concession_code,
-                    h.house_code,
                     e.visit_date,
                     h.sector,
                     h.environment,
@@ -76,7 +75,6 @@ router.get('/pending', async (req, res) => {
                     'breeding' as type,
                     b.investigator_name,
                     h.concession_code,
-                    h.house_code,
                     b.visit_date,
                     h.sector,
                     h.environment,
@@ -96,9 +94,8 @@ router.get('/pending', async (req, res) => {
                 SELECT 
                     m.id,
                     'mosquitoes' as type,
-                    m.investigator_name,
+                    NULL::VARCHAR as investigator_name,
                     h.concession_code,
-                    h.house_code,
                     m.visit_date,
                     h.sector,
                     h.environment,
@@ -180,7 +177,6 @@ router.get('/test/:type/:id', async (req, res) => {
                     SELECT 
                         e.*,
                         h.concession_code,
-                        h.house_code,
                         h.sector,
                         h.environment,
                         h.gps_coordinates
@@ -194,7 +190,6 @@ router.get('/test/:type/:id', async (req, res) => {
                     SELECT 
                         b.*,
                         h.concession_code,
-                        h.house_code,
                         h.sector,
                         h.environment,
                         h.gps_coordinates
@@ -208,7 +203,6 @@ router.get('/test/:type/:id', async (req, res) => {
                     SELECT 
                         m.*,
                         h.concession_code,
-                        h.house_code,
                         h.sector,
                         h.environment,
                         h.gps_coordinates
@@ -272,7 +266,6 @@ router.get('/:type/:id', async (req, res) => {
                     SELECT 
                         e.*,
                         h.concession_code,
-                        h.house_code,
                         h.sector,
                         h.environment,
                         h.gps_coordinates
@@ -286,7 +279,6 @@ router.get('/:type/:id', async (req, res) => {
                     SELECT 
                         b.*,
                         h.concession_code,
-                        h.house_code,
                         h.sector,
                         h.environment,
                         h.gps_coordinates
@@ -300,7 +292,6 @@ router.get('/:type/:id', async (req, res) => {
                     SELECT 
                         m.*,
                         h.concession_code,
-                        h.house_code,
                         h.sector,
                         h.environment,
                         h.gps_coordinates
@@ -519,14 +510,10 @@ router.get('/statistics', async (req, res) => {
 router.get('/investigators', async (req, res) => {
     try {
         const query = `
-            WITH all_investigators AS (
-                SELECT investigator_name FROM eggs_collections WHERE investigator_name IS NOT NULL
-                UNION
-                SELECT investigator_name FROM breeding_sites WHERE investigator_name IS NOT NULL
-                UNION
-                SELECT investigator_name FROM adult_mosquitoes_collections WHERE investigator_name IS NOT NULL
-            )
-            SELECT DISTINCT investigator_name FROM all_investigators ORDER BY investigator_name
+            SELECT DISTINCT investigator_name 
+            FROM breeding_sites 
+            WHERE investigator_name IS NOT NULL 
+            ORDER BY investigator_name
         `;
 
         const result = await pool.query(query);

@@ -100,6 +100,33 @@
             margin-bottom: 2rem;
         }
 
+        /* Grille spéciale pour 3 graphiques : 2 en haut, 1 en bas */
+        .indicators-grid-three {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto auto;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .indicators-grid-three .indicator-card:nth-child(3) {
+            grid-column: 1 / -1;
+            grid-row: 2;
+        }
+
+        /* Responsive pour les grilles 3 éléments */
+        @media (max-width: 768px) {
+            .indicators-grid-three {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto;
+            }
+            
+            .indicators-grid-three .indicator-card:nth-child(3) {
+                grid-column: 1;
+                grid-row: auto;
+            }
+        }
+
         .indicator-card {
             background: var(--card-background);
             border-radius: 12px;
@@ -355,7 +382,7 @@
                     </div>
                 </div>
             </div>
-            <div class="indicators-grid">
+            <div class="indicators-grid-three">
                 <!-- Œufs par secteur et par mois -->
                 <div class="indicator-card">
                     <div class="indicator-header">
@@ -442,7 +469,7 @@
             <div class="section-header">
                 <h2 class="section-title" data-i18n="analyses.sections.mosquitoes">Section Moustiques</h2>
             </div>
-            <div class="indicators-grid">
+            <div class="indicators-grid-three">
                 <!-- Courbe densité moustiques adultes -->
                 <div class="indicator-card">
                     <div class="indicator-header">
@@ -495,7 +522,7 @@
             <div class="section-header">
                 <h2 class="section-title" data-i18n="analyses.sections.research">Section Recherche</h2>
             </div>
-            <div class="indicators-grid">
+            <div class="indicators-grid-three">
                 <!-- Nombre d'Aedes par secteur et par mois -->
                 <div class="indicator-card">
                     <div class="indicator-header">
@@ -520,7 +547,7 @@
                     <div class="chart-container">
                         <canvas id="siteTypeEnvironmentChart"></canvas>
                     </div>
-            </div>
+                </div>
 
                 <!-- Nombre d'Aedes par méthode de collecte et lieu de capture -->
                 <div class="indicator-card">
@@ -536,22 +563,22 @@
                 </div>
             </div>
         </div>
-        </div>
+    </div>
 
     <!-- Footer -->
     <!-- Footer Professionnel -->
-    <footer style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); color: white;" class="py-12">
-        <div class="container mx-auto px-6">
-            <div class="grid md:grid-cols-2 gap-8">
+    <footer style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); color: white;" class="py-8 md:py-12">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="grid md:grid-cols-2 gap-6 md:gap-8">
                 <!-- Colonne 1: Informations Contact -->
                 <div>
-                    <h3 class="text-xl font-bold mb-4 text-white">
+                    <h3 class="text-lg md:text-xl font-bold mb-3 md:mb-4 text-white">
                         <i class="fas fa-building mr-2"></i>Centre MURAZ
                     </h3>
-                    <p class="text-blue-100 mb-4">
+                    <p class="text-blue-100 mb-3 md:mb-4 text-sm md:text-base">
                         Plateforme de Surveillance des Arboviroses
                     </p>
-                    <div class="space-y-2 text-blue-100">
+                    <div class="space-y-1.5 md:space-y-2 text-blue-100 text-sm md:text-base">
                         <p>
                             <i class="fas fa-map-marker-alt mr-2 text-blue-300"></i>
                             01 BP 390 Bobo-Dioulasso 01, Burkina Faso
@@ -561,23 +588,23 @@
 
                 <!-- Colonne 2: Contacts -->
                 <div>
-                    <h3 class="text-xl font-bold mb-4 text-white">
+                    <h3 class="text-lg md:text-xl font-bold mb-3 md:mb-4 text-white">
                         <i class="fas fa-phone mr-2"></i>Contacts
                     </h3>
-                    <div class="space-y-3 text-blue-100">
-                        <p class="flex items-center">
+                    <div class="space-y-2.5 md:space-y-3 text-blue-100 text-sm md:text-base">
+                        <p class="flex items-center leading-6">
                             <i class="fas fa-phone-alt mr-3 text-blue-300"></i>
                             <span>+226 20 97 00 75</span>
                         </p>
-                        <p class="flex items-center">
+                        <p class="flex items-center leading-6">
                             <i class="fas fa-phone-alt mr-3 text-blue-300"></i>
                             <span>+226 20 97 01 27</span>
                         </p>
-                        <p class="flex items-center">
+                        <p class="flex items-center leading-6">
                             <i class="fas fa-mobile-alt mr-3 text-blue-300"></i>
                             <span>+226 76 60 81 09</span>
                         </p>
-                        <p class="flex items-center">
+                        <p class="flex items-center leading-6">
                             <i class="fas fa-envelope mr-3 text-blue-300"></i>
                             <a href="mailto:contact@centremuraz.bf" class="hover:text-white transition">contact@centremuraz.bf</a>
                         </p>
@@ -586,18 +613,18 @@
             </div>
 
             <!-- Ligne de séparation -->
-            <div class="mt-8 pt-6" style="border-top: 2px solid rgba(255, 255, 255, 0.3);">
-                <div class="flex flex-col md:flex-row justify-between items-center text-blue-100">
-                    <p>&copy; 2025 Centre MURAZ - Tous droits réservés</p>
-                    <div class="flex space-x-4 mt-4 md:mt-0">
+            <div class="mt-6 md:mt-8 pt-5 md:pt-6" style="border-top: 1px solid rgba(255, 255, 255, 0.3);">
+                <div class="flex flex-col md:flex-row justify-between items-center text-blue-100 text-sm md:text-base">
+                    <p class="text-center md:text-left">&copy; 2025 Centre MURAZ - Tous droits réservés</p>
+                    <div class="flex space-x-3 md:space-x-4 mt-3 md:mt-0">
                         <a href="#" class="hover:text-white transition">
-                            <i class="fab fa-facebook-f text-xl"></i>
+                            <i class="fab fa-facebook-f text-lg md:text-xl"></i>
                         </a>
                         <a href="#" class="hover:text-white transition">
-                            <i class="fab fa-twitter text-xl"></i>
+                            <i class="fab fa-twitter text-lg md:text-xl"></i>
                         </a>
                         <a href="#" class="hover:text-white transition">
-                            <i class="fab fa-linkedin-in text-xl"></i>
+                            <i class="fab fa-linkedin-in text-lg md:text-xl"></i>
                         </a>
                     </div>
                 </div>
@@ -608,7 +635,6 @@
     <!-- Scripts -->
     <script type="module" src="/js/app-modular.js?v=2025-01-15-17-10"></script>
     <script src="/js/robust-translation.js?v=2025-01-15-17-10"></script>
-    <script src="/js/debug-modules.js?v=2025-01-15-17-10"></script>
     <script src="/js/analyses.js?v=2025-01-15-18-45"></script>
 </body>
 </html>

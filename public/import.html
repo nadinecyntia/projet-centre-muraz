@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import de Données - Centre MURAZ</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --muraz-primary: #10b981;
+            --muraz-secondary: #059669;
+            --muraz-dark: #047857;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+            min-height: 100vh;
+        }
+
+        .import-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        .import-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            background: #e5e7eb;
+            color: #6b7280;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .step.active {
+            background: var(--muraz-primary);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .step.completed {
+            background: var(--muraz-secondary);
+            color: white;
+        }
+
+        .step-divider {
+            width: 40px;
+            height: 2px;
+            background: #d1d5db;
+        }
+
+        .step.completed + .step-divider {
+            background: var(--muraz-secondary);
+        }
+
+        .file-drop-zone {
+            position: relative;
+            border: 3px dashed #d1d5db;
+            border-radius: 16px;
+            padding: 3rem;
+            text-align: center;
+            background: #f9fafb;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .file-drop-zone:hover {
+            border-color: var(--muraz-primary);
+            background: #f0fdf4;
+            transform: translateY(-2px);
+        }
+
+        .file-drop-zone.dragover {
+            border-color: var(--muraz-secondary);
+            background: #d1fae5;
+            transform: scale(1.02);
+        }
+
+        .file-drop-zone i {
+            font-size: 3rem;
+            color: var(--muraz-primary);
+            margin-bottom: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--muraz-primary) 0%, var(--muraz-secondary) 100%);
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--muraz-primary);
+            border: 2px solid var(--muraz-primary);
+            padding: 0.75rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-secondary:hover {
+            background: var(--muraz-primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #6b7280;
+            border: 2px solid #d1d5db;
+            padding: 0.75rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-outline:hover {
+            border-color: #9ca3af;
+            background: #f9fafb;
+        }
+
+        .spinner {
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid var(--muraz-primary);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            font-size: 0.875rem;
+            overflow-x: auto;
+            display: block;
+        }
+
+        .preview-table thead {
+            background: linear-gradient(135deg, var(--muraz-primary) 0%, var(--muraz-secondary) 100%);
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .preview-table th,
+        .preview-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+            white-space: nowrap;
+        }
+
+        .preview-table tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card .icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0.5rem 0;
+        }
+
+        .stat-card .label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            border: 1px solid var(--muraz-primary);
+            color: #065f46;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            border: 1px solid #ef4444;
+            color: #991b1b;
+        }
+
+        .alert-warning {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            color: #92400e;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            border: 1px solid #3b82f6;
+            color: #1e40af;
+        }
+
+        .file-selected-badge {
+            background: #d1fae5;
+            border: 2px solid var(--muraz-primary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .file-selected-badge i {
+            font-size: 2.5rem;
+            color: var(--muraz-primary);
+        }
+
+        .file-selected-badge .file-info {
+            flex: 1;
+        }
+
+        .file-selected-badge .file-name {
+            font-weight: 700;
+            color: #065f46;
+            font-size: 1.125rem;
+        }
+
+        .file-selected-badge .file-size {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header p {
+            opacity: 0.9;
+        }
+
+        .section {
+            display: none;
+            margin-top: 2rem;
+        }
+
+        .section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .error-list {
+            max-height: 400px;
+            overflow-y: auto;
+            background: #fef2f2;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .error-item {
+            padding: 0.5rem;
+            border-bottom: 1px solid #fecaca;
+            font-size: 0.875rem;
+            color: #991b1b;
+        }
+
+        .error-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto px-6 py-8 max-w-5xl" style="padding-top: 2rem; padding-bottom: 3rem;">
+        
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h1><i class="fas fa-file-import mr-3"></i>Import de Données</h1>
+                    <p>Importez vos fichiers CSV ou Excel en toute simplicité</p>
+                </div>
+                <a href="/admin.html" class="btn-outline bg-white bg-opacity-20 border-white text-white hover:bg-white hover:text-green-600 whitespace-nowrap">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Retour à l'Admin</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Step Indicator -->
+        <div class="step-indicator">
+            <div class="step active" data-step="1">
+                <i class="fas fa-cog"></i>
+                <span>Configuration</span>
+            </div>
+            <div class="step-divider"></div>
+            <div class="step" data-step="2">
+                <i class="fas fa-eye"></i>
+                <span>Prévisualisation</span>
+            </div>
+            <div class="step-divider"></div>
+            <div class="step" data-step="3">
+                <i class="fas fa-upload"></i>
+                <span>Import</span>
+            </div>
+            <div class="step-divider"></div>
+            <div class="step" data-step="4">
+                <i class="fas fa-check-circle"></i>
+                <span>Résultats</span>
+            </div>
+        </div>
+
+        <!-- Section 1: Configuration -->
+        <div id="section1" class="section active">
+            <div class="import-card p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-cog text-green-600 mr-2"></i>
+                    Étape 1 : Configuration de l'Import
+                </h2>
+
+                <div class="space-y-6">
+                    <!-- Type de données -->
+                    <div>
+                        <label class="block text-lg font-semibold text-gray-700 mb-3">
+                            <i class="fas fa-database text-blue-600 mr-2"></i>
+                            Type de données
+                        </label>
+                        <select id="dataType" class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all text-base">
+                            <option value="">Sélectionnez le type de données...</option>
+                            <option value="eggs">🥚 Collection d'Œufs</option>
+                            <option value="breeding">🦟 Gîtes Larvaires (Breeding Sites)</option>
+                            <option value="mosquitoes">🦟 Moustiques Adultes</option>
+                        </select>
+                    </div>
+
+                    <!-- Zone de drop -->
+                    <div>
+                        <label class="block text-lg font-semibold text-gray-700 mb-3">
+                            <i class="fas fa-file-upload text-green-600 mr-2"></i>
+                            Fichier à importer
+                        </label>
+                        <div class="file-drop-zone" id="dropZone">
+                            <input type="file" id="fileInput" accept=".csv,.xls,.xlsx" style="display: none;">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <div class="text-xl font-semibold text-gray-700 mb-2">
+                                Glissez-déposez votre fichier ici
+                            </div>
+                            <div class="text-sm text-gray-500 mb-4">
+                                ou cliquez pour parcourir
+                            </div>
+                            <div class="text-xs text-gray-400">
+                                Formats acceptés : CSV, XLS, XLSX • Taille max : 10 MB
+                            </div>
+                        </div>
+                        <div id="fileSelected" style="display: none;"></div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex gap-4 flex-wrap">
+                        <button id="downloadTemplateBtn" class="btn-outline flex-1 min-w-[200px]">
+                            <i class="fas fa-download"></i>
+                            <span>Télécharger un Template</span>
+                        </button>
+                        <button id="previewBtn" class="btn-primary flex-1 min-w-[200px]" disabled>
+                            <i class="fas fa-eye"></i>
+                            <span>Prévisualiser les Données</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Preview -->
+        <div id="section2" class="section">
+            <div class="import-card p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-eye text-green-600 mr-2"></i>
+                    Étape 2 : Prévisualisation des Données
+                </h2>
+
+                <!-- Stats Cards -->
+                <div id="previewStats" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <!-- Stats will be inserted here -->
+                </div>
+
+                <!-- Validation Alerts -->
+                <div id="validationAlerts"></div>
+
+                <!-- Preview Table Container -->
+                <div id="previewContainer" class="bg-gray-50 rounded-lg p-4 shadow-inner" style="overflow-x: auto; max-height: 500px; overflow-y: auto;">
+                    <!-- Table will be inserted here -->
+                </div>
+
+                <!-- Actions -->
+                <div class="flex gap-4 mt-6 flex-wrap">
+                    <button id="backToConfigBtn" class="btn-outline">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Retour</span>
+                    </button>
+                    <button id="executeImportBtn" class="btn-primary flex-1" disabled>
+                        <i class="fas fa-upload"></i>
+                        <span>Lancer l'Import</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Import Progress -->
+        <div id="section3" class="section">
+            <div class="import-card p-8 text-center">
+                <div class="spinner mx-auto mb-4" style="width: 60px; height: 60px; border-width: 4px;"></div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">
+                    Import en cours...
+                </h2>
+                <p class="text-gray-600">
+                    Veuillez patienter pendant que nous importons vos données
+                </p>
+                <div id="importProgress" class="mt-6">
+                    <!-- Progress info will be shown here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 4: Results -->
+        <div id="section4" class="section">
+            <div class="import-card p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-check-circle text-green-600 mr-2"></i>
+                    Étape 4 : Résultats de l'Import
+                </h2>
+
+                <div id="resultsContainer">
+                    <!-- Results will be inserted here -->
+                </div>
+
+                <!-- Actions -->
+                <div class="flex gap-4 mt-6 flex-wrap">
+                    <button id="newImportBtn" class="btn-primary">
+                        <i class="fas fa-plus"></i>
+                        <span>Nouvel Import</span>
+                    </button>
+                    <a href="/admin.html" class="btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Retour à l'Admin</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JavaScript -->
+    <script src="/js/import-page.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+

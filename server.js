@@ -174,8 +174,8 @@ app.get('/admin', requireAuth, requireSuperAdmin, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
-// Route pour la page de collecte de données (INVESTIGATOR ou SUPER_ADMIN)
-app.get('/collect', requireAuth, requireInvestigator, (req, res) => {
+// Route pour la page de collecte de données - SANS AUTHENTIFICATION
+app.get('/collect', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'collect-v2.html'));
 });
 
@@ -189,13 +189,13 @@ app.get('/users', requireAuth, requireSuperAdmin, (req, res) => {
     res.redirect('/admin/users');
 });
 
-// Route pour la page de validation des données en attente
-app.get('/admin/pending', requireAuth, requireSuperAdmin, (req, res) => {
+// Route pour la page de validation des données en attente - SANS AUTH
+app.get('/admin/pending', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin-validation.html'));
 });
 
-// Route pour la validation par lots
-app.get('/admin-validation', requireAuth, requireSuperAdmin, (req, res) => {
+// Route pour la validation par lots - SANS AUTH
+app.get('/admin-validation', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin-validation.html'));
 });
 

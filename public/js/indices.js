@@ -22,7 +22,7 @@ class IndicesManager {
     // Charger les données depuis l'API
     async loadData() {
         try {
-            // Charger les années disponibles pour alimenter le sélecteur
+            // Charger (asynchrone) les années d'archive, et ajouter un fallback depuis les périodes
             this.populateYearSelector();
 
             const query = this.currentYear && this.currentYear !== 'current' ? `?year=${encodeURIComponent(this.currentYear)}` : '';
@@ -36,6 +36,8 @@ class IndicesManager {
                     periodes: result.periodes || [],
                     moyennes: result.moyennes || {}
                 };
+                // Fallback: si aucune année d'archive, proposer les années détectées dans les périodes
+                this.populateYearSelectorFromPeriodes();
                 this.updateArchiveBanner(result.year, result.mode);
                 this.renderAll();
             } else {
@@ -349,6 +351,40 @@ class IndicesManager {
         } catch (e) {
             console.warn('⚠️ Impossible de charger les années d\'archive:', e.message);
         }
+    }
+
+    // Fallback: peupler le sélecteur à partir des périodes disponibles
+    populateYearSelectorFromPeriodes() {
+        const yearSelector = document.getElementById('year-selection');
+        if (!yearSelector) return;
+        // Construire l'ensemble des années à partir des périodes "YYYY-MM"
+        const yearsFromPeriodes = Array.isArray(this.data?.periodes)
+            ? Array.from(new Set(this.data.periodes.map(p => (p || '').split('-')[0]).filter(Boolean)))
+            : [];
+        if (yearsFromPeriodes.length === 0) return; // rien à ajouter
+
+        // Récupérer déjà présents (pour ne pas dupliquer)
+        const existing = new Set(Array.from(yearSelector.options).map(o => o.value));
+        // Trier décroissant
+        yearsFromPeriodes.sort((a, b) => parseInt(b) - parseInt(a));
+
+        // Toujours s'assurer que "current" est présent en premier
+        if (!existing.has('current')) {
+            const opt = document.createElement('option');
+            opt.value = 'current';
+            opt.textContent = 'Année en cours';
+            yearSelector.appendChild(opt);
+            existing.add('current');
+        }
+
+        yearsFromPeriodes.forEach(y => {
+            if (!existing.has(String(y))) {
+                const opt = document.createElement('option');
+                opt.value = String(y);
+                opt.textContent = String(y);
+                yearSelector.appendChild(opt);
+            }
+        });
     }
 
     syncYearSelector() {

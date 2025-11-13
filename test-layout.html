@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Layout 3 Graphiques</title>
+    <style>
+        .indicators-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .indicators-grid-three {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto auto;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .indicators-grid-three .indicator-card:nth-child(3) {
+            grid-column: 1 / -1;
+            grid-row: 2;
+        }
+
+        @media (max-width: 768px) {
+            .indicators-grid-three {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto;
+            }
+            
+            .indicators-grid-three .indicator-card:nth-child(3) {
+                grid-column: 1;
+                grid-row: auto;
+            }
+        }
+
+        .indicator-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+        }
+
+        .indicator-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .chart-container {
+            height: 300px;
+            background: #f8fafc;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Layout - 3 Graphiques</h1>
+    
+    <h2>Layout normal (2 graphiques)</h2>
+    <div class="indicators-grid">
+        <div class="indicator-card">
+            <h3 class="indicator-title">Graphique 1</h3>
+            <div class="chart-container">Graphique 1</div>
+        </div>
+        <div class="indicator-card">
+            <h3 class="indicator-title">Graphique 2</h3>
+            <div class="chart-container">Graphique 2</div>
+        </div>
+    </div>
+
+    <h2>Layout 3 graphiques (2 en haut, 1 en bas)</h2>
+    <div class="indicators-grid-three">
+        <div class="indicator-card">
+            <h3 class="indicator-title">Graphique 1</h3>
+            <div class="chart-container">Graphique 1</div>
+        </div>
+        <div class="indicator-card">
+            <h3 class="indicator-title">Graphique 2</h3>
+            <div class="chart-container">Graphique 2</div>
+        </div>
+        <div class="indicator-card">
+            <h3 class="indicator-title">Graphique 3 (pleine largeur)</h3>
+            <div class="chart-container">Graphique 3</div>
+        </div>
+    </div>
+</body>
+</html>
+
+
+

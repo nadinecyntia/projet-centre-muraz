@@ -27,76 +27,107 @@
 	// GÉOLOCALISATION GPS
 	// ===============================================
 	
-	document.querySelectorAll('[data-gps]').forEach(btn => {
-		btn.addEventListener('click', (e) => {
-			e.preventDefault(); // Empêcher toute soumission de formulaire
-			
-			const fieldName = btn.getAttribute('data-gps');
-			
-			// Chercher le champ dans le même parent direct (évite les conflits si plusieurs champs ont le même nom)
-			const parent = btn.parentElement;
-			const field = parent.querySelector(`input[name="${fieldName}"]`);
-			
-			console.log('🌍 Bouton GPS cliqué, champ cible:', fieldName);
-			
-			if (!field) {
-				alert(`Erreur: Champ "${fieldName}" introuvable !`);
-				console.error('❌ Champ introuvable:', fieldName);
-				return;
-			}
-			
-			if (!navigator.geolocation) {
-				alert('❌ Géolocalisation non supportée par ce navigateur');
-				console.error('❌ navigator.geolocation non disponible');
-				return;
-			}
-			
-			console.log('⏳ Demande de géolocalisation en cours...');
-			btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-			btn.disabled = true;
-			
-			navigator.geolocation.getCurrentPosition(
-				pos => {
-					const coords = `${pos.coords.latitude.toFixed(6)},${pos.coords.longitude.toFixed(6)}`;
-					field.value = coords;
-					console.log('✅ Position obtenue:', coords);
-					
-					btn.innerHTML = '<i class="fas fa-check"></i>';
-					setTimeout(() => {
+	function initializeGPSButtons() {
+		document.querySelectorAll('[data-gps]').forEach(btn => {
+			btn.addEventListener('click', (e) => {
+				e.preventDefault(); // Empêcher toute soumission de formulaire
+				e.stopPropagation();
+				
+				const fieldName = btn.getAttribute('data-gps');
+				
+				// Chercher le champ : d'abord dans le parent direct, puis dans la section
+				let field = null;
+				const parent = btn.parentElement;
+				
+				// Chercher dans le parent direct (div.actions)
+				if (parent) {
+					field = parent.querySelector(`input[name="${fieldName}"]`);
+				}
+				
+				// Si pas trouvé, chercher dans toute la section parente
+				if (!field) {
+					const section = btn.closest('.section');
+					if (section) {
+						field = section.querySelector(`input[name="${fieldName}"]`);
+					}
+				}
+				
+				// Si toujours pas trouvé, chercher dans tout le document (dernier recours)
+				if (!field) {
+					field = document.querySelector(`input[name="${fieldName}"]`);
+				}
+				
+				console.log('🌍 Bouton GPS cliqué, champ cible:', fieldName);
+				console.log('🔍 Champ trouvé:', field ? 'OUI' : 'NON', field);
+				
+				if (!field) {
+					alert(`Erreur: Champ "${fieldName}" introuvable ! Veuillez vérifier que le champ existe dans le formulaire.`);
+					console.error('❌ Champ introuvable:', fieldName);
+					console.error('📍 Parent:', parent);
+					console.error('📍 Section:', btn.closest('.section'));
+					return;
+				}
+				
+				if (!navigator.geolocation) {
+					alert('❌ Géolocalisation non supportée par ce navigateur');
+					console.error('❌ navigator.geolocation non disponible');
+					return;
+				}
+				
+				console.log('⏳ Demande de géolocalisation en cours...');
+				btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+				btn.disabled = true;
+				
+				navigator.geolocation.getCurrentPosition(
+					pos => {
+						const coords = `${pos.coords.latitude.toFixed(6)},${pos.coords.longitude.toFixed(6)}`;
+						field.value = coords;
+						console.log('✅ Position obtenue:', coords);
+						
+						btn.innerHTML = '<i class="fas fa-check"></i>';
+						setTimeout(() => {
+							btn.innerHTML = '<i class="fas fa-location-crosshairs"></i>';
+							btn.disabled = false;
+						}, 1500);
+					},
+					err => {
+						let errorMsg = '';
+						switch(err.code) {
+							case err.PERMISSION_DENIED:
+								errorMsg = 'Permission refusée. Autorisez la géolocalisation dans les paramètres du navigateur.';
+								break;
+							case err.POSITION_UNAVAILABLE:
+								errorMsg = 'Position indisponible. Vérifiez que le GPS de votre appareil est activé.';
+								break;
+							case err.TIMEOUT:
+								errorMsg = 'Délai d\'attente dépassé. Réessayez.';
+								break;
+							default:
+								errorMsg = 'Erreur inconnue: ' + err.message;
+						}
+						
+						alert('❌ ' + errorMsg);
+						console.error('❌ Erreur GPS:', err.code, err.message);
+						
 						btn.innerHTML = '<i class="fas fa-location-crosshairs"></i>';
 						btn.disabled = false;
-					}, 1500);
-				},
-				err => {
-					let errorMsg = '';
-					switch(err.code) {
-						case err.PERMISSION_DENIED:
-							errorMsg = 'Permission refusée. Autorisez la géolocalisation dans les paramètres du navigateur.';
-							break;
-						case err.POSITION_UNAVAILABLE:
-							errorMsg = 'Position indisponible. Vérifiez que le GPS de votre appareil est activé.';
-							break;
-						case err.TIMEOUT:
-							errorMsg = 'Délai d\'attente dépassé. Réessayez.';
-							break;
-						default:
-							errorMsg = 'Erreur inconnue: ' + err.message;
+					},
+					{
+						enableHighAccuracy: true,
+						timeout: 10000,
+						maximumAge: 0
 					}
-					
-					alert('❌ ' + errorMsg);
-					console.error('❌ Erreur GPS:', err.code, err.message);
-					
-					btn.innerHTML = '<i class="fas fa-location-crosshairs"></i>';
-					btn.disabled = false;
-				},
-				{
-					enableHighAccuracy: true,
-					timeout: 10000,
-					maximumAge: 0
-				}
-			);
+				);
 		});
 	});
+	}
+	
+	// Initialiser les boutons GPS quand le DOM est prêt
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initializeGPSButtons);
+	} else {
+		initializeGPSButtons();
+	}
 	
 	// ===============================================
 	// UTILITAIRES

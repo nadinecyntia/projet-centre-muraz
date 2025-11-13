@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../config/database');
-const { requireInvestigator } = require('../middleware/auth');
 
-// Appliquer le middleware d'authentification
-router.use(requireInvestigator);
+// ===============================================
+// AUTHENTIFICATION DÉSACTIVÉE POUR LES ROUTES DE COLLECTE
+// Les formulaires de collecte sont accessibles sans authentification
+// ===============================================
 
 // ===============================================
 // HELPER FUNCTIONS
@@ -20,7 +21,6 @@ async function findOrCreateHouse(client, houseData) {
         sector,
         environment,
         gps_coordinates,
-        house_code,
         household_size,
         sleeping_unit_count,
         head_contact
@@ -40,13 +40,9 @@ async function findOrCreateHouse(client, houseData) {
         await client.query(
             `UPDATE houses SET
                 gps_coordinates = COALESCE($1, gps_coordinates),
-                house_code = COALESCE($2, house_code),
-                household_size = COALESCE($3, household_size),
-                sleeping_unit_count = COALESCE($4, sleeping_unit_count),
-                head_contact = COALESCE($5, head_contact),
                 updated_at = NOW()
-             WHERE id = $6`,
-            [gps_coordinates, house_code, household_size, sleeping_unit_count, head_contact, house_id]
+             WHERE id = $2`,
+            [gps_coordinates, house_id]
         );
         
         return house_id;
@@ -56,14 +52,10 @@ async function findOrCreateHouse(client, houseData) {
     const createResult = await client.query(
         `INSERT INTO houses (
             concession_code, sector, environment, gps_coordinates,
-            house_code, household_size, sleeping_unit_count, head_contact,
             created_at, updated_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
+        ) VALUES ($1, $2, $3, $4, NOW(), NOW())
         RETURNING id`,
-        [
-            concession_code, sector, environment, gps_coordinates,
-            house_code, household_size, sleeping_unit_count, head_contact
-        ]
+        [concession_code, sector, environment, gps_coordinates]
     );
     
     const house_id = createResult.rows[0].id;
@@ -76,6 +68,7 @@ async function findOrCreateHouse(client, houseData) {
 // ===============================================
 
 router.post('/collect/eggs', async (req, res) => {
+    console.log('📥 Requête POST /api/collect/eggs reçue (sans authentification)');
     const client = await pool.connect();
     
     try {
@@ -159,6 +152,7 @@ router.post('/collect/eggs', async (req, res) => {
 // ===============================================
 
 router.post('/collect/breeding', async (req, res) => {
+    console.log('📥 Requête POST /api/collect/breeding reçue (sans authentification)');
     const client = await pool.connect();
     
     try {
@@ -170,7 +164,6 @@ router.post('/collect/breeding', async (req, res) => {
             sector,
             environment,
             gps_coordinates,
-            house_code,
             household_size,
             sleeping_unit_count,
             head_contact,
@@ -220,7 +213,6 @@ router.post('/collect/breeding', async (req, res) => {
             sector,
             environment,
             gps_coordinates: gps_coordinates || null,
-            house_code: house_code || null,
             household_size: household_size ? parseInt(household_size) : null,
             sleeping_unit_count: sleeping_unit_count ? parseInt(sleeping_unit_count) : null,
             head_contact: head_contact || null
@@ -305,6 +297,7 @@ router.post('/collect/breeding', async (req, res) => {
 // ===============================================
 
 router.post('/collect/mosquitoes', async (req, res) => {
+    console.log('📥 Requête POST /api/collect/mosquitoes reçue (sans authentification)');
     const client = await pool.connect();
     
     try {
@@ -321,7 +314,6 @@ router.post('/collect/mosquitoes', async (req, res) => {
             visit_date,
             visit_start_time,
             visit_end_time,
-            investigator_name,
             collection_methods,
             capture_locations,
             
@@ -383,7 +375,7 @@ router.post('/collect/mosquitoes', async (req, res) => {
         // 2. Créer la collecte de moustiques
         const result = await client.query(
             `INSERT INTO adult_mosquitoes_collections (
-                house_id, visit_date, visit_start_time, visit_end_time, investigator_name,
+                house_id, visit_date, visit_start_time, visit_end_time,
                 collection_methods, capture_locations,
                 prokopack_traps_count, bg_traps_count, prokopack_mosquitoes_count, bg_trap_mosquitoes_count,
                 total_mosquitoes_count, male_count, female_count,
@@ -392,16 +384,15 @@ router.post('/collect/mosquitoes', async (req, res) => {
                 mosquitoes_aedes_count, mosquitoes_culex_count, mosquitoes_anopheles_count, mosquitoes_other_count,
                 observations, status, submitted_by, created_at, updated_at
             ) VALUES (
-                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14,
-                $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25,
-                $26, 'pending', $27, NOW(), NOW()
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13,
+                $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25,
+                'pending', $26, NOW(), NOW()
             ) RETURNING id`,
             [
                 house_id,
                 visit_date,
                 visit_start_time,
                 visit_end_time,
-                investigator_name || null,
                 collection_methods || null,
                 capture_locations || null,
                 parseInt(prokopack_traps_count) || 0,

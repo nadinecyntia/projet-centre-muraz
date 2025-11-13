@@ -27,7 +27,6 @@ router.get('/analyses', async (req, res) => {
                         'eggs' as data_type,
                         e.investigator_name,
                         h.concession_code,
-                        h.house_code,
                         e.visit_date,
                         h.sector,
                         h.environment,
@@ -47,7 +46,6 @@ router.get('/analyses', async (req, res) => {
                         'breeding' as data_type,
                         b.investigator_name,
                         h.concession_code,
-                        h.house_code,
                         b.visit_date,
                         h.sector,
                         h.environment,
@@ -59,7 +57,7 @@ router.get('/analyses', async (req, res) => {
                     FROM breeding_sites b
                     JOIN houses h ON b.house_id = h.id
                     WHERE b.status = 'approved'
-                    GROUP BY b.investigator_name, h.concession_code, h.house_code, b.visit_date, h.sector, h.environment, h.gps_coordinates
+                    GROUP BY b.investigator_name, h.concession_code, b.visit_date, h.sector, h.environment, h.gps_coordinates
                     
                     UNION ALL
                     
@@ -68,7 +66,6 @@ router.get('/analyses', async (req, res) => {
                         'mosquitoes' as data_type,
                         m.investigator_name,
                         h.concession_code,
-                        h.house_code,
                         m.visit_date,
                         h.sector,
                         h.environment,
@@ -108,7 +105,7 @@ router.get('/analyses', async (req, res) => {
                 JOIN houses h ON m.house_id = h.id
                 WHERE m.status='approved' AND h.sector IS NOT NULL AND h.sector <> ''
                 GROUP BY 1,2
-                ORDER BY 1 ASC;
+                ORDER BY date_trunc('month', m.visit_date) ASC;
             `;
             const adultesRes = await client.query(adultesQuery);
             const chartDataAdultes = {};
@@ -132,7 +129,7 @@ router.get('/analyses', async (req, res) => {
                 FROM adult_mosquitoes_collections m
                 WHERE m.status='approved'
                 GROUP BY 1,2
-                ORDER BY 1 ASC;
+                ORDER BY date_trunc('month', m.visit_date) ASC;
             `;
             const genresRes = await client.query(genresQuery);
             const chartDataAdultesParGenre = {};
@@ -154,7 +151,7 @@ router.get('/analyses', async (req, res) => {
                 JOIN houses h ON b.house_id = h.id
                 WHERE b.status='approved' AND h.sector IS NOT NULL AND h.sector <> ''
                 GROUP BY 1,2
-                ORDER BY 1 ASC;
+                ORDER BY date_trunc('month', m.visit_date) ASC;
             `;
             const larvesRes = await client.query(larvesQuery);
             const chartDataLarves = {};
@@ -716,6 +713,7 @@ router.get('/analyses/eggs-aggregates', async (req, res) => {
     try {
         const client = await pool.connect();
         try {
+            const year = req.query.year && req.query.year !== 'current' ? parseInt(req.query.year, 10) : null;
             const query = `
                 WITH base AS (
                     SELECT 
@@ -725,7 +723,7 @@ router.get('/analyses/eggs-aggregates', async (req, res) => {
                         e.eggs_count::int AS eggs_count
                     FROM eggs_collections e
                     JOIN houses h ON e.house_id = h.id
-                    WHERE e.status='approved'
+                    WHERE e.status='approved' ${year ? `AND EXTRACT(YEAR FROM e.visit_date) = ${year}` : ''}
                 )
                 SELECT 
                     period,
@@ -752,6 +750,7 @@ router.get('/analyses/breeding-aggregates', async (req, res) => {
     try {
         const client = await pool.connect();
         try {
+            const year = req.query.year && req.query.year !== 'current' ? parseInt(req.query.year, 10) : null;
             const query = `
                 WITH base AS (
                     SELECT 
@@ -763,7 +762,7 @@ router.get('/analyses/breeding-aggregates', async (req, res) => {
                         SUM(b.nymphs_count)::int AS nymphs_count
                     FROM breeding_sites b
                     JOIN houses h ON b.house_id = h.id
-                    WHERE b.status='approved'
+                    WHERE b.status='approved' ${year ? `AND EXTRACT(YEAR FROM b.visit_date) = ${year}` : ''}
                     GROUP BY 1, 2, 3
                 )
                 SELECT 
@@ -794,6 +793,7 @@ router.get('/analyses/breeding-by-class-environment', async (req, res) => {
         console.log('📊 API Analyses: Breeding by Class & Environment');
         const client = await pool.connect();
         try {
+            const year = req.query.year && req.query.year !== 'current' ? parseInt(req.query.year, 10) : null;
             const query = `
                 WITH unnested AS (
                     SELECT 
@@ -804,7 +804,7 @@ router.get('/analyses/breeding-by-class-environment', async (req, res) => {
                         b.nymphs_count
                     FROM breeding_sites b
                     JOIN houses h ON b.house_id = h.id
-                    WHERE b.status = 'approved'
+                    WHERE b.status = 'approved' ${year ? `AND EXTRACT(YEAR FROM b.visit_date) = ${year}` : ''}
                         AND b.site_classes IS NOT NULL
                         AND array_length(b.site_classes, 1) > 0
                         AND h.environment IS NOT NULL
@@ -847,6 +847,7 @@ router.get('/analyses/mosquitoes-aggregates', async (req, res) => {
     try {
         const client = await pool.connect();
         try {
+            const year = req.query.year && req.query.year !== 'current' ? parseInt(req.query.year, 10) : null;
             const query = `
                 WITH base AS (
                     SELECT 
@@ -862,7 +863,7 @@ router.get('/analyses/mosquitoes-aggregates', async (req, res) => {
                         m.mosquitoes_other_count::int AS other_count
                     FROM adult_mosquitoes_collections m
                     JOIN houses h ON m.house_id = h.id
-                    WHERE m.status='approved'
+                    WHERE m.status='approved' ${year ? `AND EXTRACT(YEAR FROM m.visit_date) = ${year}` : ''}
                 )
                 SELECT 
                     period,

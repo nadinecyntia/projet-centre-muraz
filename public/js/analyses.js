@@ -216,6 +216,8 @@ class AnalysesManager {
                         adults: adultsData,
                         breedingByClass: breedingByClassData
                     };
+                    // Ajouter les années détectées dans les données si pas d'archives
+                    this.populateYearSelectorFromData();
 
                     console.log('✅ Données agrégées chargées:', {
                         eggs: eggsData.length,
@@ -239,6 +241,8 @@ class AnalysesManager {
                 this.fetchAdultsData()
             ]);
             this.data = { eggs: eggsData, larvae: larvaeData, adults: adultsData };
+            // Ajouter les années détectées dans les données si pas d'archives
+            this.populateYearSelectorFromData();
             console.log('✅ Données (fallback) chargées:', {
                 eggs: eggsData?.length || 0,
                 larvae: larvaeData?.length || 0,
@@ -1037,9 +1041,17 @@ class AnalysesManager {
             colorIndex++;
         });
 
+        const labels = this.getEnglishMonthNames();
         return {
-            labels: this.sortMonthsChronologically(Array.from(months)),
-            datasets: datasets
+            labels: labels,
+            datasets: datasets.map(ds => ({
+                ...ds,
+                data: labels.map(month => {
+                    // Remapper les données sur les 12 mois fixes (Jan -> Dec)
+                    const key = Object.keys(groupedData).find(k => groupedData[k].sector === ds.label && groupedData[k].month === month);
+                    return key ? groupedData[key].count : 0;
+                })
+            }))
         };
     }
 
@@ -1135,13 +1147,14 @@ class AnalysesManager {
             monthlyData[monthKey].count += parseInt(item.total_mosquitoes_count) || 0;
         });
 
-        // Trier par mois chronologiquement et extraire les données
-        const sortedMonths = Object.keys(monthlyData).sort((a, b) => {
-            // Comparer les dates YYYY-MM
-            return a.localeCompare(b);
+        // Remplir tous les mois de Janvier à Décembre (zéro si absent)
+        const labels = this.getEnglishMonthNames();
+        const totalsByLabel = {};
+        Object.keys(monthlyData).forEach(key => {
+            const label = monthlyData[key].label;
+            totalsByLabel[label] = (totalsByLabel[label] || 0) + monthlyData[key].count;
         });
-        const labels = sortedMonths.map(key => monthlyData[key].label);
-        const values = sortedMonths.map(key => monthlyData[key].count);
+        const values = labels.map(label => totalsByLabel[label] || 0);
 
         return { labels, values };
     }
@@ -1182,8 +1195,9 @@ class AnalysesManager {
         const colors = this.themeManager.getColorArray(sectors.size);
         let colorIndex = 0;
 
+        const labels = this.getEnglishMonthNames();
         Array.from(sectors).forEach(sector => {
-            const data = Array.from(months).map(month => {
+            const data = labels.map(month => {
                 const key = Object.keys(groupedData).find(k => 
                     groupedData[k].sector === sector && groupedData[k].month === month
                 );
@@ -1201,7 +1215,7 @@ class AnalysesManager {
         });
         
         return {
-            labels: this.sortMonthsChronologically(Array.from(months)),
+            labels: labels,
             datasets: datasets
         };
     }
@@ -1239,11 +1253,33 @@ class AnalysesManager {
         return months[date.getMonth()];
     }
 
+    // Retourne la liste complète des mois (anglais) de Janvier à Décembre
+    getEnglishMonthNames() {
+        return [
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
+        ];
+    }
+
     // Fonction pour trier les mois anglais chronologiquement
     sortMonthsChronologically(monthLabels) {
         const monthOrder = [
             'January', 'February', 'March', 'April', 'May', 'June',
             'July', 'August', 'September', 'October', 'November', 'December'
+        ];
+        
+        return monthLabels.sort((a, b) => {
+            const indexA = monthOrder.indexOf(a);
+            const indexB = monthOrder.indexOf(b);
+            return indexA - indexB;
+        });
+    }
+
+    // Fonction pour trier les mois français chronologiquement
+    sortMonthsChronologicallyFrench(monthLabels) {
+        const monthOrder = [
+            'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+            'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
         ];
         
         return monthLabels.sort((a, b) => {
@@ -1330,6 +1366,57 @@ class AnalysesManager {
         }
     }
 
+    // Ajoute les années détectées dans les données actuelles (fallback si pas d'archives)
+    populateYearSelectorFromData() {
+        const select = document.getElementById('year-selection-analyses');
+        if (!select) return;
+
+        const extractYears = (arr = [], field) => {
+            const out = new Set();
+            arr.forEach(item => {
+                const v = item?.[field];
+                if (!v) return;
+                const d = new Date(v);
+                if (!isNaN(d.getTime())) out.add(String(d.getFullYear()))
+            });
+            return out;
+        };
+
+        const years = new Set();
+        // visit_date présent dans eggs/larvae/adults (normalisé au 1er du mois pour agrégats)
+        extractYears(this.data?.eggs, 'visit_date').forEach(y => years.add(y));
+        extractYears(this.data?.larvae, 'visit_date').forEach(y => years.add(y));
+        extractYears(this.data?.adults, 'visit_date').forEach(y => years.add(y));
+
+        if (years.size === 0) return;
+
+        // Options existantes pour éviter les doublons
+        const existing = new Set(Array.from(select.options).map(o => o.value));
+        const sorted = Array.from(years).sort((a,b) => parseInt(b) - parseInt(a));
+
+        // S'assurer que "current" existe
+        if (!existing.has('current')) {
+            const opt = document.createElement('option');
+            opt.value = 'current';
+            opt.textContent = 'Année en cours';
+            select.appendChild(opt);
+            existing.add('current');
+        }
+
+        sorted.forEach(y => {
+            if (!existing.has(y)) {
+                const opt = document.createElement('option');
+                opt.value = y;
+                opt.textContent = y;
+                select.appendChild(opt);
+            }
+        });
+
+        // Synchroniser la valeur visible
+        const value = this.currentYear || 'current';
+        if (select.value !== value) select.value = value;
+    }
+
     updateArchiveBanner(year, mode) {
         const banner = document.getElementById('archive-banner-analyses');
         const spanYear = document.getElementById('archive-year-analyses');
@@ -1412,15 +1499,16 @@ class AnalysesManager {
             monthlyData[monthKey].count += parseInt(item.eggs_count) || 0;
         });
 
-        // Trier par mois chronologiquement
-        const sortedMonths = Object.keys(monthlyData).sort((a, b) => {
-            // Comparer les dates YYYY-MM
-            return a.localeCompare(b);
+        // Remplir tous les mois de Janvier à Décembre (zéro si absent)
+        const labels = this.getEnglishMonthNames();
+        const totalsByLabel = {};
+        Object.keys(monthlyData).forEach(key => {
+            const label = monthlyData[key].label;
+            totalsByLabel[label] = (totalsByLabel[label] || 0) + monthlyData[key].count;
         });
-        
         return {
-            labels: sortedMonths.map(key => monthlyData[key].label),
-            values: sortedMonths.map(key => monthlyData[key].count)
+            labels,
+            values: labels.map(label => totalsByLabel[label] || 0)
         };
     }
 
@@ -1460,12 +1548,9 @@ class AnalysesManager {
         const colors = this.themeManager.getColorArray(environments.size);
         let colorIndex = 0;
 
-        // Créer un ordre chronologique des mois basé sur les données réelles
-        const allMonths = Array.from(months);
-        const sortedMonths = allMonths.sort((a, b) => {
-            const monthOrder = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
-            return monthOrder.indexOf(a) - monthOrder.indexOf(b);
-        });
+        // Créer un ordre fixe Janvier -> Décembre
+        const allMonths = this.getEnglishMonthNames();
+        const sortedMonths = allMonths;
 
         environments.forEach(environment => {
             const data = [];
@@ -1668,10 +1753,7 @@ class AnalysesManager {
 
         // Créer un ordre chronologique des mois basé sur les données réelles
         const allMonths = Array.from(months);
-        const sortedMonths = allMonths.sort((a, b) => {
-            const monthOrder = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
-            return monthOrder.indexOf(a) - monthOrder.indexOf(b);
-        });
+        const sortedMonths = this.sortMonthsChronologicallyFrench(allMonths);
 
         sectors.forEach(sector => {
             const data = [];
@@ -1742,10 +1824,7 @@ class AnalysesManager {
 
         // Créer un ordre chronologique des mois basé sur les données réelles
         const allMonths = Array.from(months);
-        const sortedMonths = allMonths.sort((a, b) => {
-            const monthOrder = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
-            return monthOrder.indexOf(a) - monthOrder.indexOf(b);
-        });
+        const sortedMonths = this.sortMonthsChronologicallyFrench(allMonths);
 
         sectors.forEach(sector => {
             const data = [];
